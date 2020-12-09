@@ -1,0 +1,18 @@
+- repo: git://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+    - id: check-merge-conflict
+    - id: check-yaml
+    - id: trailing-whitespace
+    - id: mixed-line-ending
+    - id: end-of-file-fixer
+    - id: flake8
+- repo: https://github.com/psf/black
+  rev: 20.8b1
+  hooks:
+    - id: black
+- repo: https://github.com/pycqa/isort
+  rev: 5.6.4
+  hooks:
+    - id: isort
+      args: ["--profile", "black", "--filter-files"]
