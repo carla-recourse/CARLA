@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Pre-commit checks
+      - name: Unit tests
         run: |
           pip install -U pip setuptools wheel
           pip install -e .
