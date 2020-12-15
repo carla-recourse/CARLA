@@ -2,14 +2,14 @@ from cf_benchmark import distances
 
 
 def test_d1():
-    actual = distances.d1_distance([0], [0])
+    actual = distances.d1_distance([0, 1], [0, 1])
     expected = 0
 
     assert actual == expected
 
 
 def test_d4():
-    actual = distances.d4_distance([0], [0])
+    actual = distances.d4_distance([0, 1], [0, 1])
     expected = 0
 
     assert actual == expected
