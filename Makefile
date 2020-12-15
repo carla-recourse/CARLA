@@ -1,4 +1,4 @@
-.PHONY: clean install-dev requirements venv
+.PHONY: test clean install-dev requirements venv
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -12,6 +12,11 @@ CURRENT_DIR = $(shell pwd)
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
+## Run python tests
+test:
+	$(PYTHON) -m pytest test/*
+
+
 ## Delete all compiled Python files
 clean:
 	find . -type f -name "*.py[co]" -delete
