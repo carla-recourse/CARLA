@@ -1,6 +1,6 @@
 # Counterfactual Explanation Benchmarking
 
-A Python package _`cf-benchmark`_ to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
+A Python package **`cf-benchmark`** to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
 
 ### Available Datasets
 
@@ -31,8 +31,8 @@ pip install git+https://github.com/indyfree/cf-benchmark.git#egg=cf-benchmark
 
 ### Requirements
 
-- `python3.7-venv` (if not shipped with python3.7)
-- [GNU Make](https://www.gnu.org/software/make/)
+- `python3.7-venv` (when not already shipped with python3.7)
+- Recommended: [GNU Make](https://www.gnu.org/software/make/)
 
 ### Installation
 
