@@ -14,11 +14,24 @@ Python package to benchmark counterfactual explanation methods on commonly used 
 
 - Artificial Neural Network with 2 hidden layers and ReLU activation function
 
+## Installation
+
 ### Requirements
 
 - `python3.7`
-- `python3.7-venv` (if not shipped with python3.7)
+- `pip`
 
+### Install via pip
+
+```sh
+pip install git+https://github.com/indyfree/cf-benchmark.git#egg=cf-benchmark
+```
+
+## Contributing
+
+### Requirements
+
+- `python3.7-venv` (if not shipped with python3.7)
 - [GNU Make](https://www.gnu.org/software/make/)
 
 ### Installation
@@ -51,12 +64,12 @@ pip install -r requirements-dev.txt
 python -m pytest test/*
 ```
 
-### Contributing
+### Linting and Styling
 
-We use pre-commit hooks to enforce:
+We use pre-commit hooks within our build pipelines to enforce:
 
-- coherent styling with [black](https://github.com/psf/black)
 - python linting with [flake8](https://flake8.pycqa.org/en/latest/)
+- coherent styling with [black](https://github.com/psf/black)
 
 Install pre-commit with:
 
@@ -71,6 +84,6 @@ pip install -r requirements-dev.txt
 pre-commit install
 ```
 
-### Licence
+## Licence
 
 cf-benchmark is under the MIT Licence. See the [LICENCE](github.com/indyfree/cf-benchmark/blob/master/LICENSE) for more details.
