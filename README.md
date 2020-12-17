@@ -68,8 +68,8 @@ python -m pytest test/*
 
 We use pre-commit hooks within our build pipelines to enforce:
 
-- Python linting with [flake8](https://flake8.pycqa.org/en/latest/)
-- Python styling with [black](https://github.com/psf/black)
+- Python linting with [flake8](https://flake8.pycqa.org/en/latest/).
+- Python styling with [black](https://github.com/psf/black).
 
 Install pre-commit with:
 
