@@ -1,6 +1,18 @@
 # Counterfactual Explanation Benchmarking
 
-Benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models or datasets
+Python package to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
+
+## Available Datasets
+
+- Adult Data Set: [Source](https://archive.ics.uci.edu/ml/datasets/adult)
+
+## Implemented Methods
+
+- DiCE: [Repo](https://github.com/interpretml/DiCE), [Paper](https://arxiv.org/abs/1905.07697)
+
+## Provided Machine Learning Models
+
+- Artificial Neural Network with 2 hidden layers and ReLU activation function
 
 ### Requirements
 
