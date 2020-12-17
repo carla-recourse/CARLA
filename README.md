@@ -1,16 +1,16 @@
 # Counterfactual Explanation Benchmarking
 
-Python package to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
+A Python package _`cf-benchmark`_ to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
 
-## Available Datasets
+### Available Datasets
 
 - Adult Data Set: [Source](https://archive.ics.uci.edu/ml/datasets/adult)
 
-## Implemented Methods
+### Implemented Methods
 
 - DiCE: [Repo](https://github.com/interpretml/DiCE), [Paper](https://arxiv.org/abs/1905.07697)
 
-## Provided Machine Learning Models
+### Provided Machine Learning Models
 
 - Artificial Neural Network with 2 hidden layers and ReLU activation function
 
@@ -68,8 +68,8 @@ python -m pytest test/*
 
 We use pre-commit hooks within our build pipelines to enforce:
 
-- python linting with [flake8](https://flake8.pycqa.org/en/latest/)
-- coherent styling with [black](https://github.com/psf/black)
+- Python linting with [flake8](https://flake8.pycqa.org/en/latest/)
+- Python styling with [black](https://github.com/psf/black)
 
 Install pre-commit with:
 
