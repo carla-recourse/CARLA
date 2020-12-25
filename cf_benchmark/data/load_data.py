@@ -19,8 +19,7 @@ def load_dataset(name, cache=True, data_home=None, **kws):
     Parameters
     ----------
     name : str
-        Name of the dataset (``{name}.csv`` on
-        https://github.com/indyfree/cf-data).
+        Name of the dataset ``{name}.csv`` on https://github.com/indyfree/cf-data.
     cache : boolean, optional
         If True, try to load from the local cache first, and save to the cache
         if a download is required.
@@ -35,7 +34,7 @@ def load_dataset(name, cache=True, data_home=None, **kws):
         Tabular data, possibly with some preprocessing applied.
     """
 
-    path = "https://raw.githubusercontent.com/indyfree/cf-data/master/{}.csv"
+    path = "https://raw.githubusercontent.com/indyfree/cf-data/master/raw/{}.csv"
     full_path = path.format(name)
 
     if cache:
@@ -43,7 +42,7 @@ def load_dataset(name, cache=True, data_home=None, **kws):
 
         if not os.path.exists(cache_path):
             if name not in get_dataset_names():
-                raise ValueError(f"'{name}' is not an available datasets.")
+                raise ValueError(f"'{name}' is not an available dataset.")
             urlretrieve(full_path, cache_path)
         full_path = cache_path
 
@@ -51,6 +50,8 @@ def load_dataset(name, cache=True, data_home=None, **kws):
 
     if df.iloc[-1].isnull().all():
         df = df.iloc[:-1]
+
+    return df
 
 
 def get_dataset_names():
@@ -64,7 +65,7 @@ def get_dataset_names():
     with urlopen(url) as resp:
         html = resp.read()
 
-    pat = r"/indyfree/cf-data/blob/master/(\w*).csv"
+    pat = r"/indyfree/cf-data/blob/main/(\w*).csv"
     datasets = re.findall(pat, html.decode())
     return datasets
 
