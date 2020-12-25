@@ -1,6 +1,56 @@
 import os
 import re
-from urllib.request import urlopen
+from urllib.request import urlopen, urlretrieve
+
+import pandas as pd
+
+
+def load_dataset(name, cache=True, data_home=None, **kws):
+    """Load an example dataset from the online repository (requires internet).
+
+    This function provides quick access to a number of example datasets
+    that are commonly useful for evaluating counterfatual methods.
+
+    Note that some of the datasets have a small amount of preprocessing applied
+    to define a proper ordering for categorical variables.
+
+    Use :func:`get_dataset_names` to see a list of available datasets.
+
+    Parameters
+    ----------
+    name : str
+        Name of the dataset (``{name}.csv`` on
+        https://github.com/indyfree/cf-data).
+    cache : boolean, optional
+        If True, try to load from the local cache first, and save to the cache
+        if a download is required.
+    data_home : string, optional
+        The directory in which to cache data; see :func:`get_data_home`.
+    kws : keys and values, optional
+        Additional keyword arguments are passed to passed through to
+        :func:`pandas.read_csv`.
+    Returns
+    -------
+    df : :class:`pandas.DataFrame`
+        Tabular data, possibly with some preprocessing applied.
+    """
+
+    path = "https://raw.githubusercontent.com/indyfree/cf-data/master/{}.csv"
+    full_path = path.format(name)
+
+    if cache:
+        cache_path = os.path.join(get_data_home(data_home), os.path.basename(full_path))
+
+        if not os.path.exists(cache_path):
+            if name not in get_dataset_names():
+                raise ValueError(f"'{name}' is not an available datasets.")
+            urlretrieve(full_path, cache_path)
+        full_path = cache_path
+
+    df = pd.read_csv(full_path, **kws)
+
+    if df.iloc[-1].isnull().all():
+        df = df.iloc[:-1]
 
 
 def get_dataset_names():
