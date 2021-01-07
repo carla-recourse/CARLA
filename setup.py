@@ -13,6 +13,7 @@ setup(
         "pandas==1.1.4",
         "recourse==1.0.0",
         "scikit-learn==0.23.2",
+        "tensorflow==2.4.0",
         "torch==1.7.0",
     ],
     entry_points="""
