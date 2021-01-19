@@ -1,12 +1,12 @@
 import os
-import re
-from urllib.request import urlopen, urlretrieve
+from urllib.error import HTTPError
+from urllib.request import urlretrieve
 
 import tensorflow as tf
 import torch
 
 
-def load_model(name, dataset, engine="torch", cache=True, models_home=None, **kws):
+def load_model(name, dataset, ext="h5", cache=True, models_home=None, **kws):
     """Load an pretrained model from the online repository (requires internet).
 
     This function provides quick access to a number of models trained on example
@@ -33,16 +33,8 @@ def load_model(name, dataset, engine="torch", cache=True, models_home=None, **kw
         Additional keyword arguments are passed to passed through to the read model function
     Returns
     -------
-    df : :class:`pandas.DataFrame`
-        Tabular data, possibly with some preprocessing applied.
+    model :  Tensorflow or pytorch model
     """
-    if engine == "torch":
-        ext = "pt"
-    elif engine == "tensorflow":
-        ext = "hd5"
-    else:
-        raise NotImplementedError(f"'{engine}' is not an supported engine.")
-
     full_path = (
         "https://raw.githubusercontent.com/"
         "indyfree/cf-models/main/models/"
@@ -51,37 +43,28 @@ def load_model(name, dataset, engine="torch", cache=True, models_home=None, **kw
 
     if cache:
         cache_path = os.path.join(
-            get_models_home(models_home), os.path.basename(full_path)
+            get_models_home(models_home), dataset, os.path.basename(full_path)
         )
 
         if not os.path.exists(cache_path):
-            if name not in get_model_names(dataset):
-                raise ValueError(f"'{name}' is not an available model.")
-            urlretrieve(full_path, cache_path)
+            os.makedirs(os.path.dirname(cache_path))
+            try:
+                urlretrieve(full_path, cache_path)
+            except HTTPError as e:
+                raise ValueError(
+                    f"'{name}' is not an available model for dataset '{dataset}'.", e
+                )
+
         full_path = cache_path
 
-    if engine == "torch":
+    if ext == "pt":
         model = torch.load(full_path).eval()
-    elif engine == "tensorflow":
+    elif ext == "h5":
         model = tf.keras.models.load_model(full_path)
+    else:
+        raise NotImplementedError("Extension not supported:", ext)
 
     return model
-
-
-def get_model_names(dataset):
-    """Report available example models, useful for reporting issues.
-
-    Requires an internet connection.
-
-    """
-
-    url = f"https://github.com/indyfree/cf-models/tree/main/models/{dataset}"
-    with urlopen(url) as resp:
-        html = resp.read()
-
-    pat = "/indyfree/cf-models/blob/main/" f"models/{dataset}/" r"(\w*).pt"
-    datasets = re.findall(pat, html.decode())
-    return datasets
 
 
 def get_models_home(models_home=None):
