@@ -1,0 +1,20 @@
+adult:
+  target: income
+  continous:
+    - age
+    - fnlwgt
+    - education-num
+    - capital-gain
+    - hours-per-week
+    - capital-loss
+  categorical:
+    - marital-status
+    - native-country
+    - occupation
+    - race
+    - relationship
+    - sex
+    - workclass
+  immutable:
+    - age
+    - sex
