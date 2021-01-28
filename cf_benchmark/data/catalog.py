@@ -33,7 +33,7 @@ class DataCatalog:
     @property
     def normalized(self):
         if not self._data_normalized:
-            self._data_normalized = processing.normalize(self.data)
+            self._data_normalized = processing.normalize(self.data, self.continous)
 
         return self._data_normalized
 
