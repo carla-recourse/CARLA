@@ -1,3 +1,4 @@
+import pandas as pd
 import yaml
 
 from . import processing
@@ -13,6 +14,7 @@ class DataCatalog:
         self.catalog = self._load_catalog(CATALOG_FILE, dataset)
 
         self._data_normalized = None
+        self._data_encoded = None
 
     @property
     def categoricals(self):
@@ -32,10 +34,17 @@ class DataCatalog:
 
     @property
     def normalized(self):
-        if not self._data_normalized:
+        if self._data_normalized is None:
             self._data_normalized = processing.normalize(self.data, self.continous)
 
         return self._data_normalized
+
+    @property
+    def encoded(self):
+        if self._data_encoded is None:
+            self._data_encoded = pd.get_dummies(self.data, drop_first=True)
+
+        return self._data_encoded
 
     def _load_catalog(self, filename, dataset):
         with open(filename, "r") as f:
