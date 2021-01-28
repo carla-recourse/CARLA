@@ -4,14 +4,12 @@ import yaml
 from . import processing
 from .load_data import load_dataset
 
-CATALOG_FILE = "data_catalog.yaml"
-
 
 class DataCatalog:
-    def __init__(self, dataset):
-        self.data = load_dataset(dataset)
+    def __init__(self, data_name, catalog_file):
+        self.data = load_dataset(data_name)
 
-        self.catalog = self._load_catalog(CATALOG_FILE, dataset)
+        self.catalog = self._load_catalog(catalog_file, data_name)
 
         self._data_normalized = None
         self._data_encoded = None
