@@ -34,7 +34,7 @@ def load_dataset(name, cache=True, data_home=None, **kws):
         Tabular data, possibly with some preprocessing applied.
     """
 
-    path = "https://raw.githubusercontent.com/indyfree/cf-data/master/raw/{}.csv"
+    path = "https://raw.githubusercontent.com/indyfree/cf-data/master/{}.csv"
     full_path = path.format(name)
 
     if cache:

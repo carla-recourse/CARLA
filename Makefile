@@ -12,6 +12,10 @@ CURRENT_DIR = $(shell pwd)
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
+## Run package
+run:
+	$(PYTHON) cf_benchmark/run.py
+
 ## Run python tests
 test:
 	$(PYTHON) -m pytest test/*
