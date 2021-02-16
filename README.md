@@ -10,14 +10,14 @@ CARLA is a python library to benchmark counterfactual explanation and recourse m
 
 _*Disclaimer*_: Currently in the process of open-sourcing
 
-- Actionable Recourse: [Paper](https://arxiv.org/pdf/1809.06514.pdf)
-- [Action Sequence](https://arxiv.org/pdf/1910.00057.pdf)
-- [Contrastive Explanations Method (CEM)](https://arxiv.org/pdf/1802.07623.pdf)
-- [Counterfactual Latent Uncertainty Explanations(CLUE)](https://arxiv.org/pdf/2006.06848.pdf)
-- [Diverse Counterfactual Explanations (DiCE)](https://arxiv.org/pdf/1905.07697.pdf)
-- [EB-CF](https://arxiv.org/pdf/1912.03277.pdf)
-- [Feasible and Actionable Counterfactual Explanations (FACE)](https://arxiv.org/pdf/1909.09369.pdf)
-- [Growing Sphere](https://arxiv.org/pdf/1910.09398.pdf)
+- Actionable Recourse (AR): [Paper](https://arxiv.org/pdf/1809.06514.pdf)
+- Action Sequence (AS): [Paper](https://arxiv.org/pdf/1910.00057.pdf)
+- Contrastive Explanations Method (CEM): [Paper](https://arxiv.org/pdf/1802.07623.pdf)
+- Counterfactual Latent Uncertainty Explanations (CLUE): [Paper](https://arxiv.org/pdf/2006.06848.pdf)
+- Diverse Counterfactual Explanations (DiCE): [Paper](https://arxiv.org/pdf/1905.07697.pdf)
+- EB-CF: [Paper](https://arxiv.org/pdf/1912.03277.pdf)
+- Feasible and Actionable Counterfactual Explanations (FACE): [Paper](https://arxiv.org/pdf/1909.09369.pdf)
+- Growing Sphere (GS): [Paper](https://arxiv.org/pdf/1910.09398.pdf)
 
 ### Provided Machine Learning Models
 
