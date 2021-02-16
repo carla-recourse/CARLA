@@ -3,9 +3,9 @@ from setuptools import setup
 VERSION = "0.0.1"
 
 setup(
-    name="cf_benchmark",
+    name="carla",
     version=VERSION,
-    package_dir={"cf_benchmark": "cf_benchmark"},
+    package_dir={"carla": "carla"},
     install_requires=[
         "lime==0.2.0.1",
         "mip==1.12.0",
@@ -19,6 +19,6 @@ setup(
     ],
     entry_points="""
                 [console_scripts]
-                claims-assessment=cf_benchmark.run:main
+                claims-assessment=carla.run:main
             """,
 )

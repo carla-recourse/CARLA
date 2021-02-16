@@ -1,5 +1,5 @@
-from cf_benchmark.data import DataCatalog
-from cf_benchmark.models import load_model
+from carla.data import DataCatalog
+from carla.models import load_model
 
 
 def predict_label(model, data, label):

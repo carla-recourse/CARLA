@@ -1,4 +1,4 @@
-from cf_benchmark import distances
+from carla import distances
 
 
 def test_d1():

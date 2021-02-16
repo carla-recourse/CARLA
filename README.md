@@ -1,6 +1,6 @@
 # Counterfactual Explanation Benchmarking
 
-A Python package **`cf-benchmark`** to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
+A Python package **`carla`** to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
 
 ### Available Datasets
 
@@ -24,7 +24,7 @@ A Python package **`cf-benchmark`** to benchmark counterfactual explanation meth
 ### Install via pip
 
 ```sh
-pip install git+https://github.com/indyfree/cf-benchmark.git#egg=cf-benchmark
+pip install git+https://github.com/indyfree/carla.git#egg=carla
 ```
 
 ## Contributing
@@ -86,4 +86,4 @@ pre-commit install
 
 ## Licence
 
-cf-benchmark is under the MIT Licence. See the [LICENCE](github.com/indyfree/cf-benchmark/blob/master/LICENSE) for more details.
+carla is under the MIT Licence. See the [LICENCE](github.com/indyfree/carla/blob/master/LICENSE) for more details.

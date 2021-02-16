@@ -3,7 +3,7 @@
 #################################################################################
 # GLOBALS                                                                       #
 #################################################################################
-PACKAGE_NAME = cf_benchmark
+PACKAGE_NAME = carla
 PYTHON = $(VENV_DIR)/bin/python
 PIP = $(VENV_DIR)/bin/pip
 VENV_DIR = env
@@ -14,7 +14,7 @@ CURRENT_DIR = $(shell pwd)
 #################################################################################
 ## Run package
 run:
-	$(PYTHON) cf_benchmark/run.py
+	$(PYTHON) carla/run.py
 
 ## Run python tests
 test:
