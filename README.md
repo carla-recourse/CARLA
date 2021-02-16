@@ -6,9 +6,18 @@ A Python package **`carla`** to benchmark counterfactual explanation methods on 
 
 - Adult Data Set: [Source](https://archive.ics.uci.edu/ml/datasets/adult)
 
-### Implemented Methods
+### Implemented Counterfactual Methods
 
-- DiCE: [Repo](https://github.com/interpretml/DiCE), [Paper](https://arxiv.org/abs/1905.07697)
+_*Disclaimer*_: Currently in the process of open-sourcing
+
+- [Actionable Recourse](https://arxiv.org/pdf/1809.06514.pdf)
+- [Action Sequence](https://arxiv.org/pdf/1910.00057.pdf)
+- [Contrastive Explanations Method (CEM)](https://arxiv.org/pdf/1802.07623.pdf)
+- [Counterfactual Latent Uncertainty Explanations(CLUE)](https://arxiv.org/pdf/2006.06848.pdf)
+- [Diverse Counterfactual Explanations (DiCE)](https://arxiv.org/pdf/1905.07697.pdf)
+- [EB-CF](https://arxiv.org/pdf/1912.03277.pdf)
+- [Feasible and Actionable Counterfactual Explanations (FACE)](https://arxiv.org/pdf/1909.09369.pdf)
+- [Growing Sphere](https://arxiv.org/pdf/1910.09398.pdf)
 
 ### Provided Machine Learning Models
 
