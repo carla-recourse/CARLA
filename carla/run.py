@@ -12,8 +12,8 @@ def predict_label(model, data, label):
 if __name__ == "__main__":
 
     data_name = "adult"
-    data_catalog = "data_catalog.yaml"
-    data = DataCatalog(data_name)
+    data_catalog = "adult_catalog.yaml"
+    data = DataCatalog(data_name, data_catalog)
 
     print(data.categoricals)
     print(data.continous)
