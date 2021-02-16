@@ -1,8 +1,6 @@
-# CARLA - A Python Library to Benchmark Counterfactual Explanation and Recourse Models
+# CARLA - *C*ounterfactual *A*nd *R*ecourse *L*ibrary
 
-## **C**ounterfactual *A*nd *R*ecourse *L*ibrary
-
-A Python package **`carla`** to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
+CARLA is a python library to benchmark counterfactual explanation and recourse models. It comes out-of-the box with commonly used datasets and various machine learning models. Designed with extensibility in mind, to easily include with new counterfactual methods, machine learning models and datasets
 
 ### Available Datasets
 
@@ -12,7 +10,7 @@ A Python package **`carla`** to benchmark counterfactual explanation methods on 
 
 _*Disclaimer*_: Currently in the process of open-sourcing
 
-- [Actionable Recourse](https://arxiv.org/pdf/1809.06514.pdf)
+- Actionable Recourse: [Paper](https://arxiv.org/pdf/1809.06514.pdf)
 - [Action Sequence](https://arxiv.org/pdf/1910.00057.pdf)
 - [Contrastive Explanations Method (CEM)](https://arxiv.org/pdf/1802.07623.pdf)
 - [Counterfactual Latent Uncertainty Explanations(CLUE)](https://arxiv.org/pdf/2006.06848.pdf)
@@ -23,7 +21,8 @@ _*Disclaimer*_: Currently in the process of open-sourcing
 
 ### Provided Machine Learning Models
 
-- Artificial Neural Network with 2 hidden layers and ReLU activation function
+- **ANN**: Artificial Neural Network with 2 hidden layers and ReLU activation function
+- **LR**: Linear Model with no hidden layer and no activation function
 
 ## Installation
 
