@@ -1,4 +1,6 @@
-# Counterfactual Explanation Benchmarking
+# CARLA - A Python Library to Benchmark Counterfactual Explanation and Recourse Models
+
+## *C*ounterfactual *A*nd *R*ecourse *L*ibrary
 
 A Python package **`carla`** to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
 
