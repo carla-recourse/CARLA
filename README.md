@@ -1,18 +1,30 @@
-# Counterfactual Explanation Benchmarking
+# CARLA - Counterfactual And Recourse Library
 
-A Python package **`cf-benchmark`** to benchmark counterfactual explanation methods on commonly used datasets with various machine learning models. Easily extensible with new methods, models and datasets
+CARLA is a python library to benchmark counterfactual explanation and recourse models. It comes out-of-the box with commonly used datasets and various machine learning models. Designed with extensibility in mind: Easily include your own counterfactual methods, new machine learning models or other datasets.
+
+_*Disclaimer*_: We are currently in the process of open-sourcing, not all functionality is available yet.
 
 ### Available Datasets
 
 - Adult Data Set: [Source](https://archive.ics.uci.edu/ml/datasets/adult)
+- COMPAS: [Source](https://www.kaggle.com/danofer/compass)
+- Give Me Some Credit (GMC): [Source](https://www.kaggle.com/c/GiveMeSomeCredit/data)
 
-### Implemented Methods
+### Implemented Counterfactual Methods
 
-- DiCE: [Repo](https://github.com/interpretml/DiCE), [Paper](https://arxiv.org/abs/1905.07697)
+- Actionable Recourse (AR): [Paper](https://arxiv.org/pdf/1809.06514.pdf)
+- Action Sequence (AS): [Paper](https://arxiv.org/pdf/1910.00057.pdf)
+- Contrastive Explanations Method (CEM): [Paper](https://arxiv.org/pdf/1802.07623.pdf)
+- Counterfactual Latent Uncertainty Explanations (CLUE): [Paper](https://arxiv.org/pdf/2006.06848.pdf)
+- Diverse Counterfactual Explanations (DiCE): [Paper](https://arxiv.org/pdf/1905.07697.pdf)
+- EB-CF: [Paper](https://arxiv.org/pdf/1912.03277.pdf)
+- Feasible and Actionable Counterfactual Explanations (FACE): [Paper](https://arxiv.org/pdf/1909.09369.pdf)
+- Growing Sphere (GS): [Paper](https://arxiv.org/pdf/1910.09398.pdf)
 
 ### Provided Machine Learning Models
 
-- Artificial Neural Network with 2 hidden layers and ReLU activation function
+- **ANN**: Artificial Neural Network with 2 hidden layers and ReLU activation function
+- **LR**: Linear Model with no hidden layer and no activation function
 
 ## Installation
 
@@ -24,7 +36,7 @@ A Python package **`cf-benchmark`** to benchmark counterfactual explanation meth
 ### Install via pip
 
 ```sh
-pip install git+https://github.com/indyfree/cf-benchmark.git#egg=cf-benchmark
+pip install git+https://github.com/indyfree/carla.git#egg=carla
 ```
 
 ## Contributing
@@ -86,4 +98,4 @@ pre-commit install
 
 ## Licence
 
-cf-benchmark is under the MIT Licence. See the [LICENCE](github.com/indyfree/cf-benchmark/blob/master/LICENSE) for more details.
+carla is under the MIT Licence. See the [LICENCE](github.com/indyfree/carla/blob/master/LICENSE) for more details.
