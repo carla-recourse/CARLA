@@ -1,13 +1,5 @@
 from carla.data import DataCatalog
-from carla.models import load_model
-
-
-def predict_label(model, data, label):
-
-    print(model)
-    print(data)
-    pass
-
+from carla.models import load_model, predict_negative_instances
 
 if __name__ == "__main__":
 
@@ -15,12 +7,7 @@ if __name__ == "__main__":
     data_catalog = "adult_catalog.yaml"
     data = DataCatalog(data_name, data_catalog)
 
-    print(data.categoricals)
-    print(data.continous)
-    print(data.immutables)
-    print(data.target)
-    print(data.normalized)
-    print(data.encoded)
-    print(data.encoded.dtypes)
-
     model = load_model("ann", data_name)
+    print(f"Using model: {model.__class__.__module__}")
+    print(data.target)
+    print(predict_negative_instances(model, data).head(100))
