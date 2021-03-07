@@ -10,11 +10,12 @@ def normalize(df, num_cols, scaler=None):
     :param scaler: Prefitted Sklearn Scaler
     :return: Data
     """
+    df_scale = df.copy()
 
     if not scaler:
         scaler = preprocessing.MinMaxScaler()
-        scaler.fit(df[num_cols])
+        scaler.fit(df_scale[num_cols])
 
-    df[num_cols] = scaler.transform(df[num_cols])
+    df_scale[num_cols] = scaler.transform(df_scale[num_cols])
 
-    return df
+    return df_scale
