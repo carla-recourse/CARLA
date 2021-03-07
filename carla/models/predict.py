@@ -38,6 +38,7 @@ def predict_label(model, data, as_prob=False):
     -------
     predictions :  2d numpy array with predictions
     """
+    print(f"Predicing label '{data.target}' of {data.name} dataset.")
     features = data.encoded_normalized.drop(data.target, axis=1)
     predictions = model.predict(features)
 
@@ -46,6 +47,6 @@ def predict_label(model, data, as_prob=False):
         predictions = predictions.round()
 
     acc = accuracy_score(data.raw[data.target], predictions.round())
-    print(f"Model accuracy is: {(100* acc).round(2)}%")
+    print(f"Model accuracy is: {(100* acc).round(2)}%.")
 
     return predictions

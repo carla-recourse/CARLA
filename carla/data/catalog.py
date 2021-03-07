@@ -7,6 +7,7 @@ from .load_data import load_dataset
 
 class DataCatalog:
     def __init__(self, data_name, catalog_file):
+        self.name = data_name
         self.catalog = self._load_catalog(catalog_file, data_name)
 
         self._raw = load_dataset(data_name)
