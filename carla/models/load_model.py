@@ -33,7 +33,7 @@ def load_model(name, dataset, ext="h5", cache=True, models_home=None, **kws):
         Additional keyword arguments are passed to passed through to the read model function
     Returns
     -------
-    model :  Tensorflow or pytorch model
+    model :  Tensorflow or PyTorch model
     """
     full_path = (
         "https://raw.githubusercontent.com/"
