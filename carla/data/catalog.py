@@ -34,21 +34,21 @@ class DataCatalog:
 
     @property
     def raw(self):
-        return self._raw
+        return self._raw.copy()
 
     @property
     def normalized(self):
         if self._data_normalized is None:
             self._data_normalized = processing.normalize(self.raw, self.continous)
 
-        return self._data_normalized
+        return self._data_normalized.copy()
 
     @property
     def encoded(self):
         if self._data_encoded is None:
             self._data_encoded = pd.get_dummies(self.raw, drop_first=True)
 
-        return self._data_encoded
+        return self._data_encoded.copy()
 
     @property
     def encoded_normalized(self):
@@ -57,7 +57,7 @@ class DataCatalog:
                 self.encoded, self.continous
             )
 
-        return self._data_encoded_normalized
+        return self._data_encoded_normalized.copy()
 
     def _load_catalog(self, filename, dataset):
         with open(filename, "r") as f:
