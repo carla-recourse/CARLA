@@ -1,6 +1,7 @@
-from carla.data.catalog import DataCatalog
-from carla.data.api import Data
 from abc import ABC
+
+from carla.data.api import Data
+from carla.data.catalog import DataCatalog
 
 
 def test_data():

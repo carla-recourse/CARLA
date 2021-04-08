@@ -1,9 +1,9 @@
 import pandas as pd
 import yaml
 
+from ..api import Data
 from ..helper import processing
 from .load_data import load_dataset
-from ..api import Data
 
 
 class DataCatalog(Data):

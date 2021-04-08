@@ -1,5 +1,6 @@
-from carla.data.catalog import DataCatalog
 import numpy as np
+
+from carla.data.catalog import DataCatalog
 
 
 def test_adult_col():
