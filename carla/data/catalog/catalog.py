@@ -1,11 +1,12 @@
 import pandas as pd
 import yaml
 
-from . import processing
+from ..helper import processing
 from .load_data import load_dataset
+from ..api import Data
 
 
-class DataCatalog:
+class DataCatalog(Data):
     def __init__(self, data_name, catalog_file):
         self.name = data_name
         self.catalog = self._load_catalog(catalog_file, data_name)

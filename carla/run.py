@@ -1,4 +1,4 @@
-from carla.data import DataCatalog
+from carla.data.catalog import DataCatalog
 from carla.models import load_model, predict_negative_instances
 
 if __name__ == "__main__":
