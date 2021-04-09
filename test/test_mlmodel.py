@@ -1,5 +1,3 @@
-import numpy as np
-
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 
@@ -11,7 +9,8 @@ def test_properties():
     # model_pt_adult = MLModelCatalog(data_name, "ann", ext="pt")
 
     exp_backend_tf = "tensorflow"
-    exp_backend_pt = "pytorch"
+    # TODO: Issue #16
+    # exp_backend_pt = "pytorch"
     exp_feature_order_adult = [
         "age",
         "fnlwgt",
