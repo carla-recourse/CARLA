@@ -1,6 +1,4 @@
 import numpy as np
-import tensorflow as tf
-import torch
 
 from ..api import MLModel
 from .load_model import load_model
