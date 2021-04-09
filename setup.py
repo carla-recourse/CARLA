@@ -16,6 +16,7 @@ setup(
         "tensorflow==1.14.0",
         "torch==1.7.0",
         "torchvision==0.8.1",
+        "h5py==2.10.0"
     ],
     entry_points="""
                 [console_scripts]
