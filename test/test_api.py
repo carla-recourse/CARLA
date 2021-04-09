@@ -2,6 +2,8 @@ from abc import ABC
 
 from carla.data.api import Data
 from carla.data.catalog import DataCatalog
+from carla.models.api import MLModel
+from carla.models.catalog import MLModelCatalog
 
 
 def test_data():
@@ -12,3 +14,12 @@ def test_data():
     assert issubclass(DataCatalog, Data)
     assert isinstance(data_catalog, Data)
     assert issubclass(Data, ABC)
+
+
+def test_mlmodel():
+    data_name = "adult"
+    model_catalog = MLModelCatalog(data_name, "ann")
+
+    assert issubclass(MLModelCatalog, MLModel)
+    assert isinstance(model_catalog, MLModel)
+    assert issubclass(MLModel, ABC)
