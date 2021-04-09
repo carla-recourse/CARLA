@@ -10,7 +10,7 @@ def predict_negative_instances(model, data):
     ----------
     name : Tensorflow or PyTorch Model
         Model object retrieved by :func:`load_model`
-    data : DataCatalog
+    data : Data
         Dataset used for predictions
     Returns
     -------
@@ -32,7 +32,7 @@ def predict_label(model, data, as_prob=False):
     ----------
     name : Tensorflow or PyTorch Model
         Model object retrieved by :func:`load_model`
-    data : DataCatalog
+    data : Data
         Dataset used for predictions
     Returns
     -------
@@ -42,7 +42,6 @@ def predict_label(model, data, as_prob=False):
     features = data.encoded_normalized.drop(data.target, axis=1)
     predictions = model.predict(features)
 
-    predictions = predictions[:, 1]
     if not as_prob:
         predictions = predictions.round()
 
