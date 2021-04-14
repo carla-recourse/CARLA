@@ -1,6 +1,6 @@
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
-from carla.models.helper import predict_negative_instances
+from carla.models.negative_instances import predict_negative_instances
 
 if __name__ == "__main__":
 
