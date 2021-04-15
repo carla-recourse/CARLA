@@ -17,9 +17,9 @@ def predict_negative_instances(model, data):
     df :  DataFrame with negative predicted instances
     """
     df = data.raw
-    df["y"] = predict_label(model, data)
-    df = df[df["y"] == 0]
-    df = df.drop("y", axis="columns")
+    df["pred_target"] = predict_label(model, data)
+    df = df[df["pred_target"] == 0]
+    df = df.drop("pred_target", axis="columns")
     return df
 
 
