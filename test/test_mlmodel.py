@@ -4,7 +4,9 @@ from carla.models.catalog import MLModelCatalog
 
 def test_properties():
     data_name = "adult"
-    model_tf_adult = MLModelCatalog(data_name, "ann")
+    data_catalog = "adult_catalog.yaml"
+    data = DataCatalog(data_name, data_catalog, True)
+    model_tf_adult = MLModelCatalog(data, data_name, "ann")
     # TODO: Issue #16
     # model_pt_adult = MLModelCatalog(data_name, "ann", ext="pt")
 
@@ -40,7 +42,7 @@ def test_predictions():
     data_catalog = "adult_catalog.yaml"
     data = DataCatalog(data_name, data_catalog, True)
 
-    model_tf_adult = MLModelCatalog(data_name, "ann")
+    model_tf_adult = MLModelCatalog(data, data_name, "ann")
     # TODO: Issue #16
     # model_pt_adult = MLModelCatalog(data_name, "ann", ext="pt")
 
@@ -84,3 +86,22 @@ def test_predictions():
     # TODO: Issue #16
     # predictions_proba_pt = model_pt_adult.predict_proba(samples)
     # assert predictions_proba_pt.shape == expected_shape
+
+    # Check predictions for pipeline
+    samples = data.raw.iloc[0:22]
+
+    predictions_proba_tf = model_tf_adult.predict_proba(samples)
+    expected_shape = tuple((22, 2))
+    assert predictions_proba_tf.shape == expected_shape
+
+    # TODO: Issue #16
+    # predictions_proba_pt = model_pt_adult.predict_proba(samples)
+    # assert predictions_proba_pt.shape == expected_shape
+
+    predictions_tf = model_tf_adult.predict(samples)
+    expected_shape = tuple((22,))
+    assert predictions_tf.shape == expected_shape
+
+    # TODO: Issue #16
+    # predictions_pt = model_pt_adult.predict(samples)
+    # assert predictions_pt.shape == expected_shape

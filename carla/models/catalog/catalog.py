@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+from sklearn import preprocessing
 
 from ..api import MLModel
 from .load_model import load_model
@@ -6,8 +8,35 @@ from .load_model import load_model
 
 class MLModelCatalog(MLModel):
     def __init__(
-        self, data_name, model_type, ext="h5", cache=True, models_home=None, **kws
+        self, data, data_name, model_type, ext="h5", cache=True, models_home=None, **kws
     ):
+        """
+        Constructing the ML model
+
+        Parameters
+        ----------
+        model_type : str
+            Name of the model ``{name}.{ext}`` on https://github.com/indyfree/cf-models.
+        data_name : str
+            Name of the dataset the model has been trained on.
+        cache : boolean, optional
+            If True, try to load from the local cache first, and save to the cache
+            if a download is required.
+        models_home : string, optional
+            The directory in which to cache data; see :func:`get_models_home`.
+        kws : keys and values, optional
+            Additional keyword arguments are passed to passed through to the read model function
+        data : data.api.Data Class
+            Correct dataset for ML model
+        ext : String
+            File extension of saved ML model file
+        """
+        # check if dataset fits to ML model
+        assert data.name == data_name
+
+        self._continuous = data.continous
+        self._categoricals = data.categoricals
+
         self._data_name = data_name
         self._model = load_model(model_type, data_name, ext, cache, models_home, **kws)
 
@@ -19,6 +48,9 @@ class MLModelCatalog(MLModel):
             raise Exception("Model type not in catalog")
 
         self._name = model_type + "_" + data_name
+
+        # Preparing pipeline components
+        self._scaler = preprocessing.MinMaxScaler().fit(data.raw[self._continuous])
 
         if data_name == "adult":
             self._feature_input_order = [
@@ -36,8 +68,78 @@ class MLModelCatalog(MLModel):
                 "sex_Male",
                 "native-country_US",
             ]
+            self._encodings = (
+                [  # Encodings should be built in the get_dummy way: {column}_{value}
+                    "workclass_Private",
+                    "marital-status_Non-Married",
+                    "occupation_Other",
+                    "relationship_Non-Husband",
+                    "race_White",
+                    "sex_Male",
+                    "native-country_US",
+                ]
+            )
         else:
             raise Exception("Model for dataset not in catalog")
+
+    def pipeline(self, df):
+        """
+        Transforms input for prediction into correct form.
+        Only possible for DataFrames without preprocessing steps.
+
+        Recommended to use to keep correct encodings, normalization and input order
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Contains unnormalized and
+
+        Returns
+        -------
+        output : pd.DataFrame
+            Prediction input in correct order, normalized and encoded
+
+        """
+        output = df.copy()
+
+        # Normalization
+        output[self._continuous] = self._scaler.transform(output[self._continuous])
+
+        # Encoding
+        output[self._encodings] = 0
+        for encoding in self._encodings:
+            for cat in self._categoricals:
+                if cat in encoding:
+                    value = encoding.split(cat + "_")[-1]
+                    output.loc[output[cat] == value, encoding] = 1
+                    break
+
+        # Get correct order
+        output = output[self._feature_input_order]
+
+        return output
+
+    def need_pipeline(self, x):
+        """
+        Checks if ML model input needs pipelining.
+        Only DataFrames can be used to pipeline input.
+
+        Parameters
+        ----------
+        x : pd.DataFrame or np.Array
+
+        Returns
+        -------
+        bool : Boolean
+            True if no pipelining process is already taken
+        """
+        if not isinstance(x, pd.DataFrame):
+            return False
+
+        if x.select_dtypes(exclude=[np.number]).empty:
+            return False
+
+        return True
 
     @property
     def name(self):
@@ -46,7 +148,7 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        name : String
+        name : str
             Individual name of the ml model
         """
         return self._name
@@ -60,7 +162,7 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        ordered_features : List of String
+        ordered_features : list of str
             Correct order of input features for ml model
         """
         return self._feature_input_order
@@ -74,7 +176,7 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        backend : String
+        backend : str
             Used framework
         """
         return self._backend
@@ -104,16 +206,18 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        output : np.Array
+        output : np.ndarray
             Ml model prediction for interval [0, 1] with shape N x 1
         """
 
         assert len(x.shape) == 2
 
+        input = self.pipeline(x) if self.need_pipeline(x) else x
+
         if self._backend == "pytorch":
-            output = self._model.predict(x)
+            output = self._model.predict(input)
         elif self._backend == "tensorflow":
-            output = self._model.predict(x)[:, 1]
+            output = self._model.predict(input)[:, 1]
 
         return output
 
@@ -136,9 +240,11 @@ class MLModelCatalog(MLModel):
 
         assert len(x.shape) == 2
 
+        input = self.pipeline(x) if self.need_pipeline(x) else x
+
         if self._backend == "pytorch":
-            class_1 = 1 - self._model.forward(x).detach().numpy().squeeze()
-            class_2 = self._model.forward(x).detach().numpy().squeeze()
+            class_1 = 1 - self._model.forward(input).detach().numpy().squeeze()
+            class_2 = self._model.forward(input).detach().numpy().squeeze()
 
             # For single prob prediction it happens, that class_1 is casted into float after 1 - prediction
             # Additionally class_1 and class_2 have to be at least shape 1
@@ -149,6 +255,6 @@ class MLModelCatalog(MLModel):
             output = np.array(list(zip(class_1, class_2)))
 
         elif self._backend == "tensorflow":
-            output = self._model.predict(x)
+            output = self._model.predict(input)
 
         return output
