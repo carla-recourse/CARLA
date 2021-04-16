@@ -38,7 +38,7 @@ def test_properties():
 def test_predictions():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name, data_catalog, True)
 
     model_tf_adult = MLModelCatalog(data_name, "ann")
     # TODO: Issue #16

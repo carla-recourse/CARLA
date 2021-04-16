@@ -1,5 +1,6 @@
 from abc import ABC
 
+from carla.cf_models.api import CFModel
 from carla.data.api import Data
 from carla.data.catalog import DataCatalog
 from carla.models.api import MLModel
@@ -9,7 +10,7 @@ from carla.models.catalog import MLModelCatalog
 def test_data():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog)
+    data_catalog = DataCatalog(data_name, data_catalog, True)
 
     assert issubclass(DataCatalog, Data)
     assert isinstance(data_catalog, Data)

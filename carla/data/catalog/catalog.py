@@ -7,12 +7,25 @@ from .load_data import load_dataset
 
 
 class DataCatalog(Data):
-    def __init__(self, data_name, catalog_file):
+    def __init__(self, data_name, catalog_file, drop_first_encoding):
+        """
+        Constructor for catalog datasets.
+
+        Parameters
+        ----------
+        data_name : String
+            Used to get the correct dataset from online repository
+        catalog_file : String
+            yaml file
+        drop_first_encoding : Bool
+            Decides if the first column of one-hot-encoding should be dropped
+        """
         self.name = data_name
         self.catalog = self._load_catalog(catalog_file, data_name)
 
         self._raw = load_dataset(data_name)
 
+        self._drop_first = drop_first_encoding
         self._data_normalized = None
         self._data_encoded = None
         self._data_encoded_normalized = None
@@ -47,7 +60,7 @@ class DataCatalog(Data):
     @property
     def encoded(self):
         if self._data_encoded is None:
-            self._data_encoded = pd.get_dummies(self.raw, drop_first=True)
+            self._data_encoded = pd.get_dummies(self.raw, drop_first=self._drop_first)
 
         return self._data_encoded.copy()
 
