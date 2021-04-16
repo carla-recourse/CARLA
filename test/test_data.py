@@ -48,7 +48,7 @@ def test_adult_norm_enc():
     norm_col = data_catalog.continous
     norm_enc_col = data_catalog.encoded_normalized.columns
 
-    cat = data_catalog.encoded.copy()
+    cat = data_catalog.encoded
     cat[norm_col] = data_catalog.normalized[norm_col]
     cat = cat[norm_enc_col]
 
