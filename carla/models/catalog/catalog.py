@@ -6,19 +6,47 @@ from .load_model import load_model
 
 class MLModelCatalog(MLModel):
     def __init__(
-        self, data_name, model_type, ext="h5", cache=True, models_home=None, **kws
+        self,
+        data_name,
+        model_type,
+        backend="tensorflow",
+        cache=True,
+        models_home=None,
+        **kws
     ):
-        self._data_name = data_name
-        self._model = load_model(model_type, data_name, ext, cache, models_home, **kws)
+        """
+        Constructor for pretrained ML models from the catalog.
 
-        if ext == "pt":
-            self._backend = "pytorch"
-        elif ext == "h5":
-            self._backend = "tensorflow"
+        Possible backends are currently "pytorch" and "tensorflow".
+        Possible models are corrently "ann".
+
+        Parameters
+        ----------
+        data_name : str
+            Name of the dataset which is used to predict [adult]
+        model_type : str
+            Architecture [ann]
+        backend : str
+            Specifies the used framework [tensorflow, pytorch]
+        cache : boolean, optional
+            If True, try to load from the local cache first, and save to the cache
+            if a download is required.
+        models_home : string, optional
+            The directory in which to cache data; see :func:`get_models_home`.
+        kws : keys and values, optional
+            Additional keyword arguments are passed to passed through to the read model function
+        """
+        self._backend = backend
+
+        if self._backend == "pytorch":
+            ext = "pt"
+        elif self._backend == "tensorflow":
+            ext = "h5"
         else:
             raise Exception("Model type not in catalog")
 
-        self._name = model_type + "_" + data_name
+        self._data_name = data_name
+        self._model = load_model(model_type, data_name, ext, cache, models_home, **kws)
 
         if data_name == "adult":
             self._feature_input_order = [
@@ -38,18 +66,6 @@ class MLModelCatalog(MLModel):
             ]
         else:
             raise Exception("Model for dataset not in catalog")
-
-    @property
-    def name(self):
-        """
-        Contains meta information about the model, like name, dataset, structure, etc.
-
-        Returns
-        -------
-        name : String
-            Individual name of the ml model
-        """
-        return self._name
 
     @property
     def feature_input_order(self):
@@ -108,18 +124,21 @@ class MLModelCatalog(MLModel):
             Ml model prediction for interval [0, 1] with shape N x 1
         """
 
-        assert len(x.shape) == 2
+        if len(x.shape) != 2:
+            raise ValueError("Input shape has to be two-dimensional")
 
         if self._backend == "pytorch":
-            output = self._model.predict(x)
+            return self._model.predict(x)
         elif self._backend == "tensorflow":
-            output = self._model.predict(x)[:, 1]
-
-        return output
+            return self._model.predict(x)[:, 1]
+        else:
+            raise ValueError(
+                'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
+            )
 
     def predict_proba(self, x):
         """
-        Two-dimensional softmax prediction of ml model
+        Two-dimensional probability prediction of ml model
 
         Shape of input dimension has to be always two-dimensional (e.g., (1, m), (n, m))
 
@@ -134,7 +153,8 @@ class MLModelCatalog(MLModel):
             Ml model prediction with shape N x 2
         """
 
-        assert len(x.shape) == 2
+        if len(x.shape) != 2:
+            raise ValueError("Input shape has to be two-dimensional")
 
         if self._backend == "pytorch":
             class_1 = 1 - self._model.forward(x).detach().numpy().squeeze()
@@ -146,9 +166,11 @@ class MLModelCatalog(MLModel):
                 class_1 = np.array(class_1).reshape(1)
                 class_2 = class_2.reshape(1)
 
-            output = np.array(list(zip(class_1, class_2)))
+            return np.array(list(zip(class_1, class_2)))
 
         elif self._backend == "tensorflow":
-            output = self._model.predict(x)
-
-        return output
+            return self._model.predict(x)
+        else:
+            raise ValueError(
+                'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
+            )
