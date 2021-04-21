@@ -5,7 +5,7 @@ from carla.models.catalog import MLModelCatalog
 def test_properties():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog, True)
+    data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
     model_tf_adult = MLModelCatalog(data, data_name, "ann")
     # TODO: Issue #16
     # model_pt_adult = MLModelCatalog(data_name, "ann", ext="pt")
@@ -40,7 +40,7 @@ def test_properties():
 def test_predictions():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog, True)
+    data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
 
     model_tf_adult = MLModelCatalog(data, data_name, "ann")
     # TODO: Issue #16

@@ -6,7 +6,7 @@ from carla.data.catalog import DataCatalog
 def test_adult_col():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog, True)
+    data_catalog = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
 
     actual_col = (
         data_catalog.categoricals + data_catalog.continous + [data_catalog.target]
@@ -21,7 +21,7 @@ def test_adult_col():
 def test_adult_norm():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog, True)
+    data_catalog = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
 
     col = data_catalog.continous
 
@@ -34,12 +34,12 @@ def test_adult_norm():
 def test_adult_enc():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog, True)
+    data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
     cat = data.encoded
 
     assert cat.select_dtypes(exclude=[np.number]).empty
 
-    data = DataCatalog(data_name, data_catalog, False)
+    data = DataCatalog(data_name, data_catalog, drop_first_encoding=False)
     cat = data.encoded
     assert cat.select_dtypes(exclude=[np.number]).empty
 
@@ -47,7 +47,7 @@ def test_adult_enc():
 def test_adult_norm_enc():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog, True)
+    data_catalog = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
 
     norm_col = data_catalog.continous
     norm_enc_col = data_catalog.encoded_normalized.columns

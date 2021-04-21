@@ -24,14 +24,10 @@ class Dice(CFModel):
             Underlying dataset we want to build counterfactuals for.
         """
         # Prepare data for dice data structure
-        self.data = data
-        self._data_raw = data.raw.copy()
-        self._cont_feat = data.continous
-        self._target_name = data.target
         self._dice_data = dice_ml.Data(
-            dataframe=self._data_raw,
-            continuous_features=self._cont_feat,
-            outcome_name=self._target_name,
+            dataframe=data.raw,
+            continuous_features=data.continous,
+            outcome_name=data.target,
         )
 
         # Build dice model structure
@@ -39,7 +35,6 @@ class Dice(CFModel):
         # backend implementation made by dice
         self._backend = "sklearn"
 
-        self._mlmodel = mlmodel
         self._dice_model = dice_ml.Model(model=mlmodel, backend=self._backend)
 
         self._dice = dice_ml.Dice(self._dice_data, self._dice_model, method="random")
@@ -72,7 +67,8 @@ class Dice(CFModel):
         querry_instances = factuals.copy()
 
         # check if querry_instances are not empty
-        assert querry_instances.shape[0] >= 1
+        if not querry_instances.shape[0] > 0:
+            raise ValueError("Factuals should not be empty")
 
         # Generate counterfactuals
         dice_exp = self._dice.generate_counterfactuals(
