@@ -47,10 +47,7 @@ def load_model(name, dataset, ext="h5", cache=True, models_home=None, **kws):
         )
 
         if not os.path.exists(cache_path):
-            len_file_name = len(name + "." + ext)
-            cache_path_without_file = cache_path[:-len_file_name]
-            if not os.path.exists(cache_path_without_file):
-                os.makedirs(os.path.dirname(cache_path_without_file))
+            os.makedirs(os.path.dirname(cache_path), exist_ok=True)
             try:
                 urlretrieve(full_path, cache_path)
             except HTTPError as e:
