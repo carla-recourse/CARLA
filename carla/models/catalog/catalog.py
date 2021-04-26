@@ -7,9 +7,7 @@ from .load_model import load_model
 
 
 class MLModelCatalog(MLModel):
-    def __init__(
-        self, data, data_name, model_type, ext="h5", cache=True, models_home=None, **kws
-    ):
+    def __init__(self, data, model_type, ext="h5", cache=True, models_home=None, **kws):
         """
         Constructing the ML model
 
@@ -17,8 +15,6 @@ class MLModelCatalog(MLModel):
         ----------
         model_type : str
             Name of the model ``{name}.{ext}`` on https://github.com/indyfree/cf-models.
-        data_name : str
-            Name of the dataset the model has been trained on.
         cache : boolean, optional
             If True, try to load from the local cache first, and save to the cache
             if a download is required.
@@ -31,14 +27,11 @@ class MLModelCatalog(MLModel):
         ext : String
             File extension of saved ML model file
         """
-        # check if dataset fits to ML model
-        assert data.name == data_name
 
         self._continuous = data.continous
         self._categoricals = data.categoricals
 
-        self._data_name = data_name
-        self._model = load_model(model_type, data_name, ext, cache, models_home, **kws)
+        self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
 
         if ext == "pt":
             self._backend = "pytorch"
@@ -47,12 +40,12 @@ class MLModelCatalog(MLModel):
         else:
             raise Exception("Model type not in catalog")
 
-        self._name = model_type + "_" + data_name
+        self._name = model_type + "_" + data.name
 
         # Preparing pipeline components
         self._scaler = preprocessing.MinMaxScaler().fit(data.raw[self._continuous])
 
-        if data_name == "adult":
+        if data.name == "adult":
             self._feature_input_order = [
                 "age",
                 "fnlwgt",
@@ -92,7 +85,7 @@ class MLModelCatalog(MLModel):
         Parameters
         ----------
         df : pd.DataFrame
-            Contains unnormalized and
+            Contains unnormalized and not encoded data.
 
         Returns
         -------

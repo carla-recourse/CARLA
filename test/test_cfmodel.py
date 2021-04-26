@@ -9,7 +9,7 @@ def test_dice_get_counterfactuals():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
     data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
-    model_tf = MLModelCatalog(data, data_name, "ann")
+    model_tf = MLModelCatalog(data, "ann")
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
     test_factual = factuals.iloc[:22]

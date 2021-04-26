@@ -6,7 +6,7 @@ def test_properties():
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
     data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
-    model_tf_adult = MLModelCatalog(data, data_name, "ann")
+    model_tf_adult = MLModelCatalog(data, "ann")
     # TODO: Issue #16
     # model_pt_adult = MLModelCatalog(data_name, "ann", ext="pt")
 
@@ -42,7 +42,7 @@ def test_predictions():
     data_catalog = "adult_catalog.yaml"
     data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
 
-    model_tf_adult = MLModelCatalog(data, data_name, "ann")
+    model_tf_adult = MLModelCatalog(data, "ann")
     # TODO: Issue #16
     # model_pt_adult = MLModelCatalog(data_name, "ann", ext="pt")
 
