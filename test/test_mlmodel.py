@@ -4,7 +4,24 @@ from carla.models.catalog import MLModelCatalog
 
 def test_properties():
     data_name = "adult"
-    model_tf_adult = MLModelCatalog(data_name, "ann")
+
+    feature_input_order = [
+        "age",
+        "fnlwgt",
+        "education-num",
+        "capital-gain",
+        "capital-loss",
+        "hours-per-week",
+        "workclass_Private",
+        "marital-status_Non-Married",
+        "occupation_Other",
+        "relationship_Non-Husband",
+        "race_White",
+        "sex_Male",
+        "native-country_US",
+    ]
+
+    model_tf_adult = MLModelCatalog(data_name, "ann", feature_input_order)
 
     exp_backend_tf = "tensorflow"
     exp_feature_order_adult = [
@@ -32,7 +49,23 @@ def test_predictions():
     data_catalog = "adult_catalog.yaml"
     data = DataCatalog(data_name, data_catalog)
 
-    model_tf_adult = MLModelCatalog(data_name, "ann")
+    feature_input_order = [
+        "age",
+        "fnlwgt",
+        "education-num",
+        "capital-gain",
+        "capital-loss",
+        "hours-per-week",
+        "workclass_Private",
+        "marital-status_Non-Married",
+        "occupation_Other",
+        "relationship_Non-Husband",
+        "race_White",
+        "sex_Male",
+        "native-country_US",
+    ]
+
+    model_tf_adult = MLModelCatalog(data_name, "ann", feature_input_order)
 
     single_sample = data.encoded_normalized.iloc[22]
     single_sample = single_sample[model_tf_adult.feature_input_order].values.reshape(

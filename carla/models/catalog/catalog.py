@@ -9,6 +9,7 @@ class MLModelCatalog(MLModel):
         self,
         data_name,
         model_type,
+        feature_input_order,
         backend="tensorflow",
         cache=True,
         models_home=None,
@@ -26,6 +27,8 @@ class MLModelCatalog(MLModel):
             Name of the dataset which is used to predict [adult]
         model_type : str
             Architecture [ann]
+        feature_input_order : list
+            List containing all features in correct order for ML prediction
         backend : str
             Specifies the used framework [tensorflow, pytorch]
         cache : boolean, optional
@@ -48,24 +51,7 @@ class MLModelCatalog(MLModel):
         self._data_name = data_name
         self._model = load_model(model_type, data_name, ext, cache, models_home, **kws)
 
-        if data_name == "adult":
-            self._feature_input_order = [
-                "age",
-                "fnlwgt",
-                "education-num",
-                "capital-gain",
-                "capital-loss",
-                "hours-per-week",
-                "workclass_Private",
-                "marital-status_Non-Married",
-                "occupation_Other",
-                "relationship_Non-Husband",
-                "race_White",
-                "sex_Male",
-                "native-country_US",
-            ]
-        else:
-            raise Exception("Model for dataset not in catalog")
+        self._feature_input_order = feature_input_order
 
     @property
     def feature_input_order(self):

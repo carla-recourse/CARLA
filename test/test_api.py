@@ -18,7 +18,22 @@ def test_data():
 
 def test_mlmodel():
     data_name = "adult"
-    model_catalog = MLModelCatalog(data_name, "ann")
+    feature_input_order = [
+        "age",
+        "fnlwgt",
+        "education-num",
+        "capital-gain",
+        "capital-loss",
+        "hours-per-week",
+        "workclass_Private",
+        "marital-status_Non-Married",
+        "occupation_Other",
+        "relationship_Non-Husband",
+        "race_White",
+        "sex_Male",
+        "native-country_US",
+    ]
+    model_catalog = MLModelCatalog(data_name, "ann", feature_input_order)
 
     assert issubclass(MLModelCatalog, MLModel)
     assert isinstance(model_catalog, MLModel)
