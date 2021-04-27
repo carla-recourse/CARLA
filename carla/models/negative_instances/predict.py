@@ -41,6 +41,8 @@ def predict_label(model, data, as_prob=False):
     """
     print(f"Predicing label '{data.target}' of {data.name} dataset.")
     features = data.encoded_normalized.drop(data.target, axis=1)
+    # Keep correct feature order for prediction
+    features = features[model.feature_input_order]
     predictions = model.predict(features)
 
     if not as_prob:

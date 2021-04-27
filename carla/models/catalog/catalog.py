@@ -7,14 +7,30 @@ from .load_model import load_model
 
 
 class MLModelCatalog(MLModel):
-    def __init__(self, data, model_type, ext="h5", cache=True, models_home=None, **kws):
+    def __init__(
+        self,
+        data,
+        model_type,
+        feature_input_order,
+        backend="tensorflow",
+        cache=True,
+        models_home=None,
+        **kws
+    ):
         """
-        Constructing the ML model
+        Constructor for pretrained ML models from the catalog.
+
+        Possible backends are currently "pytorch" and "tensorflow".
+        Possible models are corrently "ann".
 
         Parameters
         ----------
         model_type : str
-            Name of the model ``{name}.{ext}`` on https://github.com/indyfree/cf-models.
+            Architecture [ann]
+        feature_input_order : list
+            List containing all features in correct order for ML prediction
+        backend : str
+            Specifies the used framework [tensorflow, pytorch]
         cache : boolean, optional
             If True, try to load from the local cache first, and save to the cache
             if a download is required.
@@ -24,35 +40,27 @@ class MLModelCatalog(MLModel):
             Additional keyword arguments are passed to passed through to the read model function
         data : data.api.Data Class
             Correct dataset for ML model
-        ext : String
-            File extension of saved ML model file
         """
+        self._backend = backend
 
-        self._continuous = data.continous
-        self._categoricals = data.categoricals
-
-        self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
-
-        if ext == "pt":
-            self._backend = "pytorch"
-        elif ext == "h5":
-            self._backend = "tensorflow"
+        if self._backend == "pytorch":
+            ext = "pt"
+        elif self._backend == "tensorflow":
+            ext = "h5"
         else:
             raise Exception("Model type not in catalog")
 
-        self._name = model_type + "_" + data.name
+        self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
+
+        self._feature_input_order = feature_input_order
 
         # Preparing pipeline components
+        self._continuous = data.continous
+        self._categoricals = data.categoricals
         self._scaler = preprocessing.MinMaxScaler().fit(data.raw[self._continuous])
 
-        if data.name == "adult":
-            self._feature_input_order = [
-                "age",
-                "fnlwgt",
-                "education-num",
-                "capital-gain",
-                "capital-loss",
-                "hours-per-week",
+        self._encodings = (
+            [  # Encodings should be built in the get_dummy way: {column}_{value}
                 "workclass_Private",
                 "marital-status_Non-Married",
                 "occupation_Other",
@@ -61,19 +69,7 @@ class MLModelCatalog(MLModel):
                 "sex_Male",
                 "native-country_US",
             ]
-            self._encodings = (
-                [  # Encodings should be built in the get_dummy way: {column}_{value}
-                    "workclass_Private",
-                    "marital-status_Non-Married",
-                    "occupation_Other",
-                    "relationship_Non-Husband",
-                    "race_White",
-                    "sex_Male",
-                    "native-country_US",
-                ]
-            )
-        else:
-            raise Exception("Model for dataset not in catalog")
+        )
 
     def pipeline(self, df):
         """
@@ -135,18 +131,6 @@ class MLModelCatalog(MLModel):
         return True
 
     @property
-    def name(self):
-        """
-        Contains meta information about the model, like name, dataset, structure, etc.
-
-        Returns
-        -------
-        name : str
-            Individual name of the ml model
-        """
-        return self._name
-
-    @property
     def feature_input_order(self):
         """
         Saves the required order of feature as list.
@@ -203,20 +187,23 @@ class MLModelCatalog(MLModel):
             Ml model prediction for interval [0, 1] with shape N x 1
         """
 
-        assert len(x.shape) == 2
+        if len(x.shape) != 2:
+            raise ValueError("Input shape has to be two-dimensional")
 
         input = self.pipeline(x) if self.need_pipeline(x) else x
 
         if self._backend == "pytorch":
-            output = self._model.predict(input)
+            return self._model.predict(input)
         elif self._backend == "tensorflow":
-            output = self._model.predict(input)[:, 1]
-
-        return output
+            return self._model.predict(input)[:, 1]
+        else:
+            raise ValueError(
+                'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
+            )
 
     def predict_proba(self, x):
         """
-        Two-dimensional softmax prediction of ml model
+        Two-dimensional probability prediction of ml model
 
         Shape of input dimension has to be always two-dimensional (e.g., (1, m), (n, m))
 
@@ -231,7 +218,8 @@ class MLModelCatalog(MLModel):
             Ml model prediction with shape N x 2
         """
 
-        assert len(x.shape) == 2
+        if len(x.shape) != 2:
+            raise ValueError("Input shape has to be two-dimensional")
 
         input = self.pipeline(x) if self.need_pipeline(x) else x
 
@@ -245,9 +233,11 @@ class MLModelCatalog(MLModel):
                 class_1 = np.array(class_1).reshape(1)
                 class_2 = class_2.reshape(1)
 
-            output = np.array(list(zip(class_1, class_2)))
+            return np.array(list(zip(class_1, class_2)))
 
         elif self._backend == "tensorflow":
-            output = self._model.predict(input)
-
-        return output
+            return self._model.predict(input)
+        else:
+            raise ValueError(
+                'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
+            )

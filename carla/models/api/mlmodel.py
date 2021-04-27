@@ -4,19 +4,6 @@ from abc import ABC, abstractmethod
 class MLModel(ABC):
     @property
     @abstractmethod
-    def name(self):
-        """
-        Contains meta information about the model, like name, dataset, structure, etc.
-
-        Returns
-        -------
-        name : String
-            Individual name of the ml model
-        """
-        pass
-
-    @property
-    @abstractmethod
     def feature_input_order(self):
         """
         Saves the required order of feature as list.
@@ -80,7 +67,7 @@ class MLModel(ABC):
     @abstractmethod
     def predict_proba(self, x):
         """
-        Two-dimensional softmax prediction of ml model
+        Two-dimensional probability prediction of ml model
 
         Shape of input dimension has to be always two-dimensional (e.g., (1, m), (n, m))
 
