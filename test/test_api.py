@@ -1,11 +1,11 @@
 from abc import ABC
 
-from carla.cf_models.api import CFModel
-from carla.cf_models.catalog.dice import Dice
 from carla.data.api import Data
 from carla.data.catalog import DataCatalog
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
+from carla.recourse_methods.api import Recourse_Method
+from carla.recourse_methods.catalog.dice import Dice
 
 
 def test_data():
@@ -69,6 +69,6 @@ def test_cfmodel():
 
     dice = Dice(model_catalog, data_catalog)
 
-    assert issubclass(Dice, CFModel)
-    assert isinstance(dice, CFModel)
-    assert issubclass(CFModel, ABC)
+    assert issubclass(Dice, Recourse_Method)
+    assert isinstance(dice, Recourse_Method)
+    assert issubclass(Recourse_Method, ABC)

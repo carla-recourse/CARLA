@@ -1,7 +1,7 @@
-from carla.cf_models.catalog.dice import Dice
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
+from carla.recourse_methods.catalog.dice import Dice
 
 
 def test_dice_get_counterfactuals():

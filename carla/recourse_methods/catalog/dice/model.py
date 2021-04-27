@@ -1,10 +1,10 @@
 import dice_ml
 import pandas as pd
 
-from ...api import CFModel
+from ...api import Recourse_Method
 
 
-class Dice(CFModel):
+class Dice(Recourse_Method):
     def __init__(self, mlmodel, data):
         """
         Constructor for Dice model
