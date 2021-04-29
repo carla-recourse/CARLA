@@ -32,7 +32,7 @@ def test_dice_get_counterfactuals():
     test_factual = factuals.iloc[:22]
 
     cfs = Dice(model_tf, data).get_counterfactuals(
-        factuals=test_factual, num_of_cf=1, desired_class=1
+        factuals=test_factual, num=1, desired_class=1
     )
 
     assert test_factual.shape[0] == cfs.shape[0]
