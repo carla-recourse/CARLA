@@ -30,9 +30,6 @@ class Dice(RecourseMethod):
             outcome_name=data.target,
         )
 
-        # Build dice model structure
-        # Since our own model class MLModel resembles the sklearn structure it may suffice to use the sklearn
-        # backend implementation made by dice
         self._backend = "sklearn"
 
         self._dice_model = dice_ml.Model(model=mlmodel, backend=self._backend)
