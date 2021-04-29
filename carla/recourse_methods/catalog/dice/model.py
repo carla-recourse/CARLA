@@ -38,7 +38,7 @@ class Dice(RecourseMethod):
     def dice_model(self):
         return self._dice
 
-    def get_counterfactuals(self, factuals, num_of_cf, desired_class):
+    def get_counterfactuals(self, factuals, num, desired_class):
         """
         Compute a certain number of counterfactuals per factual example.
 
@@ -48,7 +48,7 @@ class Dice(RecourseMethod):
         factuals : pd.DataFrame
             DataFrame containing all samples for which we want to generate counterfactual examples.
             All instances should belong to the same class.
-        num_of_cf : int
+        num : int
             Number of counterfactuals we want to generate per factual
         desired_class : int
             The target class we want to reach for our factuals
@@ -67,7 +67,7 @@ class Dice(RecourseMethod):
 
         # Generate counterfactuals
         dice_exp = self._dice.generate_counterfactuals(
-            querry_instances, total_CFs=num_of_cf, desired_class=desired_class
+            querry_instances, total_CFs=num, desired_class=desired_class
         )
 
         cf_ex_list = dice_exp.cf_examples_list
