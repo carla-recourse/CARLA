@@ -30,9 +30,7 @@ class Dice(RecourseMethod):
             outcome_name=data.target,
         )
 
-        self._backend = "sklearn"
-
-        self._dice_model = dice_ml.Model(model=mlmodel, backend=self._backend)
+        self._dice_model = dice_ml.Model(model=mlmodel, backend="sklearn")
 
         self._dice = dice_ml.Dice(self._dice_data, self._dice_model, method="random")
 
