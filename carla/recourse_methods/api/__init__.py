@@ -1,3 +1,3 @@
 # flake8: noqa
 
-from .recourse_method import Recourse_Method
+from .recourse_method import RecourseMethod
