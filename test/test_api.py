@@ -85,7 +85,9 @@ def test_cfmodel():
     ]
     model_catalog = MLModelCatalog(data_catalog, "ann", feature_input_order, encoding)
 
-    dice = Dice(model_catalog, data_catalog)
+    hyperparams = {"num": 1, "desired_class": 1}
+
+    dice = Dice(model_catalog, data_catalog, hyperparams)
 
     assert issubclass(Dice, RecourseMethod)
     assert isinstance(dice, RecourseMethod)

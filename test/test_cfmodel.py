@@ -40,8 +40,8 @@ def test_dice_get_counterfactuals():
     factuals = predict_negative_instances(model_tf, data)
     test_factual = factuals.iloc[:22]
 
-    cfs = Dice(model_tf, data).get_counterfactuals(
-        factuals=test_factual, num=1, desired_class=1
-    )
+    hyperparams = {"num": 1, "desired_class": 1}
+
+    cfs = Dice(model_tf, data, hyperparams).get_counterfactuals(factuals=test_factual)
 
     assert test_factual.shape[0] == cfs.shape[0]
