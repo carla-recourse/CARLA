@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+from sklearn import preprocessing
 
 from ..api import MLModel
 from .load_model import load_model
@@ -7,9 +9,10 @@ from .load_model import load_model
 class MLModelCatalog(MLModel):
     def __init__(
         self,
-        data_name,
+        data,
         model_type,
         feature_input_order,
+        encoding,
         backend="tensorflow",
         cache=True,
         models_home=None,
@@ -23,12 +26,12 @@ class MLModelCatalog(MLModel):
 
         Parameters
         ----------
-        data_name : str
-            Name of the dataset which is used to predict [adult]
         model_type : str
             Architecture [ann]
         feature_input_order : list
             List containing all features in correct order for ML prediction
+        encoding : list
+            List containing encoded features in the form of [feature-name]_[value]
         backend : str
             Specifies the used framework [tensorflow, pytorch]
         cache : boolean, optional
@@ -38,6 +41,8 @@ class MLModelCatalog(MLModel):
             The directory in which to cache data; see :func:`get_models_home`.
         kws : keys and values, optional
             Additional keyword arguments are passed to passed through to the read model function
+        data : data.api.Data Class
+            Correct dataset for ML model
         """
         self._backend = backend
 
@@ -48,10 +53,75 @@ class MLModelCatalog(MLModel):
         else:
             raise Exception("Model type not in catalog")
 
-        self._data_name = data_name
-        self._model = load_model(model_type, data_name, ext, cache, models_home, **kws)
+        self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
 
         self._feature_input_order = feature_input_order
+
+        # Preparing pipeline components
+        self._continuous = data.continous
+        self._categoricals = data.categoricals
+        self._scaler = preprocessing.MinMaxScaler().fit(data.raw[self._continuous])
+
+        self._encodings = encoding
+
+    def pipeline(self, df):
+        """
+        Transforms input for prediction into correct form.
+        Only possible for DataFrames without preprocessing steps.
+
+        Recommended to use to keep correct encodings, normalization and input order
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Contains unnormalized and not encoded data.
+
+        Returns
+        -------
+        output : pd.DataFrame
+            Prediction input in correct order, normalized and encoded
+
+        """
+        output = df.copy()
+
+        # Normalization
+        output[self._continuous] = self._scaler.transform(output[self._continuous])
+
+        # Encoding
+        output[self._encodings] = 0
+        for encoding in self._encodings:
+            for cat in self._categoricals:
+                if cat in encoding:
+                    value = encoding.split(cat + "_")[-1]
+                    output.loc[output[cat] == value, encoding] = 1
+                    break
+
+        # Get correct order
+        output = output[self._feature_input_order]
+
+        return output
+
+    def need_pipeline(self, x):
+        """
+        Checks if ML model input needs pipelining.
+        Only DataFrames can be used to pipeline input.
+
+        Parameters
+        ----------
+        x : pd.DataFrame or np.Array
+
+        Returns
+        -------
+        bool : Boolean
+            True if no pipelining process is already taken
+        """
+        if not isinstance(x, pd.DataFrame):
+            return False
+
+        if x.select_dtypes(exclude=[np.number]).empty:
+            return False
+
+        return True
 
     @property
     def feature_input_order(self):
@@ -62,7 +132,7 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        ordered_features : List of String
+        ordered_features : list of str
             Correct order of input features for ml model
         """
         return self._feature_input_order
@@ -76,7 +146,7 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        backend : String
+        backend : str
             Used framework
         """
         return self._backend
@@ -106,17 +176,19 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        output : np.Array
+        output : np.ndarray
             Ml model prediction for interval [0, 1] with shape N x 1
         """
 
         if len(x.shape) != 2:
             raise ValueError("Input shape has to be two-dimensional")
 
+        input = self.pipeline(x) if self.need_pipeline(x) else x
+
         if self._backend == "pytorch":
-            return self._model.predict(x)
+            return self._model.predict(input)
         elif self._backend == "tensorflow":
-            return self._model.predict(x)[:, 1]
+            return self._model.predict(input)[:, 1]
         else:
             raise ValueError(
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
@@ -142,9 +214,11 @@ class MLModelCatalog(MLModel):
         if len(x.shape) != 2:
             raise ValueError("Input shape has to be two-dimensional")
 
+        input = self.pipeline(x) if self.need_pipeline(x) else x
+
         if self._backend == "pytorch":
-            class_1 = 1 - self._model.forward(x).detach().numpy().squeeze()
-            class_2 = self._model.forward(x).detach().numpy().squeeze()
+            class_1 = 1 - self._model.forward(input).detach().numpy().squeeze()
+            class_2 = self._model.forward(input).detach().numpy().squeeze()
 
             # For single prob prediction it happens, that class_1 is casted into float after 1 - prediction
             # Additionally class_1 and class_2 have to be at least shape 1
@@ -155,7 +229,7 @@ class MLModelCatalog(MLModel):
             return np.array(list(zip(class_1, class_2)))
 
         elif self._backend == "tensorflow":
-            return self._model.predict(x)
+            return self._model.predict(input)
         else:
             raise ValueError(
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'

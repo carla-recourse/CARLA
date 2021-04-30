@@ -17,7 +17,7 @@ setup(
         "torch==1.7.0",
         "torchvision==0.8.1",
         "h5py==2.10.0",
-        "dice-ml",
+        "dice-ml==0.5",
         "ipython",
     ],
     entry_points="""
