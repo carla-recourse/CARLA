@@ -82,3 +82,65 @@ class MLModel(ABC):
             Ml model prediction with shape N x 2
         """
         pass
+
+    @property
+    @abstractmethod
+    def scaler(self):
+        """
+        Yields a fitted normalizer.
+        To keep a consistent and correct normalization for the ML model
+
+        We recommend to use sklear normalization preprocessing
+
+        Returns
+        -------
+        Fitted scaler for normalization
+        """
+        pass
+
+    @abstractmethod
+    def set_scaler(self, data):
+        """
+        Sets and fits the correct normalizer.
+
+        Parameters
+        ----------
+        data : carla.data.Data()
+            Contains the data to fit a scaler
+
+        Returns
+        -------
+
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def encoder(self):
+        """
+        Yields a fitted encoding function.
+        To keep consistent and correct encoding for the ML model.
+
+        We recommend to use the sklearn OneHotEncoding
+
+        Returns
+        -------
+        Fitted encoder
+        """
+        pass
+
+    @abstractmethod
+    def set_encoder(self, data):
+        """
+        Sets and fits the correct encoder.
+
+        Parameters
+        ----------
+        data : carla.data.Data()
+            Contains the data to fit an encoder
+
+        Returns
+        -------
+
+        """
+        pass

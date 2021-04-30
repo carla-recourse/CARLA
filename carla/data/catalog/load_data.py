@@ -51,6 +51,9 @@ def load_dataset(name, cache=True, data_home=None, **kws):
     if df.iloc[-1].isnull().all():
         df = df.iloc[:-1]
 
+    # TODO: Only until NANs are not longer in the dataset (issue #28)
+    df = df.dropna()
+
     return df
 
 

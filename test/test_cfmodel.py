@@ -25,22 +25,17 @@ def test_dice_get_counterfactuals():
         "sex_Male",
         "native-country_US",
     ]
-    encoding = [
-        "workclass_Private",
-        "marital-status_Non-Married",
-        "occupation_Other",
-        "relationship_Non-Husband",
-        "race_White",
-        "sex_Male",
-        "native-country_US",
-    ]
 
-    model_tf = MLModelCatalog(data, "ann", feature_input_order, encoding)
+    model_tf = MLModelCatalog(
+        data, "ann", feature_input_order, encode_normalize_data=True
+    )
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
-    test_factual = factuals.iloc[:22]
 
     hyperparams = {"num": 1, "desired_class": 1}
+    # Pipeline needed for dice, but not for predicting negative instances
+    model_tf.set_use_pipeline(True)
+    test_factual = factuals.iloc[:5]
 
     cfs = Dice(model_tf, data, hyperparams).get_counterfactuals(factuals=test_factual)
 

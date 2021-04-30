@@ -1,6 +1,7 @@
 import numpy as np
-import pandas as pd
 from sklearn import preprocessing
+
+from carla.models.pipelining import encoder, order_data, scaler
 
 from ..api import MLModel
 from .load_model import load_model
@@ -12,10 +13,11 @@ class MLModelCatalog(MLModel):
         data,
         model_type,
         feature_input_order,
-        encoding,
         backend="tensorflow",
         cache=True,
         models_home=None,
+        encode_normalize_data=False,
+        use_pipeline=False,
         **kws
     ):
         """
@@ -26,12 +28,12 @@ class MLModelCatalog(MLModel):
 
         Parameters
         ----------
+        data : data.api.Data Class
+            Correct dataset for ML model
         model_type : str
             Architecture [ann]
         feature_input_order : list
             List containing all features in correct order for ML prediction
-        encoding : list
-            List containing encoded features in the form of [feature-name]_[value]
         backend : str
             Specifies the used framework [tensorflow, pytorch]
         cache : boolean, optional
@@ -41,8 +43,10 @@ class MLModelCatalog(MLModel):
             The directory in which to cache data; see :func:`get_models_home`.
         kws : keys and values, optional
             Additional keyword arguments are passed to passed through to the read model function
-        data : data.api.Data Class
-            Correct dataset for ML model
+        encode_normalize_data : bool, optional
+            If true, the model pipeline is used to build data.encoded, data.normalized and data.encoded_normalizd
+        use_pipeline : bool, optional
+            If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
         """
         self._backend = backend
 
@@ -55,16 +59,57 @@ class MLModelCatalog(MLModel):
 
         self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
 
-        self._feature_input_order = feature_input_order
-
-        # Preparing pipeline components
         self._continuous = data.continous
         self._categoricals = data.categoricals
-        self._scaler = preprocessing.MinMaxScaler().fit(data.raw[self._continuous])
 
-        self._encodings = encoding
+        self._feature_input_order = feature_input_order
 
-    def pipeline(self, df):
+        self._scaler = self.set_scaler(data)
+        self._encoder = self.set_encoder(data)
+
+        # Preparing pipeline components
+        self._use_pipeline = use_pipeline
+        self._pipeline = self.__init_pipeline()
+
+        if encode_normalize_data:
+            data.set_encoded_normalized(self)
+
+    def __init_pipeline(self):
+        return [
+            ("scaler", lambda x: scaler(self._scaler, self._continuous, x)),
+            ("encoder", lambda x: encoder(self._encoder, self._categoricals, x)),
+            ("order", lambda x: order_data(self._feature_input_order, x)),
+        ]
+
+    def get_pipeline_element(self, key):
+        """
+        Returns a specific element of the pipeline
+
+        Parameters
+        ----------
+        key : str
+            Element of the pipeline we want to return
+
+        Returns
+        -------
+        Pipeline element
+        """
+        key_idx = list(zip(*self._pipeline))[0].index(key)  # find key in pipeline
+        return self._pipeline[key_idx][1]
+
+    @property
+    def pipeline(self):
+        """
+        Returns transformations steps for input before predictions.
+
+        Returns
+        -------
+        pipeline : list
+            List of (name, transform) tuples that are chained in the order in which they are preformed.
+        """
+        return self._pipeline
+
+    def perform_pipeline(self, df):
         """
         Transforms input for prediction into correct form.
         Only possible for DataFrames without preprocessing steps.
@@ -84,44 +129,10 @@ class MLModelCatalog(MLModel):
         """
         output = df.copy()
 
-        # Normalization
-        output[self._continuous] = self._scaler.transform(output[self._continuous])
-
-        # Encoding
-        output[self._encodings] = 0
-        for encoding in self._encodings:
-            for cat in self._categoricals:
-                if cat in encoding:
-                    value = encoding.split(cat + "_")[-1]
-                    output.loc[output[cat] == value, encoding] = 1
-                    break
-
-        # Get correct order
-        output = output[self._feature_input_order]
+        for trans_name, trans_function in self._pipeline:
+            output = trans_function(output)
 
         return output
-
-    def need_pipeline(self, x):
-        """
-        Checks if ML model input needs pipelining.
-        Only DataFrames can be used to pipeline input.
-
-        Parameters
-        ----------
-        x : pd.DataFrame or np.Array
-
-        Returns
-        -------
-        bool : Boolean
-            True if no pipelining process is already taken
-        """
-        if not isinstance(x, pd.DataFrame):
-            return False
-
-        if x.select_dtypes(exclude=[np.number]).empty:
-            return False
-
-        return True
 
     @property
     def feature_input_order(self):
@@ -183,7 +194,7 @@ class MLModelCatalog(MLModel):
         if len(x.shape) != 2:
             raise ValueError("Input shape has to be two-dimensional")
 
-        input = self.pipeline(x) if self.need_pipeline(x) else x
+        input = self.perform_pipeline(x) if self._use_pipeline else x
 
         if self._backend == "pytorch":
             return self._model.predict(input)
@@ -214,7 +225,7 @@ class MLModelCatalog(MLModel):
         if len(x.shape) != 2:
             raise ValueError("Input shape has to be two-dimensional")
 
-        input = self.pipeline(x) if self.need_pipeline(x) else x
+        input = self.perform_pipeline(x) if self._use_pipeline else x
 
         if self._backend == "pytorch":
             class_1 = 1 - self._model.forward(input).detach().numpy().squeeze()
@@ -234,3 +245,79 @@ class MLModelCatalog(MLModel):
             raise ValueError(
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
             )
+
+    @property
+    def scaler(self):
+        """
+        Returns the fitted MinMax-scaler
+
+        Returns
+        -------
+        sklearn.MinMaxScaler()
+        """
+        return self._scaler
+
+    def set_scaler(self, data):
+        """
+        Sets and fits a new MinMax-scaler according to the data
+        Parameters
+        ----------
+        data : carla.data.Data()
+
+        Returns
+        -------
+        Fitted sklearn.MinMaxScaler()
+        """
+        return preprocessing.MinMaxScaler().fit(data.raw[self._continuous])
+
+    @property
+    def encoder(self):
+        """
+        Returns the fitted OneHotEncoder
+
+        Returns
+        -------
+        sklearn.OneHotEncoder
+        """
+        return self._encoder
+
+    def set_encoder(self, data):
+        """
+        Sets and fits a new OneHotEncoder according to data
+        Parameters
+        ----------
+        data : carla.data.Data()
+
+        Returns
+        -------
+        Fitted sklearn OneHotEncoder()
+        """
+        return preprocessing.OneHotEncoder(handle_unknown="ignore", sparse=False).fit(
+            data.raw[self._categoricals]
+        )
+
+    @property
+    def use_pipeline(self):
+        """
+        Returns if the ML model uses the pipeline for predictions
+
+        Returns
+        -------
+        bool
+        """
+        return self._use_pipeline
+
+    def set_use_pipeline(self, use_pipe):
+        """
+        Sets if the ML model should use the pipeline before prediction.
+
+        Parameters
+        ----------
+        use_pipe : bool
+            If true, the model uses a transformation pipeline before prediction.
+
+        Returns
+        -------
+
+        """
+        self._use_pipeline = use_pipe

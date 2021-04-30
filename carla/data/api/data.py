@@ -93,6 +93,23 @@ class Data(ABC):
         """
         pass
 
+    @abstractmethod
+    def set_normalized(self, mlmodel):
+        """
+        Normalizes the dataframe with respect to the normalization used for the ML model.
+        Result is saved in self.normalized.
+
+        Parameters
+        ----------
+        mlmodel : carla.model.MLModel
+            ML model which contains information about normalization
+
+        Returns
+        -------
+
+        """
+        pass
+
     @property
     @abstractmethod
     def encoded(self):
@@ -108,6 +125,23 @@ class Data(ABC):
         """
         pass
 
+    @abstractmethod
+    def set_encoded(self, mlmodel):
+        """
+        Encodes the dataframe with respect to the encoding used for the ML model
+        Result is saved in self.encoded.
+
+        Parameters
+        ----------
+        mlmodel : carla.model.MLModel
+            ML model which contains information about encoding
+
+        Returns
+        -------
+
+        """
+        pass
+
     @property
     @abstractmethod
     def encoded_normalized(self):
@@ -120,5 +154,22 @@ class Data(ABC):
         -------
         df : :class:`pandas.DataFrame`
             Tabular data with normalized and encoded information
+        """
+        pass
+
+    @abstractmethod
+    def set_encoded_normalized(self, mlmodel):
+        """
+        Normalizes and encodes the dataframe with respect to the normalization/ encoding used for the ML model
+        Result is saved in self.encoded_normalized, and if not already set, in self.encoded and self.normalized, too.
+
+        Parameters
+        ----------
+        mlmodel : carla.model.MLModel
+            ML model which contains information about normalization and encoding
+
+        Returns
+        -------
+
         """
         pass
