@@ -22,8 +22,17 @@ def test_properties():
         "sex_Male",
         "native-country_US",
     ]
+    encoding = [
+        "workclass_Private",
+        "marital-status_Non-Married",
+        "occupation_Other",
+        "relationship_Non-Husband",
+        "race_White",
+        "sex_Male",
+        "native-country_US",
+    ]
 
-    model_tf_adult = MLModelCatalog(data, "ann", feature_input_order)
+    model_tf_adult = MLModelCatalog(data, "ann", feature_input_order, encoding)
 
     exp_backend_tf = "tensorflow"
     exp_feature_order_adult = [
@@ -66,8 +75,17 @@ def test_predictions():
         "sex_Male",
         "native-country_US",
     ]
+    encoding = [
+        "workclass_Private",
+        "marital-status_Non-Married",
+        "occupation_Other",
+        "relationship_Non-Husband",
+        "race_White",
+        "sex_Male",
+        "native-country_US",
+    ]
 
-    model_tf_adult = MLModelCatalog(data, "ann", feature_input_order)
+    model_tf_adult = MLModelCatalog(data, "ann", feature_input_order, encoding)
 
     single_sample = data.encoded_normalized.iloc[22]
     single_sample = single_sample[model_tf_adult.feature_input_order].values.reshape(

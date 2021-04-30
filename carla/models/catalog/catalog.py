@@ -12,6 +12,7 @@ class MLModelCatalog(MLModel):
         data,
         model_type,
         feature_input_order,
+        encoding,
         backend="tensorflow",
         cache=True,
         models_home=None,
@@ -29,6 +30,8 @@ class MLModelCatalog(MLModel):
             Architecture [ann]
         feature_input_order : list
             List containing all features in correct order for ML prediction
+        encoding : list
+            List containing encoded features in the form of [feature-name]_[value]
         backend : str
             Specifies the used framework [tensorflow, pytorch]
         cache : boolean, optional
@@ -59,17 +62,7 @@ class MLModelCatalog(MLModel):
         self._categoricals = data.categoricals
         self._scaler = preprocessing.MinMaxScaler().fit(data.raw[self._continuous])
 
-        self._encodings = (
-            [  # Encodings should be built in the get_dummy way: {column}_{value}
-                "workclass_Private",
-                "marital-status_Non-Married",
-                "occupation_Other",
-                "relationship_Non-Husband",
-                "race_White",
-                "sex_Male",
-                "native-country_US",
-            ]
-        )
+        self._encodings = encoding
 
     def pipeline(self, df):
         """

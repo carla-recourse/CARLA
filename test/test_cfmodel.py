@@ -25,8 +25,17 @@ def test_dice_get_counterfactuals():
         "sex_Male",
         "native-country_US",
     ]
+    encoding = [
+        "workclass_Private",
+        "marital-status_Non-Married",
+        "occupation_Other",
+        "relationship_Non-Husband",
+        "race_White",
+        "sex_Male",
+        "native-country_US",
+    ]
 
-    model_tf = MLModelCatalog(data, "ann", feature_input_order)
+    model_tf = MLModelCatalog(data, "ann", feature_input_order, encoding)
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
     test_factual = factuals.iloc[:22]

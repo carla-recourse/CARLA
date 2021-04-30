@@ -38,7 +38,16 @@ def test_mlmodel():
         "sex_Male",
         "native-country_US",
     ]
-    model_catalog = MLModelCatalog(data, "ann", feature_input_order)
+    encoding = [
+        "workclass_Private",
+        "marital-status_Non-Married",
+        "occupation_Other",
+        "relationship_Non-Husband",
+        "race_White",
+        "sex_Male",
+        "native-country_US",
+    ]
+    model_catalog = MLModelCatalog(data, "ann", feature_input_order, encoding)
 
     assert issubclass(MLModelCatalog, MLModel)
     assert isinstance(model_catalog, MLModel)
@@ -65,7 +74,16 @@ def test_cfmodel():
         "sex_Male",
         "native-country_US",
     ]
-    model_catalog = MLModelCatalog(data_catalog, "ann", feature_input_order)
+    encoding = [
+        "workclass_Private",
+        "marital-status_Non-Married",
+        "occupation_Other",
+        "relationship_Non-Husband",
+        "race_White",
+        "sex_Male",
+        "native-country_US",
+    ]
+    model_catalog = MLModelCatalog(data_catalog, "ann", feature_input_order, encoding)
 
     dice = Dice(model_catalog, data_catalog)
 
