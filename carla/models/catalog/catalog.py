@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn import preprocessing
 
+from ...data.api import data as data_api
 from ..api import MLModel
 from .load_model import load_model
 
@@ -9,7 +10,7 @@ from .load_model import load_model
 class MLModelCatalog(MLModel):
     def __init__(
         self,
-        data,
+        data: data_api,
         model_type,
         feature_input_order,
         encoding,
@@ -45,6 +46,7 @@ class MLModelCatalog(MLModel):
             Correct dataset for ML model
         """
         self._backend = backend
+        self._data = data
 
         if self._backend == "pytorch":
             ext = "pt"
@@ -234,3 +236,7 @@ class MLModelCatalog(MLModel):
             raise ValueError(
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
             )
+
+    @property
+    def data(self):
+        return self._data
