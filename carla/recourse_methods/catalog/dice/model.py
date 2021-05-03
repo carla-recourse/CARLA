@@ -61,10 +61,6 @@ class Dice(RecourseMethod):
         factuals : pd.DataFrame
             DataFrame containing all samples for which we want to generate counterfactual examples.
             All instances should belong to the same class.
-        num : int
-            Number of counterfactuals we want to generate per factual
-        desired_class : int
-            The target class we want to reach for our factuals
 
         Returns
         -------
