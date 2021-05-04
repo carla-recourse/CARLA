@@ -1,4 +1,4 @@
-def scaler(fitted_scaler, features, df):
+def scale(fitted_scaler, features, df):
     """
     Pipeline function to normalize data with fitted sklearn scaler.
 
@@ -23,7 +23,7 @@ def scaler(fitted_scaler, features, df):
     return output
 
 
-def encoder(fitted_encoder, features, df):
+def encode(fitted_encoder, features, df):
     """
     Pipeline function to encode data with fitted sklearn OneHotEncoder.
 

@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn import preprocessing
 
-from carla.models.pipelining import encoder, order_data, scaler
+from carla.models.pipelining import encode, order_data, scale
 
 from ..api import MLModel
 from .load_model import load_model
@@ -76,8 +76,8 @@ class MLModelCatalog(MLModel):
 
     def __init_pipeline(self):
         return [
-            ("scaler", lambda x: scaler(self._scaler, self._continuous, x)),
-            ("encoder", lambda x: encoder(self._encoder, self._categoricals, x)),
+            ("scaler", lambda x: scale(self._scaler, self._continuous, x)),
+            ("encoder", lambda x: encode(self._encoder, self._categoricals, x)),
             ("order", lambda x: order_data(self._feature_input_order, x)),
         ]
 
