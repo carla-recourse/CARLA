@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn import preprocessing
 
 from carla.models.pipelining import encode, order_data, scale
 
@@ -48,6 +47,7 @@ class MLModelCatalog(MLModel):
         use_pipeline : bool, optional
             If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
         """
+        super().__init__(data)
         self._backend = backend
 
         if self._backend == "pytorch":
@@ -64,9 +64,6 @@ class MLModelCatalog(MLModel):
 
         self._feature_input_order = feature_input_order
 
-        self._scaler = self.set_scaler(data)
-        self._encoder = self.set_encoder(data)
-
         # Preparing pipeline components
         self._use_pipeline = use_pipeline
         self._pipeline = self.__init_pipeline()
@@ -76,8 +73,8 @@ class MLModelCatalog(MLModel):
 
     def __init_pipeline(self):
         return [
-            ("scaler", lambda x: scale(self._scaler, self._continuous, x)),
-            ("encoder", lambda x: encode(self._encoder, self._categoricals, x)),
+            ("scaler", lambda x: scale(self.scaler, self._continuous, x)),
+            ("encoder", lambda x: encode(self.encoder, self._categoricals, x)),
             ("order", lambda x: order_data(self._feature_input_order, x)),
         ]
 
@@ -245,56 +242,6 @@ class MLModelCatalog(MLModel):
             raise ValueError(
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
             )
-
-    @property
-    def scaler(self):
-        """
-        Returns the fitted MinMax-scaler
-
-        Returns
-        -------
-        sklearn.MinMaxScaler()
-        """
-        return self._scaler
-
-    def set_scaler(self, data):
-        """
-        Sets and fits a new MinMax-scaler according to the data
-        Parameters
-        ----------
-        data : carla.data.Data()
-
-        Returns
-        -------
-        Fitted sklearn.MinMaxScaler()
-        """
-        return preprocessing.MinMaxScaler().fit(data.raw[self._continuous])
-
-    @property
-    def encoder(self):
-        """
-        Returns the fitted OneHotEncoder
-
-        Returns
-        -------
-        sklearn.OneHotEncoder
-        """
-        return self._encoder
-
-    def set_encoder(self, data):
-        """
-        Sets and fits a new OneHotEncoder according to data
-        Parameters
-        ----------
-        data : carla.data.Data()
-
-        Returns
-        -------
-        Fitted sklearn OneHotEncoder()
-        """
-        return preprocessing.OneHotEncoder(handle_unknown="ignore", sparse=False).fit(
-            data.raw[self._categoricals]
-        )
 
     @property
     def use_pipeline(self):
