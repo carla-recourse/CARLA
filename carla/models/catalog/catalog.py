@@ -307,7 +307,8 @@ class MLModelCatalog(MLModel):
         """
         return self._use_pipeline
 
-    def set_use_pipeline(self, use_pipe):
+    @use_pipeline.setter
+    def use_pipeline(self, use_pipe):
         """
         Sets if the ML model should use the pipeline before prediction.
 

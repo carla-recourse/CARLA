@@ -123,7 +123,7 @@ def test_predictions_with_pipeline():
     model_tf_adult = MLModelCatalog(
         data, "ann", feature_input_order, encode_normalize_data=True
     )
-    model_tf_adult.set_use_pipeline(True)
+    model_tf_adult.use_pipeline = True
 
     single_sample = data.raw.iloc[22].to_frame().T
     samples = data.raw.iloc[0:22]
