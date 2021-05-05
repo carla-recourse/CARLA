@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
+    data = DataCatalog(data_name, data_catalog)
 
     feature_input_order = [
         "age",
@@ -24,7 +24,7 @@ if __name__ == "__main__":
         "native-country_US",
     ]
 
-    model = MLModelCatalog(data, "ann", feature_input_order, encode_normalize_data=True)
+    model = MLModelCatalog(data, "ann", feature_input_order)
     print(f"Using model: {model.raw_model.__class__.__module__}")
     print(data.target)
     print(predict_negative_instances(model, data).head(100))

@@ -1,7 +1,70 @@
 from abc import ABC, abstractmethod
 
+from sklearn import preprocessing
+
 
 class MLModel(ABC):
+    def __init__(self, data, scaling_method="MinMax", encoding_method="OneHot"):
+        self.data = data
+
+        if scaling_method == "MinMax":
+            fitted_scaler = preprocessing.MinMaxScaler().fit(data.raw[data.continous])
+            self.scaler = fitted_scaler
+
+        if encoding_method == "OneHot":
+            fitted_encoder = preprocessing.OneHotEncoder(
+                handle_unknown="ignore", sparse=False
+            ).fit(data.raw[data.categoricals])
+            self.encoder = fitted_encoder
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
+
+    @property
+    def scaler(self):
+        return self._scaler
+
+    @scaler.setter
+    def scaler(self, scaler):
+        """
+        Sets a new fitted sklearn scaler.
+
+        Parameters
+        ----------
+        scaler : sklearn.preprocessing.Scaler
+            Fitted scaler for ML model.
+
+        Returns
+        -------
+
+        """
+        self._scaler = scaler
+
+    @property
+    def encoder(self):
+        return self._encoder
+
+    @encoder.setter
+    def encoder(self, encoder):
+        """
+        Sets a new fitted sklearn encoder.
+
+        Parameters
+        ----------
+        encoder : sklearn.preprocessing.Encoder
+            Fitted encoder for ML model.
+
+        Returns
+        -------
+
+        """
+        self._encoder = encoder
+
     @property
     @abstractmethod
     def feature_input_order(self):
@@ -80,67 +143,5 @@ class MLModel(ABC):
         -------
         output : float
             Ml model prediction with shape N x 2
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def scaler(self):
-        """
-        Yields a fitted normalizer.
-        To keep a consistent and correct normalization for the ML model
-
-        We recommend to use sklear normalization preprocessing
-
-        Returns
-        -------
-        Fitted scaler for normalization
-        """
-        pass
-
-    @abstractmethod
-    def set_scaler(self, data):
-        """
-        Sets and fits the correct normalizer.
-
-        Parameters
-        ----------
-        data : carla.data.Data()
-            Contains the data to fit a scaler
-
-        Returns
-        -------
-
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def encoder(self):
-        """
-        Yields a fitted encoding function.
-        To keep consistent and correct encoding for the ML model.
-
-        We recommend to use the sklearn OneHotEncoding
-
-        Returns
-        -------
-        Fitted encoder
-        """
-        pass
-
-    @abstractmethod
-    def set_encoder(self, data):
-        """
-        Sets and fits the correct encoder.
-
-        Parameters
-        ----------
-        data : carla.data.Data()
-            Contains the data to fit an encoder
-
-        Returns
-        -------
-
         """
         pass

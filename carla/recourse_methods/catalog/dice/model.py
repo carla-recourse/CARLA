@@ -5,7 +5,7 @@ from ...api import RecourseMethod
 
 
 class Dice(RecourseMethod):
-    def __init__(self, mlmodel, data, hyperparams):
+    def __init__(self, mlmodel, hyperparams):
         """
         Constructor for Dice model
         Implementation can be seen at https://github.com/interpretml/DiCE
@@ -26,12 +26,12 @@ class Dice(RecourseMethod):
             Hyperparameter which are needed for DICE to generate counterfactuals.
             Structure: {"num": int, "desired_class": int}
         """
-        self._continous = data.continous
-        self._categoricals = data.categoricals
-        self._target = data.target
+        self._continous = mlmodel.data.continous
+        self._categoricals = mlmodel.data.categoricals
+        self._target = mlmodel.data.target
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
-            dataframe=data.raw,
+            dataframe=mlmodel.data.raw,
             continuous_features=self._continous,
             outcome_name=self._target,
         )
