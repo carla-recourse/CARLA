@@ -8,7 +8,7 @@ def test_dice_get_counterfactuals():
     # Build data and mlmodel
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
+    data = DataCatalog(data_name, data_catalog)
 
     feature_input_order = [
         "age",
@@ -26,15 +26,13 @@ def test_dice_get_counterfactuals():
         "native-country_US",
     ]
 
-    model_tf = MLModelCatalog(
-        data, "ann", feature_input_order, encode_normalize_data=True
-    )
+    model_tf = MLModelCatalog(data, "ann", feature_input_order)
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
 
     hyperparams = {"num": 1, "desired_class": 1}
     # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.set_use_pipeline(True)
+    model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]
 
     cfs = Dice(model_tf, data, hyperparams).get_counterfactuals(factuals=test_factual)
