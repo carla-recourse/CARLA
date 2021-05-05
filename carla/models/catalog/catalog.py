@@ -1,5 +1,6 @@
 import numpy as np
 
+from carla.data.load_catalog import load_catalog
 from carla.models.pipelining import encode, order_data, scale
 
 from ..api import MLModel
@@ -11,7 +12,6 @@ class MLModelCatalog(MLModel):
         self,
         data,
         model_type,
-        feature_input_order,
         backend="tensorflow",
         cache=True,
         models_home=None,
@@ -30,8 +30,6 @@ class MLModelCatalog(MLModel):
             Correct dataset for ML model
         model_type : str
             Architecture [ann]
-        feature_input_order : list
-            List containing all features in correct order for ML prediction
         backend : str
             Specifies the used framework [tensorflow, pytorch]
         cache : boolean, optional
@@ -49,10 +47,14 @@ class MLModelCatalog(MLModel):
         super().__init__(data)
         self._backend = backend
 
+        # TODO: Add logic for feature_order depending on upcoming different catalog models
+        self._catalog = load_catalog(data.catalog_file, data.name)
         if self._backend == "pytorch":
             ext = "pt"
+            self._feature_input_order = self._catalog["feature_input_order_bin"]
         elif self._backend == "tensorflow":
             ext = "h5"
+            self._feature_input_order = self._catalog["feature_input_order_drop_first"]
         else:
             raise Exception("Model type not in catalog")
 
@@ -60,8 +62,6 @@ class MLModelCatalog(MLModel):
 
         self._continuous = data.continous
         self._categoricals = data.categoricals
-
-        self._feature_input_order = feature_input_order
 
         # Preparing pipeline components
         self._use_pipeline = use_pipeline

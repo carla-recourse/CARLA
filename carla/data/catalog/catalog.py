@@ -1,4 +1,4 @@
-import yaml
+from carla.data.load_catalog import load_catalog
 
 from ..api import Data
 from .load_data import load_dataset
@@ -19,7 +19,8 @@ class DataCatalog(Data):
             Decides if the first column of one-hot-encoding should be dropped
         """
         self.name = data_name
-        self.catalog = self._load_catalog(catalog_file, data_name)
+        self.catalog_file = catalog_file
+        self.catalog = load_catalog(self.catalog_file, data_name)
 
         self._raw = load_dataset(data_name)
 
@@ -46,12 +47,3 @@ class DataCatalog(Data):
     @property
     def raw(self):
         return self._raw.copy()
-
-    def _load_catalog(self, filename, dataset):
-        with open(filename, "r") as f:
-            catalog = yaml.safe_load(f)
-
-        if dataset not in catalog:
-            raise KeyError("Dataset not in catalog.")
-
-        return catalog[dataset]

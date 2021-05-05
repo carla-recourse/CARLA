@@ -10,23 +10,7 @@ def test_dice_get_counterfactuals():
     data_catalog = "adult_catalog.yaml"
     data = DataCatalog(data_name, data_catalog)
 
-    feature_input_order = [
-        "age",
-        "fnlwgt",
-        "education-num",
-        "capital-gain",
-        "capital-loss",
-        "hours-per-week",
-        "workclass_Private",
-        "marital-status_Non-Married",
-        "occupation_Other",
-        "relationship_Non-Husband",
-        "race_White",
-        "sex_Male",
-        "native-country_US",
-    ]
-
-    model_tf = MLModelCatalog(data, "ann", feature_input_order)
+    model_tf = MLModelCatalog(data, "ann")
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
 

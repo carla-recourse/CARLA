@@ -25,23 +25,7 @@ def test_adult_norm():
     data_catalog = "adult_catalog.yaml"
     data = DataCatalog(data_name, data_catalog)
 
-    feature_input_order = [
-        "age",
-        "fnlwgt",
-        "education-num",
-        "capital-gain",
-        "capital-loss",
-        "hours-per-week",
-        "workclass_Private",
-        "marital-status_Non-Married",
-        "occupation_Other",
-        "relationship_Non-Husband",
-        "race_White",
-        "sex_Male",
-        "native-country_US",
-    ]
-
-    mlmodel = MLModelCatalog(data, "ann", feature_input_order)
+    mlmodel = MLModelCatalog(data, "ann")
     norm = data.raw
     norm[data.continous] = mlmodel.scaler.transform(norm[data.continous])
 
@@ -58,25 +42,9 @@ def test_adult_enc():
     data_catalog = "adult_catalog.yaml"
     data = DataCatalog(data_name, data_catalog)
 
-    feature_input_order = [
-        "age",
-        "fnlwgt",
-        "education-num",
-        "capital-gain",
-        "capital-loss",
-        "hours-per-week",
-        "workclass_Private",
-        "marital-status_Non-Married",
-        "occupation_Other",
-        "relationship_Non-Husband",
-        "race_White",
-        "sex_Male",
-        "native-country_US",
-    ]
-
-    mlmodel = MLModelCatalog(data, "ann", feature_input_order)
+    mlmodel = MLModelCatalog(data, "ann")
 
     cat = encode(mlmodel.encoder, data.categoricals, data.raw)
-    cat = cat[feature_input_order]
+    cat = cat[mlmodel.feature_input_order]
 
     assert cat.select_dtypes(exclude=[np.number]).empty
