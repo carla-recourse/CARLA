@@ -5,7 +5,7 @@ from .load_data import load_dataset
 
 
 class DataCatalog(Data):
-    def __init__(self, data_name, catalog_file, drop_first_encoding):
+    def __init__(self, data_name, catalog_file):
         """
         Constructor for catalog datasets.
 
@@ -23,7 +23,6 @@ class DataCatalog(Data):
 
         self._raw = load_dataset(data_name)
 
-        self._drop_first = drop_first_encoding
         self._data_normalized = None
         self._data_encoded = None
         self._data_encoded_normalized = None
@@ -47,46 +46,6 @@ class DataCatalog(Data):
     @property
     def raw(self):
         return self._raw.copy()
-
-    def set_normalized(self, mlmodel):
-        scaler = mlmodel.get_pipeline_element("scaler")
-
-        self._data_normalized = scaler(self.raw)
-
-    @property
-    def normalized(self):
-        return (
-            self._data_normalized.copy() if self._data_normalized is not None else None
-        )
-
-    def set_encoded(self, mlmodel):
-        encoder = mlmodel.get_pipeline_element("encoder")
-
-        self._data_encoded = encoder(self.raw)
-
-    @property
-    def encoded(self):
-        return self._data_encoded.copy() if self._data_encoded is not None else None
-
-    def set_encoded_normalized(self, mlmodel):
-        encoder = mlmodel.get_pipeline_element("encoder")
-        scaler = mlmodel.get_pipeline_element("scaler")
-
-        if self._data_normalized is None:
-            self._data_normalized = scaler(self.raw)
-        if self._data_encoded is None:
-            self._data_encoded = encoder(self.raw)
-
-        self._data_encoded_normalized = encoder(self._raw)
-        self._data_encoded_normalized = scaler(self._data_encoded_normalized)
-
-    @property
-    def encoded_normalized(self):
-        return (
-            self._data_encoded_normalized.copy()
-            if self._data_encoded_normalized is not None
-            else None
-        )
 
     def _load_catalog(self, filename, dataset):
         with open(filename, "r") as f:

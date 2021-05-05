@@ -9,7 +9,7 @@ def test_dice_get_counterfactuals():
     # Build data and mlmodel
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
+    data = DataCatalog(data_name, data_catalog)
 
     feature_input_order = [
         "age",
@@ -27,15 +27,13 @@ def test_dice_get_counterfactuals():
         "native-country_US",
     ]
 
-    model_tf = MLModelCatalog(
-        data, "ann", feature_input_order, encode_normalize_data=True
-    )
+    model_tf = MLModelCatalog(data, "ann", feature_input_order)
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
 
     hyperparams = {"num": 1, "desired_class": 1}
     # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.set_use_pipeline(True)
+    model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]
 
     cfs = Dice(model_tf, data, hyperparams).get_counterfactuals(factuals=test_factual)
@@ -47,7 +45,7 @@ def test_ar_get_counterfactual():
     # Build data and mlmodel
     data_name = "adult"
     data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
+    data = DataCatalog(data_name, data_catalog)
 
     feature_input_order = [
         "age",
@@ -64,9 +62,7 @@ def test_ar_get_counterfactual():
         "sex_Male",
         "native-country_US",
     ]
-    model_tf = MLModelCatalog(
-        data, "ann", feature_input_order, encode_normalize_data=True
-    )
+    model_tf = MLModelCatalog(data, "ann", feature_input_order)
 
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
@@ -74,8 +70,6 @@ def test_ar_get_counterfactual():
 
     # get counterfactuals
     hyperparams = {"fs_size": 150}
-    cfs = ActionableRecourse(data, model_tf, hyperparams).get_counterfactuals(
-        test_factual
-    )
+    cfs = ActionableRecourse(model_tf, hyperparams).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == cfs.shape[0]

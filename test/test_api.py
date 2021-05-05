@@ -11,7 +11,7 @@ from carla.recourse_methods.catalog.dice import Dice
 def test_data():
     data_name = "adult"
     data_catalog_yaml = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog_yaml, drop_first_encoding=True)
+    data_catalog = DataCatalog(data_name, data_catalog_yaml)
 
     assert issubclass(DataCatalog, Data)
     assert isinstance(data_catalog, Data)
@@ -21,7 +21,7 @@ def test_data():
 def test_mlmodel():
     data_name = "adult"
     data_catalog_yaml = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog_yaml, drop_first_encoding=True)
+    data = DataCatalog(data_name, data_catalog_yaml)
 
     feature_input_order = [
         "age",
@@ -48,7 +48,7 @@ def test_mlmodel():
 def test_cfmodel():
     data_name = "adult"
     data_catalog_yaml = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog_yaml, drop_first_encoding=True)
+    data_catalog = DataCatalog(data_name, data_catalog_yaml)
 
     feature_input_order = [
         "age",

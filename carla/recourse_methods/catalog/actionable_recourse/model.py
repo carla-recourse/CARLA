@@ -3,11 +3,13 @@ import pandas as pd
 import recourse as rs
 from lime.lime_tabular import LimeTabularExplainer
 
+from carla.models.pipelining import encode, scale
+
 from ...api import RecourseMethod
 
 
 class ActionableRecourse(RecourseMethod):
-    def __init__(self, data, mlmodel, hyperparams, coeffs=None, intercepts=None):
+    def __init__(self, mlmodel, hyperparams, coeffs=None, intercepts=None):
         """
         Initializing Actionable Recourse
 
@@ -36,8 +38,17 @@ class ActionableRecourse(RecourseMethod):
             Coefficients
         intercepts
         """
-        self._data = data
+        self._data = mlmodel.data
         self._mlmodel = mlmodel
+
+        # normalize and encode data
+        self._norm_enc_data = scale(
+            mlmodel.scaler, self._data.continous, self._data.raw
+        )
+        self._norm_enc_data = encode(
+            mlmodel.encoder, self._data.categoricals, self._norm_enc_data
+        )
+
         # Get hyperparameter
         self._fs_size = (
             100 if "fs_size" not in hyperparams.keys() else hyperparams["fs_size"]
@@ -53,7 +64,7 @@ class ActionableRecourse(RecourseMethod):
 
         # Build ActionSet
         self._action_set = rs.ActionSet(
-            X=self._data.encoded_normalized[self._mlmodel.feature_input_order]
+            X=self._norm_enc_data[self._mlmodel.feature_input_order]
         )
 
         # transform immutable feature names into encoded feature names of self._data.encoded_normalized
@@ -104,8 +115,8 @@ class ActionableRecourse(RecourseMethod):
         """
         coeffs = np.zeros(factuals.shape)
         intercepts = []
-        lime_data = self._data.encoded_normalized[self._mlmodel.feature_input_order]
-        lime_label = self._data.encoded_normalized[self._data.target]
+        lime_data = self._norm_enc_data[self._mlmodel.feature_input_order]
+        lime_label = self._norm_enc_data[self._data.target]
 
         lime_exp = LimeTabularExplainer(
             training_data=lime_data.values,
