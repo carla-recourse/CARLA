@@ -15,7 +15,6 @@ class MLModelCatalog(MLModel):
         backend="tensorflow",
         cache=True,
         models_home=None,
-        encode_normalize_data=False,
         use_pipeline=False,
         **kws
     ):
@@ -67,9 +66,6 @@ class MLModelCatalog(MLModel):
         # Preparing pipeline components
         self._use_pipeline = use_pipeline
         self._pipeline = self.__init_pipeline()
-
-        if encode_normalize_data:
-            data.set_encoded_normalized(self)
 
     def __init_pipeline(self):
         return [
