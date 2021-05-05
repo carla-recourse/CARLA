@@ -1,11 +1,18 @@
+from typing import Any, Dict
+
 import dice_ml
 import pandas as pd
+
+from carla.data.api import Data
+from carla.models.api import MLModel
 
 from ...api import RecourseMethod
 
 
 class Dice(RecourseMethod):
-    def __init__(self, mlmodel, data, hyperparams):
+    def __init__(
+        self, mlmodel: MLModel, data: Data, hyperparams: Dict[str, Any]
+    ) -> None:
         """
         Constructor for Dice model
         Implementation can be seen at https://github.com/interpretml/DiCE
@@ -43,7 +50,7 @@ class Dice(RecourseMethod):
     def dice_model(self):
         return self._dice
 
-    def get_counterfactuals(self, factuals):
+    def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         """
         Compute a certain number of counterfactuals per factual example.
 

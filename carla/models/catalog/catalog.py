@@ -1,7 +1,11 @@
+from typing import Any, Callable, List, Tuple, Union
+
 import numpy as np
+import pandas as pd
 
 from carla.models.pipelining import encode, order_data, scale
 
+from ...data.catalog import DataCatalog
 from ..api import MLModel
 from .load_model import load_model
 
@@ -9,15 +13,15 @@ from .load_model import load_model
 class MLModelCatalog(MLModel):
     def __init__(
         self,
-        data,
-        model_type,
-        feature_input_order,
-        backend="tensorflow",
-        cache=True,
-        models_home=None,
-        use_pipeline=False,
+        data: DataCatalog,
+        model_type: str,
+        feature_input_order: List[str],
+        backend: str = "tensorflow",
+        cache: bool = True,
+        models_home: str = None,
+        use_pipeline: bool = False,
         **kws
-    ):
+    ) -> None:
         """
         Constructor for pretrained ML models from the catalog.
 
@@ -26,7 +30,7 @@ class MLModelCatalog(MLModel):
 
         Parameters
         ----------
-        data : data.api.Data Class
+        data : data.catalog.DataCatalog Class
             Correct dataset for ML model
         model_type : str
             Architecture [ann]
@@ -47,7 +51,7 @@ class MLModelCatalog(MLModel):
             If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
         """
         super().__init__(data)
-        self._backend = backend
+        self._backend: str = backend
 
         if self._backend == "pytorch":
             ext = "pt"
@@ -56,25 +60,27 @@ class MLModelCatalog(MLModel):
         else:
             raise Exception("Model type not in catalog")
 
-        self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
+        self._model: Any = load_model(
+            model_type, data.name, ext, cache, models_home, **kws
+        )
 
-        self._continuous = data.continous
-        self._categoricals = data.categoricals
+        self._continuous: List[str] = data.continous
+        self._categoricals: List[str] = data.categoricals
 
-        self._feature_input_order = feature_input_order
+        self._feature_input_order: List[str] = feature_input_order
 
         # Preparing pipeline components
-        self._use_pipeline = use_pipeline
-        self._pipeline = self.__init_pipeline()
+        self._use_pipeline: bool = use_pipeline
+        self._pipeline: List[Tuple[str, Callable]] = self.__init_pipeline()
 
-    def __init_pipeline(self):
+    def __init_pipeline(self) -> List[Tuple[str, Callable]]:
         return [
             ("scaler", lambda x: scale(self.scaler, self._continuous, x)),
             ("encoder", lambda x: encode(self.encoder, self._categoricals, x)),
             ("order", lambda x: order_data(self._feature_input_order, x)),
         ]
 
-    def get_pipeline_element(self, key):
+    def get_pipeline_element(self, key: str) -> Callable:
         """
         Returns a specific element of the pipeline
 
@@ -91,7 +97,7 @@ class MLModelCatalog(MLModel):
         return self._pipeline[key_idx][1]
 
     @property
-    def pipeline(self):
+    def pipeline(self) -> List[Tuple[str, Callable]]:
         """
         Returns transformations steps for input before predictions.
 
@@ -102,7 +108,7 @@ class MLModelCatalog(MLModel):
         """
         return self._pipeline
 
-    def perform_pipeline(self, df):
+    def perform_pipeline(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Transforms input for prediction into correct form.
         Only possible for DataFrames without preprocessing steps.
@@ -128,7 +134,7 @@ class MLModelCatalog(MLModel):
         return output
 
     @property
-    def feature_input_order(self):
+    def feature_input_order(self) -> List[str]:
         """
         Saves the required order of feature as list.
 
@@ -142,7 +148,7 @@ class MLModelCatalog(MLModel):
         return self._feature_input_order
 
     @property
-    def backend(self):
+    def backend(self) -> str:
         """
         Describes the type of backend which is used for the ml model.
 
@@ -156,7 +162,7 @@ class MLModelCatalog(MLModel):
         return self._backend
 
     @property
-    def raw_model(self):
+    def raw_model(self) -> Any:
         """
         Returns the raw ml model built on its framework
 
@@ -167,7 +173,7 @@ class MLModelCatalog(MLModel):
         """
         return self._model
 
-    def predict(self, x):
+    def predict(self, x: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
         """
         One-dimensional prediction of ml model for an output interval of [0, 1]
 
@@ -198,7 +204,7 @@ class MLModelCatalog(MLModel):
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
             )
 
-    def predict_proba(self, x):
+    def predict_proba(self, x: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
         """
         Two-dimensional probability prediction of ml model
 
@@ -211,7 +217,7 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        output : float
+        output : np.ndarray
             Ml model prediction with shape N x 2
         """
 
@@ -240,7 +246,7 @@ class MLModelCatalog(MLModel):
             )
 
     @property
-    def use_pipeline(self):
+    def use_pipeline(self) -> bool:
         """
         Returns if the ML model uses the pipeline for predictions
 
@@ -251,7 +257,7 @@ class MLModelCatalog(MLModel):
         return self._use_pipeline
 
     @use_pipeline.setter
-    def use_pipeline(self, use_pipe):
+    def use_pipeline(self, use_pipe: bool) -> None:
         """
         Sets if the ML model should use the pipeline before prediction.
 
