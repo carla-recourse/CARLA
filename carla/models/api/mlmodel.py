@@ -1,7 +1,70 @@
 from abc import ABC, abstractmethod
 
+from sklearn import preprocessing
+
 
 class MLModel(ABC):
+    def __init__(self, data, scaling_method="MinMax", encoding_method="OneHot"):
+        self.data = data
+
+        if scaling_method == "MinMax":
+            fitted_scaler = preprocessing.MinMaxScaler().fit(data.raw[data.continous])
+            self.scaler = fitted_scaler
+
+        if encoding_method == "OneHot":
+            fitted_encoder = preprocessing.OneHotEncoder(
+                handle_unknown="ignore", sparse=False
+            ).fit(data.raw[data.categoricals])
+            self.encoder = fitted_encoder
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
+
+    @property
+    def scaler(self):
+        return self._scaler
+
+    @scaler.setter
+    def scaler(self, scaler):
+        """
+        Sets a new fitted sklearn scaler.
+
+        Parameters
+        ----------
+        scaler : sklearn.preprocessing.Scaler
+            Fitted scaler for ML model.
+
+        Returns
+        -------
+
+        """
+        self._scaler = scaler
+
+    @property
+    def encoder(self):
+        return self._encoder
+
+    @encoder.setter
+    def encoder(self, encoder):
+        """
+        Sets a new fitted sklearn encoder.
+
+        Parameters
+        ----------
+        encoder : sklearn.preprocessing.Encoder
+            Fitted encoder for ML model.
+
+        Returns
+        -------
+
+        """
+        self._encoder = encoder
+
     @property
     @abstractmethod
     def feature_input_order(self):

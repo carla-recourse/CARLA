@@ -1,13 +1,11 @@
-import pandas as pd
 import yaml
 
 from ..api import Data
-from ..processing import processing
 from .load_data import load_dataset
 
 
 class DataCatalog(Data):
-    def __init__(self, data_name, catalog_file, drop_first_encoding):
+    def __init__(self, data_name, catalog_file):
         """
         Constructor for catalog datasets.
 
@@ -25,7 +23,6 @@ class DataCatalog(Data):
 
         self._raw = load_dataset(data_name)
 
-        self._drop_first = drop_first_encoding
         self._data_normalized = None
         self._data_encoded = None
         self._data_encoded_normalized = None
@@ -49,29 +46,6 @@ class DataCatalog(Data):
     @property
     def raw(self):
         return self._raw.copy()
-
-    @property
-    def normalized(self):
-        if self._data_normalized is None:
-            self._data_normalized = processing.normalize(self.raw, self.continous)
-
-        return self._data_normalized.copy()
-
-    @property
-    def encoded(self):
-        if self._data_encoded is None:
-            self._data_encoded = pd.get_dummies(self.raw, drop_first=self._drop_first)
-
-        return self._data_encoded.copy()
-
-    @property
-    def encoded_normalized(self):
-        if self._data_encoded_normalized is None:
-            self._data_encoded_normalized = processing.normalize(
-                self.encoded, self.continous
-            )
-
-        return self._data_encoded_normalized.copy()
 
     def _load_catalog(self, filename, dataset):
         with open(filename, "r") as f:
