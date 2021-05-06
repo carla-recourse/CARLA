@@ -211,9 +211,7 @@ def test_predictions_pt():
         "native-country_Non-US",
         "native-country_US",
     ]
-    model = MLModelCatalog(
-        data, "ann", feature_input_order, backend="pytorch", encode_normalize_data=True
-    )
+    model = MLModelCatalog(data, "ann", feature_input_order, backend="pytorch")
 
     # normalize and encode data
     norm_enc_data = scale(model.scaler, data.continous, data.raw)
