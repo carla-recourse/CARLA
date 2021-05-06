@@ -5,7 +5,7 @@ from ...api import RecourseMethod
 
 
 class Dice(RecourseMethod):
-    def __init__(self, mlmodel, data, hyperparams):
+    def __init__(self, mlmodel, hyperparams):
         """
         Constructor for Dice model
         Implementation can be seen at https://github.com/interpretml/DiCE
@@ -26,12 +26,12 @@ class Dice(RecourseMethod):
             Hyperparameter which are needed for DICE to generate counterfactuals.
             Structure: {"num": int, "desired_class": int}
         """
-        self._continous = data.continous
-        self._categoricals = data.categoricals
-        self._target = data.target
+        self._continous = mlmodel.data.continous
+        self._categoricals = mlmodel.data.categoricals
+        self._target = mlmodel.data.target
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
-            dataframe=data.raw,
+            dataframe=mlmodel.data.raw,
             continuous_features=self._continous,
             outcome_name=self._target,
         )
@@ -61,14 +61,10 @@ class Dice(RecourseMethod):
         factuals : pd.DataFrame
             DataFrame containing all samples for which we want to generate counterfactual examples.
             All instances should belong to the same class.
-        num : int
-            Number of counterfactuals we want to generate per factual
-        desired_class : int
-            The target class we want to reach for our factuals
 
         Returns
         -------
-        cfs : pd.DataFrame
+        df_cfs : pd.DataFrame
             Encoded and normalized counterfactuals
 
         """
@@ -85,12 +81,12 @@ class Dice(RecourseMethod):
             querry_instances, total_CFs=self._num, desired_class=self._desired_class
         )
 
-        cf_ex_list = dice_exp.cf_examples_list
-        cfs = pd.concat([cf_ex.final_cfs_df for cf_ex in cf_ex_list], ignore_index=True)
-        cfs[self._continous] = self._scaler.transform(cfs[self._continous])
+        list_cfs = dice_exp.cf_examples_list
+        df_cfs = pd.concat([cf.final_cfs_df for cf in list_cfs], ignore_index=True)
+        df_cfs[self._continous] = self._scaler.transform(df_cfs[self._continous])
         encoded_features = self._encoder.get_feature_names(self._categoricals)
-        cfs[encoded_features] = self._encoder.transform(cfs[self._categoricals])
-        cfs = cfs[self._feature_order + [self._target]]
+        df_cfs[encoded_features] = self._encoder.transform(df_cfs[self._categoricals])
+        df_cfs = df_cfs[self._feature_order + [self._target]]
         # TODO: Expandable for further functionality
 
-        return cfs
+        return df_cfs
