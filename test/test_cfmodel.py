@@ -35,6 +35,6 @@ def test_dice_get_counterfactuals():
     model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]
 
-    cfs = Dice(model_tf, data, hyperparams).get_counterfactuals(factuals=test_factual)
+    cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
 
     assert test_factual.shape[0] == cfs.shape[0]

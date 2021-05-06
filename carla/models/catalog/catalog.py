@@ -41,8 +41,6 @@ class MLModelCatalog(MLModel):
             The directory in which to cache data; see :func:`get_models_home`.
         kws : keys and values, optional
             Additional keyword arguments are passed to passed through to the read model function
-        encode_normalize_data : bool, optional
-            If true, the model pipeline is used to build data.encoded, data.normalized and data.encoded_normalizd
         use_pipeline : bool, optional
             If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
         """
