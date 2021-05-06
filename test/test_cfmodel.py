@@ -67,10 +67,10 @@ def test_face_get_counterfactuals():
     model_tf = MLModelCatalog(data, "ann", feature_input_order)
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
-    test_factual = factuals.iloc[:5]
+    test_factual = factuals.iloc[:2]
 
     # Test for knn mode
-    hyperparams = {"mode": "knn", "fraction": 0.35}
+    hyperparams = {"mode": "knn", "fraction": 0.25}
     face = Face(model_tf, hyperparams)
     df_cfs = face.get_counterfactuals(test_factual)
 
