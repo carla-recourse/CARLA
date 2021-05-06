@@ -5,7 +5,7 @@ from ...api import RecourseMethod
 
 
 class Dice(RecourseMethod):
-    def __init__(self, mlmodel, data, hyperparams):
+    def __init__(self, mlmodel, hyperparams):
         """
         Constructor for Dice model
         Implementation can be seen at https://github.com/interpretml/DiCE
@@ -26,11 +26,14 @@ class Dice(RecourseMethod):
             Hyperparameter which are needed for DICE to generate counterfactuals.
             Structure: {"num": int, "desired_class": int}
         """
+        self._continous = mlmodel.data.continous
+        self._categoricals = mlmodel.data.categoricals
+        self._target = mlmodel.data.target
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
-            dataframe=data.raw,
-            continuous_features=data.continous,
-            outcome_name=data.target,
+            dataframe=mlmodel.data.raw,
+            continuous_features=self._continous,
+            outcome_name=self._target,
         )
 
         self._dice_model = dice_ml.Model(model=mlmodel, backend="sklearn")
@@ -38,6 +41,11 @@ class Dice(RecourseMethod):
         self._dice = dice_ml.Dice(self._dice_data, self._dice_model, method="random")
         self._num = hyperparams["num"]
         self._desired_class = hyperparams["desired_class"]
+
+        # Need scaler and encoder for get_counterfactual output
+        self._scaler = mlmodel.scaler
+        self._encoder = mlmodel.encoder
+        self._feature_order = mlmodel.feature_input_order
 
     @property
     def dice_model(self):
@@ -53,13 +61,11 @@ class Dice(RecourseMethod):
         factuals : pd.DataFrame
             DataFrame containing all samples for which we want to generate counterfactual examples.
             All instances should belong to the same class.
-        num : int
-            Number of counterfactuals we want to generate per factual
-        desired_class : int
-            The target class we want to reach for our factuals
 
         Returns
         -------
+        df_cfs : pd.DataFrame
+            Encoded and normalized counterfactuals
 
         """
 
@@ -75,9 +81,12 @@ class Dice(RecourseMethod):
             querry_instances, total_CFs=self._num, desired_class=self._desired_class
         )
 
-        cf_ex_list = dice_exp.cf_examples_list
-        cf = pd.concat([cf_ex.final_cfs_df for cf_ex in cf_ex_list], ignore_index=True)
-
+        list_cfs = dice_exp.cf_examples_list
+        df_cfs = pd.concat([cf.final_cfs_df for cf in list_cfs], ignore_index=True)
+        df_cfs[self._continous] = self._scaler.transform(df_cfs[self._continous])
+        encoded_features = self._encoder.get_feature_names(self._categoricals)
+        df_cfs[encoded_features] = self._encoder.transform(df_cfs[self._categoricals])
+        df_cfs = df_cfs[self._feature_order + [self._target]]
         # TODO: Expandable for further functionality
 
-        return cf
+        return df_cfs

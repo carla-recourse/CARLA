@@ -38,7 +38,7 @@ def test_cfmodel():
     hyperparams = {"num": 1, "desired_class": 1}
     model_catalog = MLModelCatalog(data_catalog, "ann", use_pipeline=True)
 
-    dice = Dice(model_catalog, data_catalog, hyperparams)
+    dice = Dice(model_catalog, hyperparams)
 
     assert issubclass(Dice, RecourseMethod)
     assert isinstance(dice, RecourseMethod)
