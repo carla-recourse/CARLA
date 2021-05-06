@@ -66,7 +66,12 @@ def load_model(
         full_path = cache_path
 
     if ext == "pt":
-        model = torch.load(full_path).eval()
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model = torch.jit.load(
+            full_path,
+            map_location=device,
+        )
+        model = model.eval()
     elif ext == "h5":
         model = tf.keras.models.load_model(full_path)
     else:
