@@ -4,6 +4,7 @@ import recourse as rs
 from lime.lime_tabular import LimeTabularExplainer
 
 from carla.models.pipelining import encode, scale
+from carla.recourse_methods.processing import encoded_immutables
 
 from ...api import RecourseMethod
 
@@ -68,34 +69,15 @@ class ActionableRecourse(RecourseMethod):
         )
 
         # transform immutable feature names into encoded feature names of self._data.encoded_normalized
-        self._immutables = self.encoded_immutables()
+        self._immutables = encoded_immutables(
+            self._mlmodel.data.immutables, self._mlmodel.feature_input_order
+        )
 
         for feature in self._immutables:
             self._action_set[feature].mutable = False
             self._action_set[feature].actionable = False
 
         self._coeffs, self._intercepts = coeffs, intercepts
-
-    def encoded_immutables(self):
-        """
-        Transforms not encoded immutable feature names into encoded ones
-
-        Returns
-        -------
-        list
-        """
-        immutables = []
-        # TODO: Maybe find a more elegant way to find encoded immutable feature names
-        for feature in self._data.immutables:
-            if feature in self._mlmodel.feature_input_order:
-                immutables.append(feature)
-            else:
-                for cat in self._mlmodel.feature_input_order:
-                    if cat not in immutables:
-                        if feature in cat:
-                            immutables.append(cat)
-                            break
-        return immutables
 
     def get_lime_coefficients(self, factuals):
         """
@@ -223,5 +205,8 @@ class ActionableRecourse(RecourseMethod):
         # Convert output into correct format
         cfs = np.array(cfs).squeeze()
         cfs = pd.DataFrame(cfs, columns=self._mlmodel.feature_input_order)
+        cfs[self._mlmodel.data.target] = np.argmax(
+            self._mlmodel.predict_proba(cfs), axis=1
+        )
 
         return cfs

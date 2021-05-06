@@ -39,6 +39,7 @@ def test_dice_get_counterfactuals():
     cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
 
     assert test_factual.shape[0] == cfs.shape[0]
+    assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
 
 def test_ar_get_counterfactual():
@@ -73,3 +74,4 @@ def test_ar_get_counterfactual():
     cfs = ActionableRecourse(model_tf, hyperparams).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == cfs.shape[0]
+    assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
