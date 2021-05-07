@@ -1,6 +1,7 @@
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
+from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.dice import Dice
 
 
@@ -38,3 +39,50 @@ def test_dice_get_counterfactuals():
     cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
 
     assert test_factual.shape[0] == cfs.shape[0]
+
+
+def test_clue():
+    # Build data and mlmodel
+    data_name = "adult"
+    data_catalog = "adult_catalog.yaml"
+    data = DataCatalog(data_name, data_catalog)
+
+    feature_input_order = [
+        "age",
+        "fnlwgt",
+        "education-num",
+        "capital-gain",
+        "capital-loss",
+        "hours-per-week",
+        "sex_Female",
+        "sex_Male",
+        "workclass_Non-Private",
+        "workclass_Private",
+        "marital-status_Married",
+        "marital-status_Non-Married",
+        "occupation_Managerial-Specialist",
+        "occupation_Other",
+        "relationship_Husband",
+        "relationship_Non-Husband",
+        "race_Non-White",
+        "race_White",
+        "native-country_Non-US",
+        "native-country_US",
+    ]
+
+    model = MLModelCatalog(data, "ann", feature_input_order, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:5]
+
+    hyperparams = {
+        "data_name": "adult",
+        "train_vae": True,
+        "width": 10,
+        "depth": 3,
+        "latent_dim": 12,
+    }
+    clue = Clue(data, model, hyperparams)
+
+    print(clue)
+    print(test_factual)
