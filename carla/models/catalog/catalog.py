@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+import torch
 
 from carla.models.pipelining import encode, order_data, scale
 
@@ -173,12 +175,12 @@ class MLModelCatalog(MLModel):
 
         Parameters
         ----------
-        x : np.Array or pd.DataFrame
+        x : np.Array, pd.DataFrame, or backend specific (tensorflow or pytorch tensor)
             Tabular data of shape N x M (N number of instances, M number of features)
 
         Returns
         -------
-        output : np.ndarray
+        output : np.ndarray, or backend specific (tensorflow or pytorch tensor)
             Ml model prediction for interval [0, 1] with shape N x 1
         """
 
@@ -188,9 +190,30 @@ class MLModelCatalog(MLModel):
         input = self.perform_pipeline(x) if self._use_pipeline else x
 
         if self._backend == "pytorch":
-            return self._model.predict(input)
+            # Pytorch model needs torch.Tensor as input
+            if torch.is_tensor(input):
+                device = "cuda" if input.is_cuda else "cpu"
+                self._model = self._model.to(
+                    device
+                )  # Keep model and input on the same device
+                return self._model(
+                    input
+                )  # If input is a tensor, the prediction will be a tensor too.
+            else:
+                # Convert ndArray input into torch tensor
+                if isinstance(input, pd.DataFrame):
+                    input = input.values
+                input = torch.Tensor(input)
+
+                self._model = self._model.to("cpu")
+                output = self._model(input)
+
+                # Convert output back to ndarray
+                return output.detach().cpu().numpy()
         elif self._backend == "tensorflow":
-            return self._model.predict(input)[:, 1]
+            return self._model.predict(input)[:, 1].reshape(
+                (-1, 1)
+            )  # keep output in shape N x 1
         else:
             raise ValueError(
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
@@ -209,7 +232,7 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        output : float
+        output : np.ndarray, or backend specific (tensorflow or pytorch tensor)
             Ml model prediction with shape N x 2
         """
 
@@ -219,16 +242,13 @@ class MLModelCatalog(MLModel):
         input = self.perform_pipeline(x) if self._use_pipeline else x
 
         if self._backend == "pytorch":
-            class_1 = 1 - self._model.forward(input).detach().numpy().squeeze()
-            class_2 = self._model.forward(input).detach().numpy().squeeze()
+            class_1 = 1 - self.predict(input)
+            class_2 = self.predict(input)
 
-            # For single prob prediction it happens, that class_1 is casted into float after 1 - prediction
-            # Additionally class_1 and class_2 have to be at least shape 1
-            if not isinstance(class_1, np.ndarray):
-                class_1 = np.array(class_1).reshape(1)
-                class_2 = class_2.reshape(1)
-
-            return np.array(list(zip(class_1, class_2)))
+            if torch.is_tensor(class_1):
+                return torch.cat((class_1, class_2), dim=1)
+            else:
+                return np.array(list(zip(class_1, class_2))).reshape((-1, 2))
 
         elif self._backend == "tensorflow":
             return self._model.predict(input)
