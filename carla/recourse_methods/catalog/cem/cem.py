@@ -25,7 +25,7 @@ def generate_data(instance, target_label):
 
 
 def model_prediction(model, inputs):
-    prob = model.predict(inputs)
+    prob = model.model.predict(inputs)
     predicted_class = np.argmax(prob)
     prob_str = np.array2string(prob).replace("\n", "")
     return prob, predicted_class, prob_str
@@ -54,7 +54,8 @@ class CEM(RecourseMethod):
     def __init__(
         self,
         sess,
-        model: MLModelCatalog,
+        catalog_model: MLModelCatalog,
+        model,
         mode,
         AE,
         batch_size,
@@ -65,14 +66,16 @@ class CEM(RecourseMethod):
         initial_const,
         beta,
         gamma,
+        num_classes=2,
     ):
 
         # TODO refactor names from img to more general
-        dimension, nun_classes = model.dim_input, model.num_of_classes
+        dimension = len(catalog_model.feature_input_order)
         shape = (batch_size, dimension)
 
+        self.catalog_model = catalog_model
         self.model = model
-        self.data = model.data
+        self.data = catalog_model.data
 
         self.sess = sess
         self.INIT_LEARNING_RATE = init_learning_rate
@@ -91,7 +94,7 @@ class CEM(RecourseMethod):
         self.adv_img = tf.Variable(np.zeros(shape), dtype=tf.float32)
         self.adv_img_s = tf.Variable(np.zeros(shape), dtype=tf.float32)
         self.target_lab = tf.Variable(
-            np.zeros((batch_size, nun_classes)), dtype=tf.float32
+            np.zeros((batch_size, num_classes)), dtype=tf.float32
         )
         self.const = tf.Variable(np.zeros(batch_size), dtype=tf.float32)
         self.global_step = tf.Variable(0.0, trainable=False)
@@ -100,7 +103,7 @@ class CEM(RecourseMethod):
         self.assign_orig_img = tf.placeholder(tf.float32, shape)
         self.assign_adv_img = tf.placeholder(tf.float32, shape)
         self.assign_adv_img_s = tf.placeholder(tf.float32, shape)
-        self.assign_target_lab = tf.placeholder(tf.float32, (batch_size, nun_classes))
+        self.assign_target_lab = tf.placeholder(tf.float32, (batch_size, num_classes))
         self.assign_const = tf.placeholder(tf.float32, [batch_size])
 
         """Fast Iterative Soft Thresholding"""
@@ -502,8 +505,8 @@ class CEM(RecourseMethod):
         )
         print(INFO)
 
-        if np.argmax(self.model.predict(instance.reshape(1, -1))) != np.argmax(
-            self.model.predict(counterfactual.reshape(1, -1))
+        if np.argmax(self.model.model.predict(instance.reshape(1, -1))) != np.argmax(
+            self.model.model.predict(counterfactual.reshape(1, -1))
         ):
             counterfactual = counterfactual
         else:
@@ -533,7 +536,7 @@ class CEM(RecourseMethod):
 
         # normalize
         # TODO robust_binarization
-        instances = self.model.pipeline(instances)
+        instances = self.catalog_model.perform_pipeline(instances)
 
         counterfactuals = []
         times_list = []
@@ -558,9 +561,9 @@ class CEM(RecourseMethod):
         instances = instances.iloc[counterfactuals_indices]
 
         # Obtain labels
-        instance_label = np.argmax(self.model.predict(instances.values), axis=1)
+        instance_label = np.argmax(self.catalog_model.predict(instances.values), axis=1)
         counterfactual_label = np.argmax(
-            self.model.predict(counterfactuals_df.values), axis=1
+            self.catalog_model.predict(counterfactuals_df.values), axis=1
         )
 
         # TODO binary cols?
