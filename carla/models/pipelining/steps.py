@@ -49,6 +49,32 @@ def encode(fitted_encoder, features, df):
     return output
 
 
+def decode(fitted_encoder, features, df):
+    """
+    Pipeline function to decode data with fitted sklearn OneHotEncoder.
+
+    Parameters
+    ----------
+    fitted_encoder : sklearn OneHotEncoder
+        Encodes input data.
+    features : list
+        List of categorical feature.
+    df : pd.DataFrame
+        Data we want to normalize
+
+    Returns
+    -------
+    output : pd.DataFrame
+        Whole DataFrame with decoded values
+    """
+    output = df.copy()
+    encoded_features = fitted_encoder.get_feature_names(features)
+    output[encoded_features] = fitted_encoder.inverse_transform(output[features])
+    output = output.drop(features, axis=1)
+
+    return output
+
+
 def order_data(feature_order, df):
     """
     Restores the correct input feature order for the ML model

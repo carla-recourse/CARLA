@@ -1,3 +1,4 @@
+# flake8: noqa
 import timeit
 
 import numpy as np
@@ -5,6 +6,7 @@ import pandas as pd
 import tensorflow as tf
 
 from ....models.catalog.catalog import MLModelCatalog
+from ....models.pipelining.steps import decode
 from ...api import RecourseMethod
 
 
@@ -43,8 +45,9 @@ def success_rate_and_indices(counterfactuals_df):
     # Success rate & drop not successful counterfactuals & process remainder
     success_rate = (counterfactuals_df.dropna().shape[0]) / counterfactuals_df.shape[0]
     counterfactual_indices = np.where(
-        # np.any(np.isnan(counterfactuals_df.values) == True, axis=1) == False
-        not np.any(np.isnan(counterfactuals_df.values), axis=1)
+        np.any(np.isnan(counterfactuals_df.values) == True, axis=1)
+        == False
+        # not np.any(np.isnan(counterfactuals_df.values), axis=1)
     )[0]
 
     return success_rate, counterfactual_indices
@@ -561,12 +564,13 @@ class CEM(RecourseMethod):
         instances = instances.iloc[counterfactuals_indices]
 
         # Obtain labels
-        instance_label = np.argmax(self.catalog_model.predict(instances.values), axis=1)
+        instance_label = np.argmax(self.model.model.predict(instances.values), axis=1)
         counterfactual_label = np.argmax(
-            self.catalog_model.predict(counterfactuals_df.values), axis=1
+            self.model.model.predict(counterfactuals_df.values), axis=1
         )
 
-        # TODO binary cols?
+        # TODO
+        # encoded_features = fitted_encoder.get_feature_names(features)
         binary_cols = self.data.categoricals
         # Round binary columns to integer
         counterfactuals_df[binary_cols] = (
@@ -579,10 +583,14 @@ class CEM(RecourseMethod):
 
         if len(binary_cols) > 0:
             # Convert binary cols of counterfactuals and instances into strings: Required for >>Measurement<< in script
-            counterfactuals_df[binary_cols] = counterfactuals_df[binary_cols].astype(
-                "string"
-            )
-            instances[binary_cols] = instances[binary_cols].astype("string")
+            # counterfactuals_df[binary_cols] = counterfactuals_df[binary_cols].astype(
+            #     "string"
+            # )
+            # instances[binary_cols] = instances[binary_cols].astype("string")
+
+            encoder = self.catalog_model.get_pipeline_element("encoder")
+            counterfactuals_df = decode(encoder, binary_cols, counterfactuals_df)
+            instances = decode(encoder, binary_cols, instances)
 
             # Convert binary cols back to original string encoding
             # TODO scipy solution should be used here?
