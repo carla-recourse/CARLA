@@ -70,7 +70,7 @@ def test_cfmodel():
         data_catalog, "ann", feature_input_order, use_pipeline=True
     )
 
-    dice = Dice(model_catalog, data_catalog, hyperparams)
+    dice = Dice(model_catalog, hyperparams)
 
     assert issubclass(Dice, RecourseMethod)
     assert isinstance(dice, RecourseMethod)
