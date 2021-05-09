@@ -151,4 +151,6 @@ with graph.as_default():
             beta=hyperparams_cem["beta"],
             gamma=hyperparams_cem["gamma"],
         )
-        recourse.get_counterfactuals(factuals=test_factuals)
+        result = recourse.get_counterfactuals(factuals=test_factuals)
+        instance_list, cf_list, times_list, succes_rate = result
+        print("done")

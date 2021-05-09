@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def scale(fitted_scaler, features, df):
     """
     Pipeline function to normalize data with fitted sklearn scaler.
@@ -49,7 +52,7 @@ def encode(fitted_encoder, features, df):
     return output
 
 
-def decode(fitted_encoder, features, df):
+def decode(fitted_encoder, features, df: pd.DataFrame):
     """
     Pipeline function to decode data with fitted sklearn OneHotEncoder.
 
@@ -67,10 +70,15 @@ def decode(fitted_encoder, features, df):
     output : pd.DataFrame
         Whole DataFrame with decoded values
     """
+
+    def intersection(l1, l2):
+        return list(set(l1) & set(l2))
+
     output = df.copy()
     encoded_features = fitted_encoder.get_feature_names(features)
-    output[encoded_features] = fitted_encoder.inverse_transform(output[features])
-    output = output.drop(features, axis=1)
+    encoded_features = intersection(output.columns, encoded_features)
+    output[features] = fitted_encoder.inverse_transform(output[encoded_features])
+    output = output.drop(encoded_features, axis=1)
 
     return output
 

@@ -13,7 +13,7 @@ class MLModel(ABC):
 
         if encoding_method == "OneHot":
             fitted_encoder = preprocessing.OneHotEncoder(
-                handle_unknown="ignore", sparse=False
+                drop="if_binary", handle_unknown="error", sparse=False
             ).fit(data.raw[data.categoricals])
             self.encoder = fitted_encoder
 

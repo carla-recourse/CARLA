@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
-from sklearn import preprocessing
+import torch
 
-from ...data.api import data as data_api
+from carla.models.pipelining import encode, order_data, scale
+
 from ..api import MLModel
 from .load_model import load_model
 
@@ -10,13 +11,13 @@ from .load_model import load_model
 class MLModelCatalog(MLModel):
     def __init__(
         self,
-        data: data_api,
+        data,
         model_type,
         feature_input_order,
-        encoding,
         backend="tensorflow",
         cache=True,
         models_home=None,
+        use_pipeline=False,
         **kws
     ):
         """
@@ -27,12 +28,12 @@ class MLModelCatalog(MLModel):
 
         Parameters
         ----------
+        data : data.api.Data Class
+            Correct dataset for ML model
         model_type : str
             Architecture [ann]
         feature_input_order : list
             List containing all features in correct order for ML prediction
-        encoding : list
-            List containing encoded features in the form of [feature-name]_[value]
         backend : str
             Specifies the used framework [tensorflow, pytorch]
         cache : boolean, optional
@@ -42,11 +43,11 @@ class MLModelCatalog(MLModel):
             The directory in which to cache data; see :func:`get_models_home`.
         kws : keys and values, optional
             Additional keyword arguments are passed to passed through to the read model function
-        data : data.api.Data Class
-            Correct dataset for ML model
+        use_pipeline : bool, optional
+            If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
         """
+        super().__init__(data)
         self._backend = backend
-        self._data = data
 
         if self._backend == "pytorch":
             ext = "pt"
@@ -57,16 +58,51 @@ class MLModelCatalog(MLModel):
 
         self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
 
+        self._continuous = data.continous
+        self._categoricals = data.categoricals
+
         self._feature_input_order = feature_input_order
 
         # Preparing pipeline components
-        self._continuous = data.continous
-        self._categoricals = data.categoricals
-        self._scaler = preprocessing.MinMaxScaler().fit(data.raw[self._continuous])
+        self._use_pipeline = use_pipeline
+        self._pipeline = self.__init_pipeline()
 
-        self._encodings = encoding
+    def __init_pipeline(self):
+        return [
+            ("scaler", lambda x: scale(self.scaler, self._continuous, x)),
+            ("encoder", lambda x: encode(self.encoder, self._categoricals, x)),
+            ("order", lambda x: order_data(self._feature_input_order, x)),
+        ]
 
-    def pipeline(self, df):
+    def get_pipeline_element(self, key):
+        """
+        Returns a specific element of the pipeline
+
+        Parameters
+        ----------
+        key : str
+            Element of the pipeline we want to return
+
+        Returns
+        -------
+        Pipeline element
+        """
+        key_idx = list(zip(*self._pipeline))[0].index(key)  # find key in pipeline
+        return self._pipeline[key_idx][1]
+
+    @property
+    def pipeline(self):
+        """
+        Returns transformations steps for input before predictions.
+
+        Returns
+        -------
+        pipeline : list
+            List of (name, transform) tuples that are chained in the order in which they are preformed.
+        """
+        return self._pipeline
+
+    def perform_pipeline(self, df):
         """
         Transforms input for prediction into correct form.
         Only possible for DataFrames without preprocessing steps.
@@ -86,44 +122,10 @@ class MLModelCatalog(MLModel):
         """
         output = df.copy()
 
-        # Normalization
-        output[self._continuous] = self._scaler.transform(output[self._continuous])
-
-        # Encoding
-        output[self._encodings] = 0
-        for encoding in self._encodings:
-            for cat in self._categoricals:
-                if cat in encoding:
-                    value = encoding.split(cat + "_")[-1]
-                    output.loc[output[cat] == value, encoding] = 1
-                    break
-
-        # Get correct order
-        output = output[self._feature_input_order]
+        for trans_name, trans_function in self._pipeline:
+            output = trans_function(output)
 
         return output
-
-    def need_pipeline(self, x):
-        """
-        Checks if ML model input needs pipelining.
-        Only DataFrames can be used to pipeline input.
-
-        Parameters
-        ----------
-        x : pd.DataFrame or np.Array
-
-        Returns
-        -------
-        bool : Boolean
-            True if no pipelining process is already taken
-        """
-        if not isinstance(x, pd.DataFrame):
-            return False
-
-        if x.select_dtypes(exclude=[np.number]).empty:
-            return False
-
-        return True
 
     @property
     def feature_input_order(self):
@@ -173,24 +175,45 @@ class MLModelCatalog(MLModel):
 
         Parameters
         ----------
-        x : np.Array or pd.DataFrame
+        x : np.Array, pd.DataFrame, or backend specific (tensorflow or pytorch tensor)
             Tabular data of shape N x M (N number of instances, M number of features)
 
         Returns
         -------
-        output : np.ndarray
+        output : np.ndarray, or backend specific (tensorflow or pytorch tensor)
             Ml model prediction for interval [0, 1] with shape N x 1
         """
 
         if len(x.shape) != 2:
             raise ValueError("Input shape has to be two-dimensional")
 
-        input = self.pipeline(x) if self.need_pipeline(x) else x
+        input = self.perform_pipeline(x) if self._use_pipeline else x
 
         if self._backend == "pytorch":
-            return self._model.predict(input)
+            # Pytorch model needs torch.Tensor as input
+            if torch.is_tensor(input):
+                device = "cuda" if input.is_cuda else "cpu"
+                self._model = self._model.to(
+                    device
+                )  # Keep model and input on the same device
+                return self._model(
+                    input
+                )  # If input is a tensor, the prediction will be a tensor too.
+            else:
+                # Convert ndArray input into torch tensor
+                if isinstance(input, pd.DataFrame):
+                    input = input.values
+                input = torch.Tensor(input)
+
+                self._model = self._model.to("cpu")
+                output = self._model(input)
+
+                # Convert output back to ndarray
+                return output.detach().cpu().numpy()
         elif self._backend == "tensorflow":
-            return self._model.predict(input)[:, 1]
+            return self._model.predict(input)[:, 1].reshape(
+                (-1, 1)
+            )  # keep output in shape N x 1
         else:
             raise ValueError(
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
@@ -209,26 +232,23 @@ class MLModelCatalog(MLModel):
 
         Returns
         -------
-        output : float
+        output : np.ndarray, or backend specific (tensorflow or pytorch tensor)
             Ml model prediction with shape N x 2
         """
 
         if len(x.shape) != 2:
             raise ValueError("Input shape has to be two-dimensional")
 
-        input = self.pipeline(x) if self.need_pipeline(x) else x
+        input = self.perform_pipeline(x) if self._use_pipeline else x
 
         if self._backend == "pytorch":
-            class_1 = 1 - self._model.forward(input).detach().numpy().squeeze()
-            class_2 = self._model.forward(input).detach().numpy().squeeze()
+            class_1 = 1 - self.predict(input)
+            class_2 = self.predict(input)
 
-            # For single prob prediction it happens, that class_1 is casted into float after 1 - prediction
-            # Additionally class_1 and class_2 have to be at least shape 1
-            if not isinstance(class_1, np.ndarray):
-                class_1 = np.array(class_1).reshape(1)
-                class_2 = class_2.reshape(1)
-
-            return np.array(list(zip(class_1, class_2)))
+            if torch.is_tensor(class_1):
+                return torch.cat((class_1, class_2), dim=1)
+            else:
+                return np.array(list(zip(class_1, class_2))).reshape((-1, 2))
 
         elif self._backend == "tensorflow":
             return self._model.predict(input)
@@ -238,5 +258,28 @@ class MLModelCatalog(MLModel):
             )
 
     @property
-    def data(self):
-        return self._data
+    def use_pipeline(self):
+        """
+        Returns if the ML model uses the pipeline for predictions
+
+        Returns
+        -------
+        bool
+        """
+        return self._use_pipeline
+
+    @use_pipeline.setter
+    def use_pipeline(self, use_pipe):
+        """
+        Sets if the ML model should use the pipeline before prediction.
+
+        Parameters
+        ----------
+        use_pipe : bool
+            If true, the model uses a transformation pipeline before prediction.
+
+        Returns
+        -------
+
+        """
+        self._use_pipeline = use_pipe

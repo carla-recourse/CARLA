@@ -469,18 +469,6 @@ class CEM(RecourseMethod):
         return overall_best_attack.reshape((1,) + overall_best_attack.shape)
 
     def counterfactual_search(self, instance):
-        # # load the generation model: AE
-        # if data_name == 'adult':
-        #     dataset_filename = dataset_filename.split('.')[0]
-        #     AE_model = util.load_AE(dataset_filename)
-        #
-        # elif data_name == 'compas':
-        #     dataset_filename = dataset_filename.split('.')[0]
-        #     AE_model = util.load_AE(dataset_filename)
-        #
-        # elif data_name == 'give-me':
-        #     dataset_filename = dataset_filename.split('.')[0]
-        #     AE_model = util.load_AE(dataset_filename)
 
         orig_prob, orig_class, orig_prob_str = model_prediction(
             self.model, np.expand_dims(instance, axis=0)
@@ -537,8 +525,7 @@ class CEM(RecourseMethod):
         target_name = self.data.target
         instances = factuals.drop(columns=[target_name])
 
-        # normalize
-        # TODO robust_binarization
+        # normalize and one-hot-encoding
         instances = self.catalog_model.perform_pipeline(instances)
 
         counterfactuals = []
@@ -570,36 +557,21 @@ class CEM(RecourseMethod):
         )
 
         # TODO
-        # encoded_features = fitted_encoder.get_feature_names(features)
-        binary_cols = self.data.categoricals
-        # Round binary columns to integer
-        counterfactuals_df[binary_cols] = (
-            counterfactuals_df[binary_cols].round(0).astype(int)
-        )
+        categorical_cols = self.data.categoricals
+
+        if len(categorical_cols) > 0:
+            # Convert binary cols of counterfactuals and instances into strings: Required for >>Measurement<< in script
+            # Convert binary cols back to original string encoding
+            fitted_encoder = self.catalog_model.encoder
+            counterfactuals_df = decode(
+                fitted_encoder, categorical_cols, counterfactuals_df
+            )
+            instances = decode(fitted_encoder, categorical_cols, instances)
 
         # Order counterfactuals and instances in original data order
-        counterfactuals_df = counterfactuals_df[self.data.columns]
-        instances = instances[self.data.columns]
-
-        if len(binary_cols) > 0:
-            # Convert binary cols of counterfactuals and instances into strings: Required for >>Measurement<< in script
-            # counterfactuals_df[binary_cols] = counterfactuals_df[binary_cols].astype(
-            #     "string"
-            # )
-            # instances[binary_cols] = instances[binary_cols].astype("string")
-
-            encoder = self.catalog_model.get_pipeline_element("encoder")
-            counterfactuals_df = decode(encoder, binary_cols, counterfactuals_df)
-            instances = decode(encoder, binary_cols, instances)
-
-            # Convert binary cols back to original string encoding
-            # TODO scipy solution should be used here?
-            # counterfactuals_df = preprocessing.map_binary_backto_string(
-            #     self.data, counterfactuals_df, binary_cols
-            # )
-            # instances = preprocessing.map_binary_backto_string(
-            #     self.data, instances, binary_cols
-            # )
+        # TODO is this required?
+        # counterfactuals_df = counterfactuals_df[self.catalog_model.feature_input_order]
+        # instances = instances[self.catalog_model.feature_input_order]
 
         # Add labels
         counterfactuals_df[target_name] = counterfactual_label
