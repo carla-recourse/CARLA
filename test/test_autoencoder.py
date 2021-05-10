@@ -29,8 +29,9 @@ def test_autoencoder():
     ]
 
     model = MLModelCatalog(data, "ann", feature_input_order)
+    test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
 
-    ae = Autoencoder(len(model.feature_input_order), 20, 10, 5, data_name)
+    ae = Autoencoder([len(model.feature_input_order), 20, 10, 5], data_name)
     fitted_ae = train_autoencoder(
         ae,
         data,
@@ -40,9 +41,39 @@ def test_autoencoder():
         epochs=5,
         save=False,
     )
-
-    test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
     test_output = fitted_ae(test_input)
-    expected_shape = (1, 13)
 
+    expected_shape = (1, 13)
+    assert test_output.shape == expected_shape
+
+    # test with different lengths
+    ae = Autoencoder([len(model.feature_input_order), 5], data_name)
+    fitted_ae = train_autoencoder(
+        ae,
+        data,
+        model.scaler,
+        model.encoder,
+        model.feature_input_order,
+        epochs=5,
+        save=False,
+    )
+    test_output = fitted_ae(test_input)
+
+    expected_shape = (1, 13)
+    assert test_output.shape == expected_shape
+
+    # test with different lengths
+    ae = Autoencoder([len(model.feature_input_order), 20, 15, 10, 8, 5], data_name)
+    fitted_ae = train_autoencoder(
+        ae,
+        data,
+        model.scaler,
+        model.encoder,
+        model.feature_input_order,
+        epochs=5,
+        save=False,
+    )
+    test_output = fitted_ae(test_input)
+
+    expected_shape = (1, 13)
     assert test_output.shape == expected_shape

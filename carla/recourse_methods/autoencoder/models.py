@@ -5,22 +5,43 @@ from keras.layers import Dense, Input
 from keras.models import Model, Sequential
 
 
+def layers_valid(layers):
+    """
+    Checks if the layers parameter has at least minimal requirements
+
+    Returns
+    -------
+    bool
+    """
+    if len(layers) < 2:
+        return False
+
+    for layer in layers:
+        if layer <= 0:
+            return False
+
+    return True
+
+
 class Autoencoder:
-    def __init__(
-        self, dim_input, dim_hidden_layer1, dim_hidden_layer2, dim_latent, data_name
-    ):
+    def __init__(self, layers, data_name):
         """
         Defines the structure of the autoencoder
-        :param dim_input: int > 0; number of neurons for this layer (for Adult: 104)
-        :param dim_hidden_layer_1: int > 0, number of neurons for this layer (for Adult: 30)
-        :param dim_hidden_layer_2: int > 0, number of neurons for this layer (for Adult: 15)
-        :param dim_latent: int >0; number of dimensions for the latent code
-        """
 
-        self.dim_input = dim_input
-        self.dim_latent = dim_latent
-        self.dim_hidden_layer1 = dim_hidden_layer1
-        self.dim_hidden_layer2 = dim_hidden_layer2
+        Parameters
+        ----------
+        layers : list(int > 0)
+            Depending on the position and number elements, it determines the number and width of layers in the form of
+            [input_layer, hidden_layer_1, ...., hidden_layer_n, latent_dimension]
+        data_name : str
+            Name of the dataset. Is used for saving model.
+        """
+        if layers_valid(layers):
+            self._layers = layers
+        else:
+            raise ValueError(
+                "Number of layers have to be at least 2 (input and latent space), and number of neurons bigger than 0"
+            )
         self.data_name = data_name
 
     def train(self, xtrain, xtest, epochs, batch_size):
@@ -33,23 +54,22 @@ class Autoencoder:
 
             return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
 
-        x = Input(shape=(self.dim_input,))
+        x = Input(shape=(self._layers[0],))
 
         # Encoder
-        encoded = Dense(self.dim_hidden_layer1, activation="relu")(x)
-        encoded = Dense(self.dim_hidden_layer2, activation="relu")(encoded)
-        z = Dense(self.dim_latent, activation="relu")(encoded)
+        encoded = Dense(self._layers[1], activation="relu")(x)
+        for i in range(2, len(self._layers) - 1):
+            encoded = Dense(self._layers[i], activation="relu")(encoded)
+        z = Dense(self._layers[-1], activation="relu")(encoded)
 
         # Decoder
-        decoder = Sequential(
-            [
-                Dense(
-                    self.dim_hidden_layer1, input_dim=self.dim_latent, activation="relu"
-                ),
-                Dense(self.dim_hidden_layer2, activation="relu"),
-                Dense(self.dim_input, activation="sigmoid"),
-            ]
-        )
+        list_decoder = [
+            Dense(self._layers[1], input_dim=self._layers[-1], activation="relu")
+        ]
+        for i in range(2, len(self._layers) - 1):
+            list_decoder.append(Dense(self._layers[i], activation="relu"))
+        list_decoder.append(Dense(self._layers[0], activation="sigmoid"))
+        decoder = Sequential(list_decoder)
 
         # Compile Autoencoder, Encoder & Decoder
         # encoder = Model(x, z)
