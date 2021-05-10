@@ -19,7 +19,7 @@ class DataCatalog(Data):
         catalog_file : String
             yaml file
         """
-        self.name: str = data_name
+        self.name = data_name
         self.catalog: Dict[str, Any] = self._load_catalog(catalog_file, data_name)
 
         self._raw: pd.DataFrame = load_dataset(data_name)

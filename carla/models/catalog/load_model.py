@@ -1,5 +1,5 @@
 import os
-from typing import Any, Optional
+from typing import Optional
 from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
@@ -14,7 +14,7 @@ def load_model(
     cache: bool = True,
     models_home: Optional[str] = None,
     **kws,
-) -> Any:
+):
     """Load an pretrained model from the online repository (requires internet).
 
     This function provides quick access to a number of models trained on example

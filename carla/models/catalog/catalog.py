@@ -51,7 +51,7 @@ class MLModelCatalog(MLModel):
             If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
         """
         super().__init__(data)
-        self._backend: str = backend
+        self._backend = backend
 
         if self._backend == "pytorch":
             ext = "pt"
@@ -60,18 +60,16 @@ class MLModelCatalog(MLModel):
         else:
             raise Exception("Model type not in catalog")
 
-        self._model: Any = load_model(
-            model_type, data.name, ext, cache, models_home, **kws
-        )
+        self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
 
         self._continuous: List[str] = data.continous
         self._categoricals: List[str] = data.categoricals
 
-        self._feature_input_order: List[str] = feature_input_order
+        self._feature_input_order = feature_input_order
 
         # Preparing pipeline components
-        self._use_pipeline: bool = use_pipeline
-        self._pipeline: List[Tuple[str, Callable]] = self.__init_pipeline()
+        self._use_pipeline = use_pipeline
+        self._pipeline = self.__init_pipeline()
 
     def __init_pipeline(self) -> List[Tuple[str, Callable]]:
         return [
