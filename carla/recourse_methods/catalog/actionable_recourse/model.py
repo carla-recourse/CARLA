@@ -187,8 +187,8 @@ class ActionableRecourse(RecourseMethod):
         # Convert output into correct format
         cfs = np.array(cfs).squeeze()
         df_cfs = pd.DataFrame(cfs, columns=self._mlmodel.feature_input_order)
-        cfs[self._mlmodel.data.target] = np.argmax(
+        df_cfs[self._mlmodel.data.target] = np.argmax(
             self._mlmodel.predict_proba(cfs), axis=1
         )
 
-        return cfs
+        return df_cfs
