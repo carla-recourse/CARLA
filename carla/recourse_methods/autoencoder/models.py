@@ -24,7 +24,7 @@ def layers_valid(layers):
 
 
 class Autoencoder:
-    def __init__(self, layers, data_name, loss=None):
+    def __init__(self, layers, data_name, optimizer="rmsprop", loss=None):
         """
         Defines the structure of the autoencoder
 
@@ -33,10 +33,12 @@ class Autoencoder:
         layers : list(int > 0)
             Depending on the position and number elements, it determines the number and width of layers in the form of
             [input_layer, hidden_layer_1, ...., hidden_layer_n, latent_dimension]
-        loss: Callable, optional
-            Loss function for autoencoder model. Default is Binary Cross Entropy.
         data_name : str
             Name of the dataset. Is used for saving model.
+        loss: Callable, optional
+            Loss function for autoencoder model. Default is Binary Cross Entropy.
+        optimizer: str, optional
+            Optimizer which is used to train autoencoder model. See keras optimizer.
         """
         if layers_valid(layers):
             self._layers = layers
@@ -53,6 +55,7 @@ class Autoencoder:
             self._loss = loss
 
         self.data_name = data_name
+        self._optimizer = optimizer
 
     def train(self, xtrain, xtest, epochs, batch_size):
 
@@ -77,7 +80,7 @@ class Autoencoder:
         # encoder = Model(x, z)
         xhat = decoder(z)
         autoencoder = Model(x, xhat)
-        autoencoder.compile(optimizer="rmsprop", loss=self._loss)
+        autoencoder.compile(optimizer=self._optimizer, loss=self._loss)
 
         # Train model
         autoencoder.fit(
