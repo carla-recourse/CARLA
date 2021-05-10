@@ -22,10 +22,6 @@ def graph_search(
     frac=0.4,
     radius=0.25,
 ):
-    # This is our own implementation of these methods since the authors did not provide implementations online,
-    # neither did they respond to our emails
-    # We implemented the eps radius graph and the knn graph methods. The density graph will be added in the future.
-
     # This one implements the FACE method from
     # Rafael Poyiadzi et al (2020), "FACE: Feasible and Actionable Counterfactual Explanations",
     # Conference on AI, Ethics & Accountability (AIES, 2020)
@@ -43,10 +39,6 @@ def graph_search(
     :param radius: float > 0; parameter for epsilon density graph
     :return: candidate_counterfactual_star: np array (min. cost counterfactual explanation)
     """
-
-    # Divide data in 'mutable' and 'non-mutable'
-    # In particular, divide data in 'mutable & binary' and 'mutable and continuous'
-
     # Choose a subset of data for computational efficiency
     number_samples = np.int(np.rint(frac * data.values.shape[0]))
     chosen_indeces = np.random.choice(
