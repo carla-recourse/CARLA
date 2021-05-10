@@ -131,22 +131,22 @@ class ActionableRecourse(RecourseMethod):
 
     def get_counterfactuals(self, factuals):
         cfs = []
+        coeffs = self._coeffs
+        intercepts = self._intercepts
 
         factuals_enc_norm = self.encode_normalize_order_factuals(factuals)
 
         # Check if we need lime to build coefficients
-        if (self._coeffs is None) and (self._intercepts is None):
+        if (coeffs is None) and (intercepts is None):
             print("Start generating LIME coefficients")
-            self._coeffs, self._intercepts = self.get_lime_coefficients(
-                factuals_enc_norm
-            )
+            coeffs, intercepts = self.get_lime_coefficients(factuals_enc_norm)
             print("Finished generating LIME coefficients")
 
         # generate counterfactuals
         for index, row in factuals_enc_norm.iterrows():
             factual_enc_norm = row.values
-            coeff = self._coeffs[index]
-            intercept = self._intercepts[index]
+            coeff = coeffs[index]
+            intercept = intercepts[index]
 
             # Align action set to coefficients
             self._action_set.set_alignment(coefficients=coeff)
