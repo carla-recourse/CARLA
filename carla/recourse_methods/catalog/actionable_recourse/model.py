@@ -39,8 +39,8 @@ class ActionableRecourse(RecourseMethod):
             Coefficients
         intercepts
         """
+        super().__init__(mlmodel)
         self._data = mlmodel.data
-        self._mlmodel = mlmodel
 
         # normalize and encode data
         self._norm_enc_data = scale(
@@ -132,26 +132,7 @@ class ActionableRecourse(RecourseMethod):
     def get_counterfactuals(self, factuals):
         cfs = []
 
-        # Prepare factuals
-        querry_instances = factuals.copy()
-
-        # check if querry_instances are not empty
-        if querry_instances.shape[0] == 0:
-            raise ValueError("Factuals should not be empty")
-
-        # preprocessing for lime
-        scaler = self._mlmodel.scaler
-        encoder = self._mlmodel.encoder
-        querry_instances[self._data.continous] = scaler.transform(
-            querry_instances[self._data.continous]
-        )  # normalize
-        encoded_features = encoder.get_feature_names(self._data.categoricals)
-        querry_instances[encoded_features] = encoder.transform(
-            querry_instances[self._data.categoricals]
-        )  # encode
-        factuals_enc_norm = querry_instances[
-            self._mlmodel.feature_input_order
-        ]  # get feature order
+        factuals_enc_norm = self.encode_normalize_order_factuals(factuals)
 
         # Check if we need lime to build coefficients
         if (self._coeffs is None) and (self._intercepts is None):
