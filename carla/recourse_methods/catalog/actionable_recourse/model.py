@@ -115,8 +115,8 @@ class ActionableRecourse(RecourseMethod):
             # while self._data.categoricals do not contain those additional values.
         )
 
-        for i in range(factuals.shape[0]):
-            factual = factuals.iloc[i].T.values
+        for index, row in factuals.iterrows():
+            factual = row.values
             explanations = lime_exp.explain_instance(
                 factual,
                 self._mlmodel.predict_proba,
@@ -125,7 +125,7 @@ class ActionableRecourse(RecourseMethod):
             intercepts.append(explanations.intercept[1])
 
             for tpl in explanations.local_exp[1]:
-                coeffs[i][tpl[0]] = tpl[1]
+                coeffs[index][tpl[0]] = tpl[1]
 
         return coeffs, intercepts
 
@@ -162,10 +162,10 @@ class ActionableRecourse(RecourseMethod):
             print("Finished generating LIME coefficients")
 
         # generate counterfactuals
-        for i in range(factuals_enc_norm.shape[0]):
-            factual_enc_norm = factuals_enc_norm.iloc[i].T.values
-            coeff = self._coeffs[i]
-            intercept = self._intercepts[i]
+        for index, row in factuals_enc_norm.iterrows():
+            factual_enc_norm = row.values
+            coeff = self._coeffs[index]
+            intercept = self._intercepts[index]
 
             # Align action set to coefficients
             self._action_set.set_alignment(coefficients=coeff)
