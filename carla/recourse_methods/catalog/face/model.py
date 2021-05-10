@@ -45,11 +45,6 @@ class Face(RecourseMethod):
         self._immutables = encoded_immutables(
             self._mlmodel.data.immutables, self._mlmodel.feature_input_order
         )
-        self._mutable = [
-            x
-            for x in self._mlmodel.data.raw.columns
-            if (x not in self._immutables) and x != self._mlmodel.data.target
-        ]
 
     @property
     def fraction(self):
@@ -97,10 +92,7 @@ class Face(RecourseMethod):
             cf = graph_search(
                 df_enc_norm_data,
                 i,
-                self._mutable,
                 self._immutables,
-                self._mlmodel.data.continous,
-                self._mlmodel.data.categoricals,
                 self._mlmodel,
                 mode=self._mode,
                 frac=self._fraction,
