@@ -162,7 +162,7 @@ class ActionableRecourse(RecourseMethod):
 
             # Get actions to flip predictions
             actions = fs_pop.actions
-            last_action = len(actions) - 1
+            last_action_idx = len(actions) - 1
 
             for idx, action in enumerate(actions):
                 candidate_cf = (factual_enc_norm + action).reshape(
@@ -178,7 +178,7 @@ class ActionableRecourse(RecourseMethod):
                     break
 
                 # If no counterfactual is found apply array with nan values
-                if idx == last_action:
+                if idx == last_action_idx:
                     empty = np.empty(candidate_cf.shape)
                     empty[:] = np.nan
                     cfs.append(empty)
