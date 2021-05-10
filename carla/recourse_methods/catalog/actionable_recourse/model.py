@@ -162,9 +162,14 @@ class ActionableRecourse(RecourseMethod):
 
             # Get actions to flip predictions
             actions = fs_pop.actions
-            last_action_idx = len(actions) - 1
 
-            for idx, action in enumerate(actions):
+            # Default counterfactual value if no action flips the prediction
+            target_shape = (1, factual_enc_norm.shape[0])
+            empty = np.empty(target_shape)
+            empty[:] = np.nan
+            counterfactual = empty
+
+            for action in actions:
                 candidate_cf = (factual_enc_norm + action).reshape(
                     (1, -1)
                 )  # Reshape to keep two-dim. input
@@ -174,14 +179,10 @@ class ActionableRecourse(RecourseMethod):
                     self._mlmodel.predict_proba(factual_enc_norm.reshape((1, -1)))
                 )
                 if pred_cf != pred_f:
-                    cfs.append(candidate_cf)
+                    counterfactual = candidate_cf
                     break
 
-                # If no counterfactual is found apply array with nan values
-                if idx == last_action_idx:
-                    empty = np.empty(candidate_cf.shape)
-                    empty[:] = np.nan
-                    cfs.append(empty)
+            cfs.append(counterfactual)
 
         # Convert output into correct format
         cfs = np.array(cfs).squeeze()
