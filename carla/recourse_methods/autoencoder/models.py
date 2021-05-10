@@ -24,7 +24,7 @@ def layers_valid(layers):
 
 
 class Autoencoder:
-    def __init__(self, layers, data_name):
+    def __init__(self, layers, data_name, loss=None):
         """
         Defines the structure of the autoencoder
 
@@ -33,6 +33,8 @@ class Autoencoder:
         layers : list(int > 0)
             Depending on the position and number elements, it determines the number and width of layers in the form of
             [input_layer, hidden_layer_1, ...., hidden_layer_n, latent_dimension]
+        loss: Callable, optional
+            Loss function for autoencoder model. Default is Binary Cross Entropy.
         data_name : str
             Name of the dataset. Is used for saving model.
         """
@@ -42,17 +44,17 @@ class Autoencoder:
             raise ValueError(
                 "Number of layers have to be at least 2 (input and latent space), and number of neurons bigger than 0"
             )
+
+        if loss is None:
+            self._loss = lambda y_true, y_pred: K.sum(
+                K.binary_crossentropy(y_true, y_pred), axis=-1
+            )
+        else:
+            self._loss = loss
+
         self.data_name = data_name
 
     def train(self, xtrain, xtest, epochs, batch_size):
-        def loss(y_true, y_pred):
-            """ Negative log likelihood (Bernoulli). """
-
-            # Works if data is normalized between 0 and 1!
-            # Keras.losses.binary_crossentropy gives the mean
-            # Over the last axis. we require the sum
-
-            return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
 
         x = Input(shape=(self._layers[0],))
 
@@ -75,7 +77,7 @@ class Autoencoder:
         # encoder = Model(x, z)
         xhat = decoder(z)
         autoencoder = Model(x, xhat)
-        autoencoder.compile(optimizer="rmsprop", loss=loss)
+        autoencoder.compile(optimizer="rmsprop", loss=self._loss)
 
         # Train model
         autoencoder.fit(
