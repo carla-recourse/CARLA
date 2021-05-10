@@ -15,5 +15,4 @@ def encoded_immutables(imtbls, input_order):
                 if cat not in immutables:
                     if feature in cat:
                         immutables.append(cat)
-                        break
     return immutables
