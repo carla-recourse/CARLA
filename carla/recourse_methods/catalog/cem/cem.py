@@ -27,7 +27,7 @@ def generate_data(instance, target_label):
 
 
 def model_prediction(model, inputs):
-    prob = model.model.predict(inputs)
+    prob = model.predict(inputs)
     predicted_class = np.argmax(prob)
     prob_str = np.array2string(prob).replace("\n", "")
     return prob, predicted_class, prob_str
@@ -58,7 +58,6 @@ class CEM(RecourseMethod):
         self,
         sess,
         catalog_model: MLModelCatalog,
-        model,
         mode,
         AE,
         batch_size,
@@ -77,7 +76,6 @@ class CEM(RecourseMethod):
         shape = (batch_size, dimension)
 
         self.catalog_model = catalog_model
-        self.model = model
         self.data = catalog_model.data
 
         self.sess = sess
@@ -211,11 +209,11 @@ class CEM(RecourseMethod):
 
         # TODO check model.predict gets correct input
         if self.mode == "PP":
-            self.ImgToEnforceLabel_Score = model.predict(self.delta_img)
-            self.ImgToEnforceLabel_Score_s = model.predict(self.delta_img_s)
+            self.ImgToEnforceLabel_Score = catalog_model.raw_model(self.delta_img)
+            self.ImgToEnforceLabel_Score_s = catalog_model.raw_model(self.delta_img_s)
         elif self.mode == "PN":
-            self.ImgToEnforceLabel_Score = model.predict(self.adv_img)
-            self.ImgToEnforceLabel_Score_s = model.predict(self.adv_img_s)
+            self.ImgToEnforceLabel_Score = catalog_model.raw_model(self.adv_img)
+            self.ImgToEnforceLabel_Score_s = catalog_model.raw_model(self.adv_img_s)
 
         # distance to the input data
         """ # use this way in combination with pictures and convolutions
@@ -471,7 +469,7 @@ class CEM(RecourseMethod):
     def counterfactual_search(self, instance):
 
         orig_prob, orig_class, orig_prob_str = model_prediction(
-            self.model, np.expand_dims(instance, axis=0)
+            self.catalog_model.raw_model, np.expand_dims(instance, axis=0)
         )
 
         target_label = orig_class
@@ -480,9 +478,11 @@ class CEM(RecourseMethod):
         # start the search
         counterfactual = self.attack(orig_sample, target)
 
-        adv_prob, adv_class, adv_prob_str = model_prediction(self.model, counterfactual)
+        adv_prob, adv_class, adv_prob_str = model_prediction(
+            self.catalog_model.raw_model, counterfactual
+        )
         delta_prob, delta_class, delta_prob_str = model_prediction(
-            self.model, orig_sample - counterfactual
+            self.catalog_model.raw_model, orig_sample - counterfactual
         )
 
         INFO = "[kappa:{}, Orig class:{}, Adv class:{}, Delta class: {}, Orig prob:{}, Adv prob:{}, Delta prob:{}".format(
@@ -496,8 +496,10 @@ class CEM(RecourseMethod):
         )
         print(INFO)
 
-        if np.argmax(self.model.model.predict(instance.reshape(1, -1))) != np.argmax(
-            self.model.model.predict(counterfactual.reshape(1, -1))
+        if np.argmax(
+            self.catalog_model.raw_model.predict(instance.reshape(1, -1))
+        ) != np.argmax(
+            self.catalog_model.raw_model.predict(counterfactual.reshape(1, -1))
         ):
             counterfactual = counterfactual
         else:
@@ -527,6 +529,7 @@ class CEM(RecourseMethod):
 
         # normalize and one-hot-encoding
         instances = self.catalog_model.perform_pipeline(instances)
+        instances = instances[self.catalog_model.feature_input_order]
 
         counterfactuals = []
         times_list = []
@@ -551,14 +554,16 @@ class CEM(RecourseMethod):
         instances = instances.iloc[counterfactuals_indices]
 
         # Obtain labels
-        instance_label = np.argmax(self.model.model.predict(instances.values), axis=1)
+        instance_label = np.argmax(self.catalog_model.predict(instances.values), axis=1)
         counterfactual_label = np.argmax(
-            self.model.model.predict(counterfactuals_df.values), axis=1
+            self.catalog_model.predict(counterfactuals_df.values), axis=1
         )
 
-        # TODO
-        categorical_cols = self.data.categoricals
+        # Order counterfactuals and instances in original data order
+        counterfactuals_df = counterfactuals_df[self.catalog_model.feature_input_order]
+        instances = instances[self.catalog_model.feature_input_order]
 
+        categorical_cols = self.data.categoricals
         if len(categorical_cols) > 0:
             # Convert binary cols of counterfactuals and instances into strings: Required for >>Measurement<< in script
             # Convert binary cols back to original string encoding
@@ -567,11 +572,6 @@ class CEM(RecourseMethod):
                 fitted_encoder, categorical_cols, counterfactuals_df
             )
             instances = decode(fitted_encoder, categorical_cols, instances)
-
-        # Order counterfactuals and instances in original data order
-        # TODO is this required?
-        # counterfactuals_df = counterfactuals_df[self.catalog_model.feature_input_order]
-        # instances = instances[self.catalog_model.feature_input_order]
 
         # Add labels
         counterfactuals_df[target_name] = counterfactual_label

@@ -89,8 +89,8 @@ feature_input_order = [
     "fnlwgt",
     "education-num",
     "capital-gain",
-    "capital-loss",
     "hours-per-week",
+    "capital-loss",
     "workclass_Private",
     "marital-status_Non-Married",
     "occupation_Other",
@@ -132,6 +132,12 @@ with graph.as_default():
         )
         model_ae = load_AE()
 
+        foo = test_factuals.drop(["income"], axis=1)
+        foo = model_ann.perform_pipeline(foo)
+        # result1 = model_ann.predict(foo)
+        result1 = model_ann.raw_model.predict(foo)
+        result2 = ann_tf_13.model.predict(foo)
+
 
 with graph.as_default():
     with ann_sess.as_default():
@@ -139,7 +145,6 @@ with graph.as_default():
         recourse = CEM(
             sess=ann_sess,
             catalog_model=model_ann,
-            model=ann_tf_13,
             mode=hyperparams_cem["mode"],
             AE=model_ae,
             batch_size=1,
@@ -153,4 +158,3 @@ with graph.as_default():
         )
         result = recourse.get_counterfactuals(factuals=test_factuals)
         instance_list, cf_list, times_list, succes_rate = result
-        print("done")
