@@ -6,9 +6,10 @@ from sklearn.model_selection import train_test_split
 
 from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.catalog.clue.library import (  # CLUE,; vae_gradient_search,
+from carla.recourse_methods.catalog.clue.library import (
     VAE_gauss_cat_net,
     training,
+    vae_gradient_search,
 )
 
 
@@ -38,16 +39,24 @@ class Clue(RecourseMethod):
         self._width = hyperparams["width"]
         self._depth = hyperparams["depth"]
         self._latent_dim = hyperparams["latent_dim"]
-        self._input_dimension = len(self._mlmodel.feature_input_order)
         self._data_name = hyperparams["data_name"]
+        self._continous = self._mlmodel.data.continous
+        self._categorical = self._mlmodel.data.categoricals
 
-        # normalize and encode data and instance
+        # get input dimension
+        # indicate dimensions of inputs -- input_dim_vec: (if binary = 2; if continuous = 1)
+        input_dims_continuous = list(np.repeat(1, len(self._mlmodel.data.continous)))
+        input_dims_binary = list(np.repeat(2, len(self._mlmodel.data.categoricals)))
+        self._input_dimension = input_dims_continuous + input_dims_binary
+
+        # normalize and encode data
         self._df_norm_enc_data = scale(mlmodel.scaler, data.continous, data.raw)
         self._df_norm_enc_data = encode(
             mlmodel.encoder, data.categoricals, self._df_norm_enc_data
         )
         self._df_norm_enc_data = self._df_norm_enc_data[mlmodel.feature_input_order]
 
+        # load autoencoder
         self._vae = self.load_vae()
 
     def load_vae(self):
@@ -110,4 +119,17 @@ class Clue(RecourseMethod):
         )
 
     def get_counterfactuals(self, factuals):
-        pass
+        list_cfs = []
+
+        # normalize and encode data and instance
+        df_norm_enc_factual = scale(self._mlmodel.scaler, self._continous, factuals)
+        df_norm_enc_factual = encode(
+            self._mlmodel.encoder, self._categorical, df_norm_enc_factual
+        )
+        df_norm_enc_factual = df_norm_enc_factual[self._mlmodel.feature_input_order]
+
+        for i in range(df_norm_enc_factual.shape[0]):
+            counterfactual = vae_gradient_search(
+                df_norm_enc_factual.values[i, :], self._mlmodel, self._vae
+            )
+            list_cfs.append(counterfactual)

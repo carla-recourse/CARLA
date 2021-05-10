@@ -27,7 +27,8 @@ def train_VAE(
     script_mode=False,
 ):
 
-    models_dir = name + "_models"
+    # models_dir = name + "_models"
+    models_dir = name
     results_dir = name + "_results"
 
     cwd = os.getcwd()
@@ -176,7 +177,7 @@ def train_VAE(
         if vlb_dev[i] > best_vlb:
             best_vlb = vlb_dev[i]
             best_epoch = i
-            net.save(models_dir + "/theta_best.dat")
+            net.save(os.path.join(models_dir, "theta_best.dat"))
 
         if early_stop is not None and (i - best_epoch) > early_stop:
             break

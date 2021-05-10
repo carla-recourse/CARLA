@@ -68,7 +68,7 @@ def vae_gradient_search(
     x_dim = instance.reshape(instance.shape[0], -1).shape[1]
     # Both weights are set to 1?
     distance_weight = lambda_param / x_dim
-    desired_preds = model.prob_predict(instance)
+    desired_preds = model.predict_proba(instance)
 
     CLUE_explainer = CLUE(
         VAE,
@@ -117,7 +117,7 @@ def vae_gradient_search(
     """
     a = counterfactual[:, 0, :]
 
-    cf_preds = model.prob_predict(counterfactual[:, 0, :])
+    cf_preds = model.predict_proba(counterfactual[:, 0, :])
     indeces_counterfactual = np.where(
         np.argmax(cf_preds, axis=1) != np.argmax(desired_preds, axis=1)
     )[0]
@@ -197,12 +197,14 @@ class CLUE(BaseNet):
         self.original_x = torch.Tensor(original_x)
 
         self.prob_BNN = prob_BNN
-        self.cuda = cuda
+        # self.cuda = cuda
+        self.cuda = torch.cuda.is_available()
         if self.cuda:
             self.original_x = self.original_x.cuda()
             # self.z_init = self.z_init.cuda()
             if self.desired_preds is not None:
-                self.desired_preds = self.desired_preds.cuda()
+                # self.desired_preds = self.desired_preds.cuda()
+                self.desired_preds = torch.from_numpy(self.desired_preds).cuda()
         else:
             self.desired_preds = torch.from_numpy(self.desired_preds)
 
@@ -297,10 +299,11 @@ class CLUE(BaseNet):
             else:
                 # probs = self.BNN.predict(to_BNN, grad=True) #original version
                 # probs = self.BNN.predict(to_BNN, grad=False)
-                probs = self.BNN.prob_predict(
-                    to_BNN.detach().numpy()
-                )  # changed to prob_predict (name of our pytorch predict proba method)
-                probs = torch.from_numpy(probs)
+                # probs = self.BNN.predict_proba(
+                #     to_BNN.cpu().detach().numpy()
+                # )
+                probs = self.BNN.predict_proba(to_BNN)
+                # probs = torch.from_numpy(probs)
                 total_uncertainty = -(probs * torch.log(probs + 1e-10)).sum(
                     dim=1, keepdim=False
                 )

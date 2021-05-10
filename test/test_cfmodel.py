@@ -77,12 +77,10 @@ def test_clue():
 
     hyperparams = {
         "data_name": "adult",
-        "train_vae": True,
+        "train_vae": False,
         "width": 10,
         "depth": 3,
         "latent_dim": 12,
     }
-    clue = Clue(data, model, hyperparams)
-
-    print(clue)
-    print(test_factual)
+    cfs = Clue(data, model, hyperparams).get_counterfactuals(test_factual)
+    print(cfs)
