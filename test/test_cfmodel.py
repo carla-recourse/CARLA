@@ -73,18 +73,20 @@ def test_clue():
     model = MLModelCatalog(data, "ann", feature_input_order, backend="pytorch")
     # get factuals
     factuals = predict_negative_instances(model, data)
-    test_factual = factuals.iloc[:100]
+    test_factual = factuals.iloc[:5]
 
     hyperparams = {
         "data_name": "adult",
-        "train_vae": False,
+        "train_vae": True,
         "width": 10,
         "depth": 3,
         "latent_dim": 12,
         "batch_size": 64,
-        "epochs": 10,
+        "epochs": 1,  # Only for test purpose, else 10 epochs
         "lr": 1e-3,
         "early_stop": 10,
     }
-    cfs = Clue(data, model, hyperparams).get_counterfactuals(test_factual)
-    print(cfs)
+    df_cfs = Clue(data, model, hyperparams).get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
