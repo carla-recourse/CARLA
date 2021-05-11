@@ -64,8 +64,7 @@ def success_rate_and_indices(counterfactuals: pd.DataFrame):
     # Success rate & drop not successful counterfactuals & process remainder
     success_rate = (counterfactuals.dropna().shape[0]) / counterfactuals.shape[0]
     counterfactual_indices = np.where(
-        # np.any(np.isnan(counterfactuals.values) == True, axis=1) == False
-        not np.any(np.isnan(counterfactuals.values), axis=1)
+        np.logical_not(np.any(np.isnan(counterfactuals.values), axis=1))
     )[0]
 
     return success_rate, counterfactual_indices
