@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
@@ -32,6 +33,10 @@ class Clue(RecourseMethod):
                 "width": int,   [Structure for VAE]
                 "depth": int,   [Structure for VAE]
                 "latent_dim": int   [Structure for VAE]
+                "batch_size": int,  [Structure for VAE]
+                "epochs": int,  [Structure for VAE]
+                "lr": int,  [Structure for VAE]
+                "early_stop": int,  [Structure for VAE]
                 }
         """
         self._mlmodel = mlmodel
@@ -40,6 +45,10 @@ class Clue(RecourseMethod):
         self._depth = hyperparams["depth"]
         self._latent_dim = hyperparams["latent_dim"]
         self._data_name = hyperparams["data_name"]
+        self._batch_size = hyperparams["batch_size"]
+        self._epochs = hyperparams["epochs"]
+        self._lr = hyperparams["lr"]
+        self._early_stop = hyperparams["early_stop"]
         self._continous = self._mlmodel.data.continous
         self._categorical = self._mlmodel.data.categoricals
 
@@ -88,7 +97,7 @@ class Clue(RecourseMethod):
             self._depth,
             self._latent_dim,
             pred_sig=False,
-            lr=1e-4,
+            lr=self._lr,
             cuda=cuda,
             flatten=flat_vae_bools,
         )
@@ -116,6 +125,10 @@ class Clue(RecourseMethod):
             self._width,
             self._depth,
             self._latent_dim,
+            self._batch_size,
+            self._epochs,
+            self._lr,
+            self._early_stop,
         )
 
     def get_counterfactuals(self, factuals):
@@ -128,8 +141,15 @@ class Clue(RecourseMethod):
         )
         df_norm_enc_factual = df_norm_enc_factual[self._mlmodel.feature_input_order]
 
-        for i in range(df_norm_enc_factual.shape[0]):
-            counterfactual = vae_gradient_search(
-                df_norm_enc_factual.values[i, :], self._mlmodel, self._vae
-            )
+        for index, row in df_norm_enc_factual.iterrows():
+            counterfactual = vae_gradient_search(row.values, self._mlmodel, self._vae)
             list_cfs.append(counterfactual)
+
+        # Convert output into correct format
+        cfs = np.array(list_cfs)
+        df_cfs = pd.DataFrame(cfs, columns=self._mlmodel.feature_input_order)
+        df_cfs[self._mlmodel.data.target] = np.argmax(
+            self._mlmodel.predict_proba(cfs), axis=1
+        )
+
+        return df_cfs
