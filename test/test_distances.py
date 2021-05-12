@@ -80,10 +80,9 @@ def test_d4():
 
 
 def test_distances():
-
     test_input_1 = np.array([[1, 0, 1, 0, 0, 1, 1, 0], [1, 0, 1, 0, 0, 1, 1, 0]])
     test_input_2 = np.array([[1, 0, 0, 0, 0, 1, 1, 0], [1, 0, 1, 0, 0, 1, 1, 0]])
 
-    expected = [[1.0, 0.0], [1.0, 0.0], [1.0, 0.0], [1.0, 0.0]]
+    expected = [[1.0, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 0.0]]
     actual = distances.get_distances(test_input_1, test_input_2)
     assert actual == expected
