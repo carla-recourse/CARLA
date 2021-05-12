@@ -1,4 +1,4 @@
-def encoded_immutables(imtbls, input_order):
+def encode_feature_names(imtbls, input_order):
     """
     Transforms not encoded immutable feature names into encoded ones
     Returns

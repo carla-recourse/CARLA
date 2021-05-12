@@ -4,7 +4,7 @@ import recourse as rs
 from lime.lime_tabular import LimeTabularExplainer
 
 from carla.models.pipelining import encode, scale
-from carla.recourse_methods.processing import encoded_immutables
+from carla.recourse_methods.processing import encode_feature_names
 
 from ...api import RecourseMethod
 
@@ -69,7 +69,7 @@ class ActionableRecourse(RecourseMethod):
         )
 
         # transform immutable feature names into encoded feature names of self._data.encoded_normalized
-        self._immutables = encoded_immutables(
+        self._immutables = encode_feature_names(
             self._mlmodel.data.immutables, self._mlmodel.feature_input_order
         )
 
