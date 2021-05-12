@@ -36,7 +36,7 @@ def get_distances(factual: np.ndarray, counterfactual: np.ndarray) -> List[List[
     d3 = d3_distance(delta)
     d4 = d4_distance(delta)
 
-    return [d1, d2, d3, d4]
+    return [[d1[i], d2[i], d3[i], d4[i]] for i in range(len(d1))]
 
 
 def d1_distance(delta: np.ndarray) -> List[float]:
