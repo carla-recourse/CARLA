@@ -133,6 +133,7 @@ class ActionableRecourse(RecourseMethod):
         cfs = []
         coeffs = self._coeffs
         intercepts = self._intercepts
+        action_set = self._action_set
 
         factuals_enc_norm = self.encode_normalize_order_factuals(factuals)
 
@@ -149,12 +150,12 @@ class ActionableRecourse(RecourseMethod):
             intercept = intercepts[index]
 
             # Align action set to coefficients
-            self._action_set.set_alignment(coefficients=coeff)
+            action_set.set_alignment(coefficients=coeff)
 
             # Build AR flipset
             fs = rs.Flipset(
                 x=factual_enc_norm,
-                action_set=self._action_set,
+                action_set=action_set,
                 coefficients=coeff,
                 intercept=intercept,
             )
