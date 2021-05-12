@@ -46,14 +46,14 @@ class Benchmark:
         Dict
         """
         key = "Distances"
-        output: Dict = {key: {}}
+        output: Dict = {key: []}
         arr_f = self._factuals.to_numpy()
         arr_cf = self._counterfactuals.to_numpy()
 
         distances = get_distances(arr_f, arr_cf)
+        sub_keys = ["d1", "d2", "d3", "d4"]
         for i in range(len(distances)):
-            dist_key = "Distance {}".format(i + 1)
-            output[key][dist_key] = distances[i]
+            output[key].append(dict(zip(sub_keys, distances[i])))
 
         return output
 
@@ -76,17 +76,39 @@ class Benchmark:
         return output
 
     def to_csv(self, eval: Dict[str, Dict], path: str) -> None:
-        csv_cols = []
-        tocsv: Dict = dict()
-        for key, val in eval.items():
-            csv_cols += list(val.keys())
-            tocsv = {**tocsv, **val}
+        """
+        Write dictionary with evaluation data into csv
 
+        Parameters
+        ----------
+        eval: Dict[str, Dict]
+            Evaluation data
+        path: str
+            Path and name of savefile
+
+        Returns
+        -------
+        None
+        """
+        samples = []
+        num_samples = len(eval[list(eval.keys())[0]])
+
+        # bring data into correct format
+        for i in range(num_samples):
+            tocsv: Dict = dict()
+            for key, val in eval.items():
+                sample = val[i]
+                tocsv = {**tocsv, **sample}
+            samples.append(tocsv)
+
+        csv_cols = list(samples[0].keys())
+
+        # save data as csv
         try:
             with open(path, "w") as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=csv_cols)
                 writer.writeheader()
-                for data in tocsv:
+                for data in samples:
                     writer.writerow(data)
         except IOError:
             print("I/O error")

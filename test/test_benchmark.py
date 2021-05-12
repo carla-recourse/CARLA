@@ -46,9 +46,6 @@ def test_benchmarks():
 
     assert expected == actual
 
-    test = {"test": {"test 1": 1, "test 2": 2, "test 3": 3}}
-    benchmark.to_csv({**dict_benchmark, **test}, "test.csv")
-
 
 def test_distances():
     # Build data and mlmodel
@@ -86,6 +83,6 @@ def test_distances():
     benchmark = Benchmark(model_tf, dice, test_factual)
     dict_distances = benchmark.compute_distances()
 
-    expected = ["Distance 1", "Distance 2", "Distance 3", "Distance 4"]
-    actual = list(dict_distances["Distances"].keys())
+    expected = 5
+    actual = len(dict_distances["Distances"])
     assert expected == actual
