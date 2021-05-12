@@ -28,6 +28,7 @@ class Dice(RecourseMethod):
             Hyperparameter which are needed for DICE to generate counterfactuals.
             Structure: {"num": int, "desired_class": int}
         """
+        super().__init__(mlmodel)
         self._continous = mlmodel.data.continous
         self._categoricals = mlmodel.data.categoricals
         self._target = mlmodel.data.target
