@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 
-def get_distances(factual: np.ndarray, counterfactual: np.ndarray) -> List[float]:
+def get_distances(factual: np.ndarray, counterfactual: np.ndarray) -> List[List[float]]:
     """
     Computes distances 1 to 4.
     All features have to be in the same order (without target label).
@@ -39,7 +39,7 @@ def get_distances(factual: np.ndarray, counterfactual: np.ndarray) -> List[float
     return [d1, d2, d3, d4]
 
 
-def d1_distance(delta: np.ndarray) -> float:
+def d1_distance(delta: np.ndarray) -> List[float]:
     """
     Computes D1 distance
 
@@ -50,13 +50,13 @@ def d1_distance(delta: np.ndarray) -> float:
 
     Returns
     -------
-    float
+    List[float]
     """
     # compute elements which are greater than 0
-    return float(np.sum(delta != 0))
+    return np.sum(delta != 0, axis=1, dtype=np.float).tolist()
 
 
-def d2_distance(delta: np.ndarray) -> float:
+def d2_distance(delta: np.ndarray) -> List[float]:
     """
     Computes D2 distance
 
@@ -67,13 +67,13 @@ def d2_distance(delta: np.ndarray) -> float:
 
     Returns
     -------
-    float
+    List[float]
     """
 
-    return float(np.sum(np.abs(delta)))
+    return np.sum(np.abs(delta), axis=1, dtype=np.float).tolist()
 
 
-def d3_distance(delta: np.ndarray) -> float:
+def d3_distance(delta: np.ndarray) -> List[float]:
     """
     Computes D3 distance
 
@@ -84,12 +84,12 @@ def d3_distance(delta: np.ndarray) -> float:
 
     Returns
     -------
-    float
+    List[float]
     """
-    return float(np.sum(np.square(np.abs(delta))))
+    return np.sum(np.square(np.abs(delta)), axis=1, dtype=np.float).tolist()
 
 
-def d4_distance(delta: np.ndarray) -> float:
+def d4_distance(delta: np.ndarray) -> List[float]:
     """
     Computes D4 distance
 
@@ -100,9 +100,9 @@ def d4_distance(delta: np.ndarray) -> float:
 
     Returns
     -------
-    float
+    List[float]
     """
-    return np.max(np.abs(delta))
+    return np.max(np.abs(delta), axis=1).tolist()
 
 
 def get_delta(instance: np.ndarray, cf: np.ndarray) -> np.ndarray:
