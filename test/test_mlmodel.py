@@ -8,8 +8,7 @@ from carla.models.pipelining import encode, scale
 
 def test_properties():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, "ann")
 
@@ -36,8 +35,7 @@ def test_properties():
 
 def test_predictions_tf():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, "ann")
 
@@ -74,8 +72,7 @@ def test_predictions_tf():
 
 def test_predictions_with_pipeline():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, "ann")
     model_tf_adult.use_pipeline = True
@@ -104,8 +101,7 @@ def test_predictions_with_pipeline():
 
 def test_pipeline():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name)
 
     model = MLModelCatalog(data, "ann", use_pipeline=True)
 
@@ -122,8 +118,7 @@ def test_pipeline():
 
 def test_predictions_pt():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name)
     model = MLModelCatalog(data, "ann", backend="pytorch")
     feature_input_order = model.feature_input_order
 

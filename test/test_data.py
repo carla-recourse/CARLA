@@ -7,8 +7,7 @@ from carla.models.pipelining import encode
 
 def test_adult_col():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog)
+    data_catalog = DataCatalog(data_name)
 
     actual_col = (
         data_catalog.categoricals + data_catalog.continous + [data_catalog.target]
@@ -22,8 +21,7 @@ def test_adult_col():
 
 def test_adult_norm():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name)
 
     mlmodel = MLModelCatalog(data, "ann")
     norm = data.raw
@@ -39,8 +37,7 @@ def test_adult_norm():
 
 def test_adult_enc():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name)
 
     mlmodel = MLModelCatalog(data, "ann")
 

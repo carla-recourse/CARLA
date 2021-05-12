@@ -7,8 +7,7 @@ from carla.recourse_methods.catalog.dice import Dice
 def test_dice_get_counterfactuals():
     # Build data and mlmodel
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals

@@ -5,7 +5,7 @@ from .load_data import load_dataset
 
 
 class DataCatalog(Data):
-    def __init__(self, data_name, catalog_file):
+    def __init__(self, data_name):
         """
         Constructor for catalog datasets.
 
@@ -19,8 +19,7 @@ class DataCatalog(Data):
             Decides if the first column of one-hot-encoding should be dropped
         """
         self.name = data_name
-        self.catalog_file = catalog_file
-        self.catalog = load_catalog(self.catalog_file, data_name)
+        self.catalog = load_catalog("data_catalog.yaml", data_name)
 
         self._raw = load_dataset(data_name)
 

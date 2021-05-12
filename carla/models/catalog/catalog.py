@@ -47,16 +47,21 @@ class MLModelCatalog(MLModel):
         super().__init__(data)
         self._backend = backend
 
-        # TODO: Add logic for feature_order depending on upcoming different catalog models
-        self._catalog = load_catalog(data.catalog_file, data.name)
         if self._backend == "pytorch":
             ext = "pt"
-            self._feature_input_order = self._catalog["feature_input_order_bin"]
         elif self._backend == "tensorflow":
             ext = "h5"
-            self._feature_input_order = self._catalog["feature_input_order_drop_first"]
         else:
-            raise Exception("Model type not in catalog")
+            raise ValueError(
+                "Backend not available, please choose between pytorch and tensorflow"
+            )
+
+        # Load catalog
+        catalog = load_catalog("mlmodel_catalog.yaml", data.name)
+        if model_type not in catalog:
+            raise ValueError("Model type not in model catalog")
+        self._catalog = catalog[model_type][self._backend]
+        self._feature_input_order = self._catalog["feature_order"]
 
         self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
 
