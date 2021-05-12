@@ -1,7 +1,9 @@
+from typing import List
+
 import numpy as np
 
 
-def get_distances(factual, counterfactual):
+def get_distances(factual: np.ndarray, counterfactual: np.ndarray) -> List[float]:
     """
     Computes distances 1 to 4.
     All features have to be in the same order (without target label).
@@ -37,7 +39,7 @@ def get_distances(factual, counterfactual):
     return [d1, d2, d3, d4]
 
 
-def d1_distance(delta):
+def d1_distance(delta: np.ndarray) -> float:
     """
     Computes D1 distance
 
@@ -51,10 +53,10 @@ def d1_distance(delta):
     float
     """
     # compute elements which are greater than 0
-    return np.sum(delta != 0)
+    return float(np.sum(delta != 0))
 
 
-def d2_distance(delta):
+def d2_distance(delta: np.ndarray) -> float:
     """
     Computes D2 distance
 
@@ -68,10 +70,10 @@ def d2_distance(delta):
     float
     """
 
-    return np.sum(np.abs(delta))
+    return float(np.sum(np.abs(delta)))
 
 
-def d3_distance(delta):
+def d3_distance(delta: np.ndarray) -> float:
     """
     Computes D3 distance
 
@@ -84,10 +86,10 @@ def d3_distance(delta):
     -------
     float
     """
-    return np.sum(np.square(np.abs(delta)))
+    return float(np.sum(np.square(np.abs(delta))))
 
 
-def d4_distance(delta):
+def d4_distance(delta: np.ndarray) -> float:
     """
     Computes D4 distance
 
@@ -103,7 +105,7 @@ def d4_distance(delta):
     return np.max(np.abs(delta))
 
 
-def get_delta(instance, cf):
+def get_delta(instance: np.ndarray, cf: np.ndarray) -> np.ndarray:
     """
     Compute difference between original instance and counterfactual
 
