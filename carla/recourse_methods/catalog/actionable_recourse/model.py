@@ -1,3 +1,5 @@
+from typing import Dict, Optional, Tuple
+
 import numpy as np
 import pandas as pd
 import recourse as rs
@@ -10,7 +12,13 @@ from ...api import RecourseMethod
 
 
 class ActionableRecourse(RecourseMethod):
-    def __init__(self, mlmodel, hyperparams, coeffs=None, intercepts=None):
+    def __init__(
+        self,
+        mlmodel,
+        hyperparams: Dict,
+        coeffs: Optional[np.ndarray] = None,
+        intercepts: Optional[np.ndarray] = None,
+    ) -> None:
         """
         Initializing Actionable Recourse
 
@@ -37,7 +45,8 @@ class ActionableRecourse(RecourseMethod):
             {"fs_size": int (size of generated flipset, default 100)}
         coeffs : np.ndArray
             Coefficients
-        intercepts
+        intercepts: np.ndArray
+            Intercepts
         """
         super().__init__(mlmodel)
         self._data = mlmodel.data
@@ -79,7 +88,9 @@ class ActionableRecourse(RecourseMethod):
 
         self._coeffs, self._intercepts = coeffs, intercepts
 
-    def get_lime_coefficients(self, factuals):
+    def get_lime_coefficients(
+        self, factuals: pd.DataFrame
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Actionable Recourse is only defined on linear models. To make it work for arbitrary non-linear networks
         we need to find the lime coefficients for every instance.
@@ -127,9 +138,9 @@ class ActionableRecourse(RecourseMethod):
             for tpl in explanations.local_exp[1]:
                 coeffs[index][tpl[0]] = tpl[1]
 
-        return coeffs, intercepts
+        return coeffs, np.array(intercepts)
 
-    def get_counterfactuals(self, factuals):
+    def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         cfs = []
         coeffs = self._coeffs
         intercepts = self._intercepts
@@ -145,6 +156,9 @@ class ActionableRecourse(RecourseMethod):
 
         # generate counterfactuals
         for index, row in factuals_enc_norm.iterrows():
+            # asserts are essential for mypy typechecking
+            assert coeffs is not None
+            assert intercepts is not None
             factual_enc_norm = row.values
             coeff = coeffs[index]
             intercept = intercepts[index]

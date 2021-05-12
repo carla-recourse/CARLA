@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import pandas as pd
+
 from carla.models.pipelining import encode, scale
 
 
@@ -8,10 +10,10 @@ class RecourseMethod(ABC):
         self._mlmodel = mlmodel
 
     @abstractmethod
-    def get_counterfactuals(self, factuals):
+    def get_counterfactuals(self, factuals: pd.DataFrame):
         pass
 
-    def encode_normalize_order_factuals(self, factuals):
+    def encode_normalize_order_factuals(self, factuals: pd.DataFrame):
         # Prepare factuals
         querry_instances = factuals.copy()
 
