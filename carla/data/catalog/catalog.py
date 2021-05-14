@@ -1,14 +1,15 @@
 from typing import Any, Dict, List
 
 import pandas as pd
-import yaml
+
+from carla.data.load_catalog import load_catalog
 
 from ..api import Data
 from .load_data import load_dataset
 
 
 class DataCatalog(Data):
-    def __init__(self, data_name: str, catalog_file: str):
+    def __init__(self, data_name: str):
         """
         Constructor for catalog datasets.
 
@@ -16,11 +17,9 @@ class DataCatalog(Data):
         ----------
         data_name : String
             Used to get the correct dataset from online repository
-        catalog_file : String
-            yaml file
         """
         self.name = data_name
-        self.catalog: Dict[str, Any] = self._load_catalog(catalog_file, data_name)
+        self.catalog: Dict[str, Any] = load_catalog("data_catalog.yaml", data_name)
 
         self._raw: pd.DataFrame = load_dataset(data_name)
 
@@ -43,12 +42,3 @@ class DataCatalog(Data):
     @property
     def raw(self) -> pd.DataFrame:
         return self._raw.copy()
-
-    def _load_catalog(self, filename: str, dataset: str):
-        with open(filename, "r") as f:
-            catalog = yaml.safe_load(f)
-
-        if dataset not in catalog:
-            raise KeyError("Dataset not in catalog.")
-
-        return catalog[dataset]
