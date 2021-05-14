@@ -1,7 +1,12 @@
+from typing import List
+
 import numpy as np
+import pandas as pd
 
 
-def get_distances(data, factual, counterfactual):
+def get_distances(
+    data: pd.DataFrame, factual: List, counterfactual: List
+) -> np.ndarray:
     """
     Computes distances 1 to 4
     :param data: Dataframe with original data
@@ -17,7 +22,7 @@ def get_distances(data, factual, counterfactual):
     return np.array([d1, d2, d3, d4])
 
 
-def d1_distance(instance, cf):
+def d1_distance(instance: List, cf: List) -> float:
     """
     Compute d1-distance
     :param instance: List of original feature
@@ -36,7 +41,7 @@ def d1_distance(instance, cf):
     return d1
 
 
-def d2_distance(instance, cf, df):
+def d2_distance(instance: List, cf: List, df: pd.DataFrame) -> float:
     """
     Compute d2 distance
     :param instance: List of original feature
@@ -51,13 +56,13 @@ def d2_distance(instance, cf, df):
     # get range of every feature
     range = get_range(df)
 
-    d2 = [np.abs(x[0] / x[1]) for x in zip(delta, range)]
-    d2 = sum(d2)
+    d2_list = [np.abs(x[0] / x[1]) for x in zip(delta, range)]
+    d2 = sum(d2_list)
 
     return d2
 
 
-def d3_distance(instance, cf, df):
+def d3_distance(instance: List, cf: List, df: pd.DataFrame) -> float:
     """
     Compute d3 distance
     :param instance: List of original feature
@@ -72,13 +77,13 @@ def d3_distance(instance, cf, df):
     # get range of every feature
     range = get_range(df)
 
-    d3 = [(x[0] / x[1]) ** 2 for x in zip(delta, range)]
-    d3 = sum(d3)
+    d3_list = [(x[0] / x[1]) ** 2 for x in zip(delta, range)]
+    d3 = sum(d3_list)
 
     return d3
 
 
-def d4_distance(instance, cf):
+def d4_distance(instance: List, cf: List) -> float:
     """
     Compute d4 distance
     :param instance: List of original feature
@@ -89,13 +94,13 @@ def d4_distance(instance, cf):
     delta = get_delta(instance, cf)
     delta = delta[:-1]  # loose label column
 
-    d4 = [np.abs(x) for x in delta]
-    d4 = np.max(d4)
+    d4_list = [np.abs(x) for x in delta]
+    d4 = np.max(d4_list)
 
     return d4
 
 
-def get_delta(instance, cf):
+def get_delta(instance: List, cf: List) -> List:
     """
     Compute difference between original instance and counterfactual
     :param instance: List of features of original instance
@@ -117,7 +122,7 @@ def get_delta(instance, cf):
     return delta
 
 
-def get_max_list(data):
+def get_max_list(data: np.ndarray) -> List[int]:
     """
     get max element for every column.
     Max for string elements is 1
@@ -136,7 +141,7 @@ def get_max_list(data):
     return max
 
 
-def get_min_list(data):
+def get_min_list(data: np.ndarray) -> List[int]:
     """
     get min element for every column.
     Min for string elements is 0
@@ -155,7 +160,7 @@ def get_min_list(data):
     return min
 
 
-def get_range(df):
+def get_range(df: pd.DataFrame) -> List[int]:
     """
     Get range max - min of every feature
     :param df: dataframe object of dataset
