@@ -175,7 +175,7 @@ def build_constraints(data, i, keys_immutable):
     return immutable_constraint_matrix1, immutable_constraint_matrix2
 
 
-def find_cf(
+def find_counterfactuals(
     candidate_counterfactuals_star,
     data,
     immutable_constraint_matrix1,
