@@ -1,4 +1,7 @@
-def encoded_immutables(imtbls, input_order):
+from typing import List
+
+
+def encode_feature_names(imtbls: List[str], input_order: List[str]) -> List[str]:
     """
     Transforms not encoded immutable feature names into encoded ones
 
@@ -16,5 +19,4 @@ def encoded_immutables(imtbls, input_order):
                 if cat not in immutables:
                     if feature in cat:
                         immutables.append(cat)
-                        break
     return immutables

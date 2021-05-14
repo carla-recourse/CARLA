@@ -1,14 +1,17 @@
+from typing import Any, Dict
+
 import numpy as np
 import pandas as pd
 
+from carla.models.api import MLModel
 from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.face.library import graph_search
-from carla.recourse_methods.processing import encoded_immutables
+from carla.recourse_methods.processing import encode_feature_names
 
 
 class Face(RecourseMethod):
-    def __init__(self, mlmodel, hyperparams):
+    def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
         """
         Constructor for FACE method
 
@@ -29,9 +32,9 @@ class Face(RecourseMethod):
                 "fraction": float [0 < x < 1]}  determines fraction of data set to be used to
                                                 construct neighbourhood graph
         """
+        super().__init__(mlmodel)
         self.mode = hyperparams["mode"]
         self.fraction = hyperparams["fraction"]
-        self._mlmodel = mlmodel
 
         # Normalize and encode data
         self._df_enc_norm = scale(
@@ -42,33 +45,33 @@ class Face(RecourseMethod):
         )
         self._df_enc_norm = self._df_enc_norm[self._mlmodel.feature_input_order]
 
-        self._immutables = encoded_immutables(
+        self._immutables = encode_feature_names(
             self._mlmodel.data.immutables, self._mlmodel.feature_input_order
         )
 
     @property
-    def fraction(self):
+    def fraction(self) -> float:
         return self._fraction
 
     @fraction.setter
-    def fraction(self, x):
+    def fraction(self, x: float) -> None:
         if 0 < x < 1:
             self._fraction = x
         else:
             raise ValueError("Fraction has to be between 0 and 1")
 
     @property
-    def mode(self):
+    def mode(self) -> str:
         return self._mode
 
     @mode.setter
-    def mode(self, mode):
+    def mode(self, mode: str) -> None:
         if mode in ["knn", "epsilon"]:
             self._mode = mode
         else:
             raise ValueError("Mode has to be either knn or epsilon")
 
-    def get_counterfactuals(self, factuals):
+    def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         # Normalize and encode factual
         df_enc_norm_fact = scale(
             self._mlmodel.scaler, self._mlmodel.data.continous, factuals
