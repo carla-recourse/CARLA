@@ -1,11 +1,13 @@
 import os
+from typing import Callable, List, Optional
 
+import numpy as np
 from keras import backend as K
 from keras.layers import Dense, Input
 from keras.models import Model, Sequential
 
 
-def layers_valid(layers):
+def layers_valid(layers: List) -> bool:
     """
     Checks if the layers parameter has at least minimal requirements
 
@@ -24,7 +26,13 @@ def layers_valid(layers):
 
 
 class Autoencoder:
-    def __init__(self, layers, data_name, optimizer="rmsprop", loss=None):
+    def __init__(
+        self,
+        layers: List,
+        data_name: str,
+        optimizer: str = "rmsprop",
+        loss: Optional[Callable] = None,
+    ) -> None:
         """
         Defines the structure of the autoencoder
 
@@ -57,7 +65,9 @@ class Autoencoder:
         self.data_name = data_name
         self._optimizer = optimizer
 
-    def train(self, xtrain, xtest, epochs, batch_size):
+    def train(
+        self, xtrain: np.ndarray, xtest: np.ndarray, epochs: int, batch_size: int
+    ) -> Model:
 
         x = Input(shape=(self._layers[0],))
 
@@ -95,7 +105,7 @@ class Autoencoder:
 
         return autoencoder
 
-    def save(self, fitted_ae):
+    def save(self, fitted_ae: Model) -> None:
 
         cache_path = self.get_aes_home()
 

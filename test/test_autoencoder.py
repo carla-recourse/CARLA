@@ -10,26 +10,9 @@ from carla.recourse_methods.autoencoder import Autoencoder, train_autoencoder
 def test_autoencoder():
     # Build data and mlmodel
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog)
+    data = DataCatalog(data_name)
 
-    feature_input_order = [
-        "age",
-        "fnlwgt",
-        "education-num",
-        "capital-gain",
-        "capital-loss",
-        "hours-per-week",
-        "workclass_Private",
-        "marital-status_Non-Married",
-        "occupation_Other",
-        "relationship_Non-Husband",
-        "race_White",
-        "sex_Male",
-        "native-country_US",
-    ]
-
-    model = MLModelCatalog(data, "ann", feature_input_order)
+    model = MLModelCatalog(data, "ann")
     test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
 
     ae = Autoencoder([len(model.feature_input_order), 20, 10, 5], data_name)
