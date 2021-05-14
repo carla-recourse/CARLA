@@ -1,4 +1,6 @@
 # import helpers
+import copy
+
 import numpy as np
 
 # import Dijkstra's shortest path algorithm
@@ -53,7 +55,6 @@ def graph_search(
     y_positive_indeces = np.where(y_predicted == 1)
 
     # TODO: replace counterfactual search by function, which takes 'mode' as an argument
-    candidate_counterfactuals_star = []
     if mode == "knn":
         boundary = 3  # chosen in ad-hoc fashion
         median = n_neighbors
@@ -75,9 +76,10 @@ def graph_search(
     # obtain candidate targets (CT); two conditions need to be met:
     # (1) CT needs to be predicted positively & (2) CT needs to have certain "density"
     # for knn I interpret 'certain density' as sufficient number of neighbours
+    candidate_counterfactuals = []
     for n in neighbors_list:
-        find_cf(
-            candidate_counterfactuals_star,
+        neighbor_candidates = find_counterfactuals(
+            candidate_counterfactuals,
             data,
             immutable_constraint_matrix1,
             immutable_constraint_matrix2,
@@ -86,8 +88,9 @@ def graph_search(
             y_positive_indeces,
             is_knn=is_knn,
         )
+        candidate_counterfactuals += neighbor_candidates
 
-    candidate_counterfactual_star = np.array(candidate_counterfactuals_star)
+    candidate_counterfactual_star = np.array(candidate_counterfactuals)
 
     # STEP 4 -- COMPUTE DISTANCES between x^F and candidate x^CF; else return NaN
     if candidate_counterfactual_star.size == 0:
@@ -96,20 +99,19 @@ def graph_search(
         )
         candidate_counterfactual_star[:] = np.nan
 
-    else:
-        if p_norm == 1:
-            c_dist = np.abs((data.values[index] - candidate_counterfactual_star)).sum(
-                axis=1
-            )
-        elif p_norm == 2:
-            c_dist = np.square(
-                (data.values[index] - candidate_counterfactuals_star)
-            ).sum(axis=1)
-        else:
-            raise ValueError("Distance not defined yet. Choose p_norm to be 1 or 2")
+        return candidate_counterfactual_star
 
-        min_index = np.argmin(c_dist)
-        candidate_counterfactual_star = candidate_counterfactual_star[min_index]
+    if p_norm == 1:
+        c_dist = np.abs((data.values[index] - candidate_counterfactual_star)).sum(
+            axis=1
+        )
+    elif p_norm == 2:
+        c_dist = np.square((data.values[index] - candidate_counterfactuals)).sum(axis=1)
+    else:
+        raise ValueError("Distance not defined yet. Choose p_norm to be 1 or 2")
+
+    min_index = np.argmin(c_dist)
+    candidate_counterfactual_star = candidate_counterfactual_star[min_index]
 
     return candidate_counterfactual_star
 
@@ -130,9 +132,12 @@ def choose_random_subset(data, frac, index):
     pd.DataFrame
     """
     number_samples = np.int(np.rint(frac * data.values.shape[0]))
-    chosen_indeces = np.random.choice(
+    list_to_choose = (
         np.arange(0, index).tolist()
-        + np.arange(index + 1, data.values.shape[0]).tolist(),
+        + np.arange(index + 1, data.values.shape[0]).tolist()
+    )
+    chosen_indeces = np.random.choice(
+        list_to_choose,
         replace=False,
         size=number_samples,
     )
@@ -144,7 +149,7 @@ def choose_random_subset(data, frac, index):
     return data
 
 
-def build_constraints(data, i, keys_immutable):
+def build_constraints(data, i, keys_immutable, epsilon=0.5):
     """
 
     Parameters
@@ -154,12 +159,12 @@ def build_constraints(data, i, keys_immutable):
         Position of immutable key
     keys_immutable: list[str]
         Immutable feature
+    epsilon: int
 
     Returns
     -------
     np.ndarray, np.ndarray
     """
-    epsilon = 0.5  # avoids division by 0
     immutable_constraint_matrix = np.outer(
         data[keys_immutable[i]].values + epsilon,
         data[keys_immutable[i]].values + epsilon,
@@ -175,8 +180,8 @@ def build_constraints(data, i, keys_immutable):
     return immutable_constraint_matrix1, immutable_constraint_matrix2
 
 
-def find_cf(
-    candidate_counterfactuals_star,
+def find_counterfactuals(
+    candidates,
     data,
     immutable_constraint_matrix1,
     immutable_constraint_matrix2,
@@ -201,8 +206,9 @@ def find_cf(
 
     Returns
     -------
-    None
+    list
     """
+    candidate_counterfactuals_star = copy.deepcopy(candidates)
     # STEP 1 -- BUILD NETWORK GRAPH
     graph = build_graph(
         data, immutable_constraint_matrix1, immutable_constraint_matrix2, is_knn, n
@@ -228,6 +234,8 @@ def find_cf(
     )
     for i in range(indeces_counterfactuals.shape[0]):
         candidate_counterfactuals_star.append(data.values[indeces_counterfactuals[i]])
+
+    return candidate_counterfactuals_star
 
 
 def shortest_path(graph, index):

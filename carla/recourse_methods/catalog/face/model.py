@@ -81,8 +81,8 @@ class Face(RecourseMethod):
         )
         df_enc_norm_fact = df_enc_norm_fact[self._mlmodel.feature_input_order]
 
-        # >drop< instances 'under consideration', >reorder< and >add< instances 'under consideration' to top;
-        # necessary in order to use the index
+        # >drop< factuals from dataset to prevent duplicates,
+        # >reorder< and >add< factuals to top; necessary in order to use the index
         df_enc_norm_data = self._df_enc_norm.copy()
         cond = df_enc_norm_data.isin(df_enc_norm_fact).values
         df_enc_norm_data = df_enc_norm_data.drop(df_enc_norm_data[cond].index)
@@ -108,5 +108,7 @@ class Face(RecourseMethod):
         df_cfs[self._mlmodel.data.target] = np.argmax(
             self._mlmodel.predict_proba(df_cfs), axis=1
         )
+        # Change all wrong counterfactuals to nan
+        df_cfs.loc[df_cfs[self._mlmodel.data.target] == 0, :] = np.nan
 
         return df_cfs
