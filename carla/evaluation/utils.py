@@ -81,7 +81,6 @@ def redundancy(factual: np.array, counterfactual: np.array, ml_model: MLModelCat
     red = 0
 
     # get model prediction and cast it from tensor to float
-    # TODO replace backend with boolean, to avoid errors in string which would fail the condition
     if ml_model.backend == "pytorch":
         pred_f = round(
             ml_model.predict(torch.from_numpy(factual).float())
