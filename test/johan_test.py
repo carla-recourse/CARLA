@@ -24,7 +24,7 @@ def load_AE():
 
 
 def test_cem_get_counterfactuals():
-    data = DataCatalog(data_name="adult", catalog_file="adult_catalog.yaml")
+    data = DataCatalog(data_name="adult")
 
     feature_input_order = [
         "age",

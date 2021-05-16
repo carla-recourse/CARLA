@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
+from ....evaluation.utils import success_rate_and_indices
 from ....models.catalog.catalog import MLModelCatalog
 from ....models.pipelining.steps import decode
 from ...api import RecourseMethod
@@ -31,26 +32,6 @@ def model_prediction(model, inputs):
     predicted_class = np.argmax(prob)
     prob_str = np.array2string(prob).replace("\n", "")
     return prob, predicted_class, prob_str
-
-
-# TODO helper function in measures?
-def success_rate_and_indices(counterfactuals_df):
-    """
-    Used to indicate which counterfactuals should be dropped (due to lack of success indicated by NaN).
-    Also computes percent of successfully found counterfactuals
-    :param counterfactuals_df: pd df, where NaNs indicate 'no counterfactual found' [df should contain no object values)
-    :return: success_rate, indices
-    """
-
-    # Success rate & drop not successful counterfactuals & process remainder
-    success_rate = (counterfactuals_df.dropna().shape[0]) / counterfactuals_df.shape[0]
-    counterfactual_indices = np.where(
-        np.any(np.isnan(counterfactuals_df.values) == True, axis=1)
-        == False
-        # not np.any(np.isnan(counterfactuals_df.values), axis=1)
-    )[0]
-
-    return success_rate, counterfactual_indices
 
 
 class CEM(RecourseMethod):

@@ -1,7 +1,12 @@
+from typing import List
+
 import pandas as pd
+from sklearn.base import BaseEstimator
 
 
-def scale(fitted_scaler, features, df):
+def scale(
+    fitted_scaler: BaseEstimator, features: List[str], df: pd.DataFrame
+) -> pd.DataFrame:
     """
     Pipeline function to normalize data with fitted sklearn scaler.
 
@@ -26,7 +31,9 @@ def scale(fitted_scaler, features, df):
     return output
 
 
-def encode(fitted_encoder, features, df):
+def encode(
+    fitted_encoder: BaseEstimator, features: List[str], df: pd.DataFrame
+) -> pd.DataFrame:
     """
     Pipeline function to encode data with fitted sklearn OneHotEncoder.
 
