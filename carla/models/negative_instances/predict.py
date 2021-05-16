@@ -1,7 +1,14 @@
+from typing import Any
+
+import numpy as np
+import pandas as pd
 from sklearn.metrics import accuracy_score
 
+from carla.data.api import Data
+from carla.models.pipelining import encode, scale
 
-def predict_negative_instances(model, data):
+
+def predict_negative_instances(model: Any, data: Data) -> pd.DataFrame:
     """Predicts the data target and retrieves the negative instances. (H^-)
 
     Assumption: Positive class label is at position 1
@@ -24,7 +31,7 @@ def predict_negative_instances(model, data):
     return df
 
 
-def predict_label(model, data, as_prob=False):
+def predict_label(model: Any, data: Data, as_prob: bool = False) -> np.ndarray:
     """Predicts the data target
 
     Assumption: Positive class label is at position 1
@@ -39,11 +46,15 @@ def predict_label(model, data, as_prob=False):
     -------
     predictions :  2d numpy array with predictions
     """
-    print(f"Predicing label '{data.target}' of {data.name} dataset.")
-    features = data.encoded_normalized.drop(data.target, axis=1)
+    print(f"Predicing label '{data.target}'.")
+
+    # normalize and encode data
+    norm_enc_data = scale(model.scaler, data.continous, data.raw)
+    norm_enc_data = encode(model.encoder, data.categoricals, norm_enc_data)
+
     # Keep correct feature order for prediction
-    features = features[model.feature_input_order]
-    predictions = model.predict(features)
+    norm_enc_data = norm_enc_data[model.feature_input_order]
+    predictions = model.predict(norm_enc_data)
 
     if not as_prob:
         predictions = predictions.round()

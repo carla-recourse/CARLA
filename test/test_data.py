@@ -1,12 +1,13 @@
 import numpy as np
 
 from carla.data.catalog import DataCatalog
+from carla.models.catalog import MLModelCatalog
+from carla.models.pipelining import encode
 
 
 def test_adult_col():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
+    data_catalog = DataCatalog(data_name)
 
     actual_col = (
         data_catalog.categoricals + data_catalog.continous + [data_catalog.target]
@@ -20,42 +21,27 @@ def test_adult_col():
 
 def test_adult_norm():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
+    data = DataCatalog(data_name)
 
-    col = data_catalog.continous
+    mlmodel = MLModelCatalog(data, "ann")
+    norm = data.raw
+    norm[data.continous] = mlmodel.scaler.transform(norm[data.continous])
 
-    raw = data_catalog.raw[col]
-    norm = data_catalog.normalized[col]
+    col = data.continous
+
+    raw = data.raw[col]
+    norm = norm[col]
 
     assert ((raw != norm).all()).any()
 
 
 def test_adult_enc():
     data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
-    cat = data.encoded
+    data = DataCatalog(data_name)
+
+    mlmodel = MLModelCatalog(data, "ann")
+
+    cat = encode(mlmodel.encoder, data.categoricals, data.raw)
+    cat = cat[mlmodel.feature_input_order]
 
     assert cat.select_dtypes(exclude=[np.number]).empty
-
-    data = DataCatalog(data_name, data_catalog, drop_first_encoding=False)
-    cat = data.encoded
-    assert cat.select_dtypes(exclude=[np.number]).empty
-
-
-def test_adult_norm_enc():
-    data_name = "adult"
-    data_catalog = "adult_catalog.yaml"
-    data_catalog = DataCatalog(data_name, data_catalog, drop_first_encoding=True)
-
-    norm_col = data_catalog.continous
-    norm_enc_col = data_catalog.encoded_normalized.columns
-
-    cat = data_catalog.encoded
-    cat[norm_col] = data_catalog.normalized[norm_col]
-    cat = cat[norm_enc_col]
-
-    cat_norm = data_catalog.encoded_normalized
-
-    assert ((cat_norm == cat).all()).all()

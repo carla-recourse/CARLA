@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
@@ -6,7 +7,14 @@ import tensorflow as tf
 import torch
 
 
-def load_model(name, dataset, ext="h5", cache=True, models_home=None, **kws):
+def load_model(
+    name: str,
+    dataset: str,
+    ext: str = "h5",
+    cache: bool = True,
+    models_home: Optional[str] = None,
+    **kws,
+):
     """Load an pretrained model from the online repository (requires internet).
 
     This function provides quick access to a number of models trained on example
@@ -58,7 +66,12 @@ def load_model(name, dataset, ext="h5", cache=True, models_home=None, **kws):
         full_path = cache_path
 
     if ext == "pt":
-        model = torch.load(full_path).eval()
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model = torch.jit.load(
+            full_path,
+            map_location=device,
+        )
+        model = model.eval()
     elif ext == "h5":
         model = tf.keras.models.load_model(full_path)
     else:
