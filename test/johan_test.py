@@ -7,40 +7,13 @@ from tensorflow import Graph, Session
 from carla.data.catalog.catalog import DataCatalog
 from carla.models.catalog.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
+from carla.recourse_methods.autoencoder import Autoencoder, train_autoencoder
 from carla.recourse_methods.catalog.cem.cem import CEM
 
 
-def load_AE():
-
-    model_filename = "ae_tf.json"
-    weigth_filename = "ae_tf.h5"
-
-    json_file = open(model_filename, "r")
-    decoder = model_from_json(json_file.read(), custom_objects={"tf": tf})
-    json_file.close()
-    decoder.load_weights(weigth_filename)
-
-    return decoder
-
-
 def test_cem_get_counterfactuals():
-    data = DataCatalog(data_name="adult")
-
-    feature_input_order = [
-        "age",
-        "fnlwgt",
-        "education-num",
-        "capital-gain",
-        "hours-per-week",
-        "capital-loss",
-        "workclass_Private",
-        "marital-status_Non-Married",
-        "occupation_Other",
-        "relationship_Non-Husband",
-        "race_White",
-        "sex_Male",
-        "native-country_US",
-    ]
+    data_name = "adult"
+    data = DataCatalog(data_name=data_name)
 
     hyperparams_cem = {"kappa": 0.1, "beta": 0.9, "gamma": 0.0, "mode": "PN"}
 
@@ -48,10 +21,18 @@ def test_cem_get_counterfactuals():
     with graph.as_default():
         ann_sess = Session()
         with ann_sess.as_default():
-            model_ann = MLModelCatalog(
-                data=data, model_type="ann", feature_input_order=feature_input_order
+            model_ann = MLModelCatalog(data=data, model_type="ann")
+
+            ae = Autoencoder([len(model_ann.feature_input_order), 20, 10, 7], data_name)
+            model_ae = train_autoencoder(
+                ae,
+                data,
+                model_ann.scaler,
+                model_ann.encoder,
+                model_ann.feature_input_order,
+                epochs=5,
+                save=False,
             )
-            model_ae = load_AE()
 
             factuals = predict_negative_instances(model_ann, data)
             test_factuals = factuals.iloc[:5]
