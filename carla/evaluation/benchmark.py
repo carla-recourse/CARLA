@@ -25,7 +25,7 @@ class Benchmark:
         factuals: pd.DataFrame
             Instances we want to find counterfactuals
         """
-        self._recmodel = recmodel
+        self._recmodel = recourse_method
         self._counterfactuals = self._recmodel.get_counterfactuals(factuals)
 
         # Normalizing and encoding factual for later use
@@ -93,7 +93,6 @@ class Benchmark:
         samples = []
         num_samples = len(eval[list(eval.keys())[0]])
 
-        # bring data into correct format
         for i in range(num_samples):
             tocsv: Dict = dict()
             for key, val in eval.items():
@@ -104,11 +103,8 @@ class Benchmark:
         csv_cols = list(samples[0].keys())
 
         # save data as csv
-        try:
-            with open(path, "w") as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=csv_cols)
-                writer.writeheader()
-                for data in samples:
-                    writer.writerow(data)
-        except IOError:
-            print("I/O error")
+        with open(path, "w") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=csv_cols)
+            writer.writeheader()
+            for data in samples:
+                writer.writerow(data)
