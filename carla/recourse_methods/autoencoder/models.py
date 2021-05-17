@@ -116,11 +116,13 @@ class Autoencoder:
         # save model
         model_json = fitted_ae.to_json()
 
+        path = os.path.join(
+            cache_path,
+            "{}_{}.{}".format(self.data_name, fitted_ae.input_shape[1], "json"),
+        )
+
         with open(
-            os.path.join(
-                cache_path,
-                "{}_{}.{}".format(self.data_name, fitted_ae.input_shape[1], "json"),
-            ),
+            path,
             "w",
         ) as json_file:
             json_file.write(model_json)
@@ -138,24 +140,20 @@ class Autoencoder:
 
         """
         cache_path = self.get_aes_home()
+        path = os.path.join(
+            cache_path,
+            "{}_{}".format(self.data_name, input_shape),
+        )
 
         # load ae
         json_file = open(
-            os.path.join(
-                cache_path,
-                "{}_{}.{}".format(self.data_name, input_shape, "json"),
-            ),
+            "{}.{}".format(path, "json"),
             "r",
         )
         model_ae = model_from_json(json_file.read(), custom_objects={"tf": tf})
         json_file.close()
 
-        model_ae.load_weights(
-            os.path.join(
-                cache_path,
-                "{}_{}.{}".format(self.data_name, input_shape, "h5"),
-            )
-        )
+        model_ae.load_weights("{}.{}".format(path, "h5"))
 
         # Build layers property from loaded model
         layers = []
