@@ -20,15 +20,11 @@ class Autoencoder:
 
         Parameters
         ----------
-        layers : list(int > 0)
-            Depending on the position and number elements, it determines the number and width of layers in the form of
+        layers : Depending on the position and number elements, it determines the number and width of layers in the form of
             [input_layer, hidden_layer_1, ...., hidden_layer_n, latent_dimension]
-        data_name : str
-            Name of the dataset. Is used for saving model.
-        loss: Callable, optional
-            Loss function for autoencoder model. Default is Binary Cross Entropy.
-        optimizer: str, optional
-            Optimizer which is used to train autoencoder model. See keras optimizer.
+        data_name : Name of the dataset. Is used for saving model.
+        loss: Loss function for autoencoder model. Default is Binary Cross Entropy.
+        optimizer: Optimizer which is used to train autoencoder model. See keras optimizer.
         """
         if self.layers_valid(layers):
             self._layers = layers
@@ -50,10 +46,6 @@ class Autoencoder:
     def layers_valid(self, layers: List) -> bool:
         """
         Checks if the layers parameter has at least minimal requirements
-
-        Returns
-        -------
-        bool
         """
         if len(layers) < 2:
             return False
