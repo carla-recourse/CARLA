@@ -42,8 +42,6 @@ def graph_search(
     # ADD CONSTRAINTS by immutable inputs into adjacency matrix
     # if element in adjacency matrix 0, then it cannot be reached
     # this ensures that paths only take same sex / same race / ... etc. routes
-    # TODO: CANNOT deal with continuous constraints (e.g. age) yet
-    # TODO: However, authors also do not mention how to go about it
     for i in range(len(keys_immutable)):
         immutable_constraint_matrix1, immutable_constraint_matrix2 = build_constraints(
             data, i, keys_immutable
@@ -54,7 +52,6 @@ def graph_search(
     y_predicted = np.argmax(y_predicted, axis=1)
     y_positive_indeces = np.where(y_predicted == 1)
 
-    # TODO: replace counterfactual search by function, which takes 'mode' as an argument
     if mode == "knn":
         boundary = 3  # chosen in ad-hoc fashion
         median = n_neighbors
