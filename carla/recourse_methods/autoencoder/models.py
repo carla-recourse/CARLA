@@ -67,7 +67,7 @@ class Autoencoder:
         encoded = Dense(self._layers[1], activation="relu")(x)
         for i in range(2, len(self._layers) - 1):
             encoded = Dense(self._layers[i], activation="relu")(encoded)
-        z = Dense(self._layers[-1], activation="relu")(encoded)
+        latent_space = Dense(self._layers[-1], activation="relu")(encoded)
 
         # Decoder
         list_decoder = [
@@ -79,9 +79,9 @@ class Autoencoder:
         decoder = Sequential(list_decoder)
 
         # Compile Autoencoder, Encoder & Decoder
-        # encoder = Model(x, z)
-        xhat = decoder(z)
-        autoencoder = Model(x, xhat)
+        # encoder = Model(x, latent_space)
+        x_reconstructed = decoder(latent_space)
+        autoencoder = Model(x, x_reconstructed)
         autoencoder.compile(optimizer=self._optimizer, loss=self._loss)
 
         # Train model
