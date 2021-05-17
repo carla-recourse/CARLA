@@ -1,13 +1,17 @@
-# import library.data_processing as preprocessing
-# import library.measure as measure
-import timeit
-
-import numpy as np
 import pandas as pd
 
-from carla.methods.lib.growing_spheres import gs_counterfactuals as gs
+from carla.recourse_methods.api import RecourseMethod
 
 
+class GrowingSpheres(RecourseMethod):
+    def __init__(self, mlmodel):
+        super().__init__(mlmodel)
+
+    def get_counterfactuals(self, factuals: pd.DataFrame):
+        pass
+
+
+'''
 def get_counterfactual(data, df_instances, model):
     """
     :param dataset_path: str; path
@@ -106,3 +110,4 @@ def get_counterfactual(data, df_instances, model):
     # return instances_list, counterfactuals_list, times_list, success_rate
 
     return None
+'''

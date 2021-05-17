@@ -1,11 +1,14 @@
 import os
 import re
+from typing import Any, List
 from urllib.request import urlopen, urlretrieve
 
 import pandas as pd
 
 
-def load_dataset(name, cache=True, data_home=None, **kws):
+def load_dataset(
+    name: str, cache: bool = True, data_home: str = None, **kws
+) -> pd.DataFrame:
     """Load an example dataset from the online repository (requires internet).
 
     This function provides quick access to a number of example datasets
@@ -51,10 +54,13 @@ def load_dataset(name, cache=True, data_home=None, **kws):
     if df.iloc[-1].isnull().all():
         df = df.iloc[:-1]
 
+    # TODO: Only until NANs are not longer in the dataset (issue #28)
+    df = df.dropna()
+
     return df
 
 
-def get_dataset_names():
+def get_dataset_names() -> List[Any]:
     """Report available example datasets, useful for reporting issues.
 
     Requires an internet connection.
