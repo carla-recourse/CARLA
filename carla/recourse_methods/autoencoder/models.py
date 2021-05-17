@@ -2,9 +2,10 @@ import os
 from typing import Callable, List, Optional
 
 import numpy as np
-from keras import backend as K
 from keras.layers import Dense, Input
 from keras.models import Model, Sequential
+
+from carla.recourse_methods.autoencoder.losses import binary_crossentropy
 
 
 class Autoencoder:
@@ -34,9 +35,7 @@ class Autoencoder:
             )
 
         if loss is None:
-            self._loss = lambda y_true, y_pred: K.sum(
-                K.binary_crossentropy(y_true, y_pred), axis=-1
-            )
+            self._loss = binary_crossentropy
         else:
             self._loss = loss
 
