@@ -4,6 +4,7 @@ from typing import List
 def encode_feature_names(imtbls: List[str], input_order: List[str]) -> List[str]:
     """
     Transforms not encoded immutable feature names into encoded ones
+
     Returns
     -------
     list
