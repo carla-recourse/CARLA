@@ -22,6 +22,7 @@ class MLModelCatalog(MLModel):
         cache: bool = True,
         models_home: str = None,
         use_pipeline: bool = False,
+        encoding_method: str = "OneHot",
         **kws
     ) -> None:
         """
@@ -48,7 +49,7 @@ class MLModelCatalog(MLModel):
         use_pipeline : bool, optional
             If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
         """
-        super().__init__(data)
+        super().__init__(data, encoding_method=encoding_method)
         self._backend = backend
 
         if self._backend == "pytorch":

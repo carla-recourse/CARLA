@@ -83,6 +83,7 @@ def decode(fitted_encoder, features, df: pd.DataFrame):
 
     output = df.copy()
     encoded_features = fitted_encoder.get_feature_names(features)
+
     encoded_features = intersection(output.columns, encoded_features)
     output[features] = fitted_encoder.inverse_transform(output[encoded_features])
     output = output.drop(encoded_features, axis=1)

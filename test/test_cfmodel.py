@@ -58,7 +58,9 @@ def test_cem_get_counterfactuals():
     with graph.as_default():
         ann_sess = Session()
         with ann_sess.as_default():
-            model_ann = MLModelCatalog(data=data, model_type="ann")
+            model_ann = MLModelCatalog(
+                data=data, model_type="ann", encoding_method="Binary"
+            )
 
             ae = Autoencoder([len(model_ann.feature_input_order), 20, 10, 7], data_name)
             model_ae = train_autoencoder(
