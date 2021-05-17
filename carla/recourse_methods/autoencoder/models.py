@@ -23,6 +23,8 @@ class Autoencoder:
         ----------
         layers : Depending on the position and number elements, it determines the number and width of layers in the form of
             [input_layer, hidden_layer_1, ...., hidden_layer_n, latent_dimension]
+            The encoder structure would be: input_layer -> [hidden_layers] -> latent_dimension
+            The decoder structure would be: latent_dimension -> [hidden_layers] -> input_dimension
         data_name : Name of the dataset. Is used for saving model.
         loss: Loss function for autoencoder model. Default is Binary Cross Entropy.
         optimizer: Optimizer which is used to train autoencoder model. See keras optimizer.
