@@ -11,7 +11,7 @@ from carla.recourse_methods.api import RecourseMethod
 
 class Benchmark:
     def __init__(
-        self, mlmodel: MLModel, recmodel: RecourseMethod, factuals: pd.DataFrame
+        self, mlmodel: MLModel, recourse_method: RecourseMethod, factuals: pd.DataFrame
     ) -> None:
         """
         Constructor for benchmarking class
