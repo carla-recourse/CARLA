@@ -98,6 +98,7 @@ def test_cem_get_counterfactuals():
             assert pd.concat(instance_list).shape == test_factuals.shape
             assert pd.concat(cf_list).shape == test_factuals.shape
 
+            
 def test_face_get_counterfactuals():
     # Build data and mlmodel
     data_name = "adult"
