@@ -7,24 +7,6 @@ from keras.layers import Dense, Input
 from keras.models import Model, Sequential
 
 
-def layers_valid(layers: List) -> bool:
-    """
-    Checks if the layers parameter has at least minimal requirements
-
-    Returns
-    -------
-    bool
-    """
-    if len(layers) < 2:
-        return False
-
-    for layer in layers:
-        if layer <= 0:
-            return False
-
-    return True
-
-
 class Autoencoder:
     def __init__(
         self,
@@ -48,7 +30,7 @@ class Autoencoder:
         optimizer: str, optional
             Optimizer which is used to train autoencoder model. See keras optimizer.
         """
-        if layers_valid(layers):
+        if self.layers_valid(layers):
             self._layers = layers
         else:
             raise ValueError(
@@ -64,6 +46,23 @@ class Autoencoder:
 
         self.data_name = data_name
         self._optimizer = optimizer
+
+    def layers_valid(self, layers: List) -> bool:
+        """
+        Checks if the layers parameter has at least minimal requirements
+
+        Returns
+        -------
+        bool
+        """
+        if len(layers) < 2:
+            return False
+
+        for layer in layers:
+            if layer <= 0:
+                return False
+
+        return True
 
     def train(
         self, xtrain: np.ndarray, xtest: np.ndarray, epochs: int, batch_size: int
