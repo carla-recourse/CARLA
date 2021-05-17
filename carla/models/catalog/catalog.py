@@ -5,6 +5,7 @@ import pandas as pd
 import tensorflow as tf
 import torch
 
+from carla.data.load_catalog import load_catalog
 from carla.models.pipelining import encode, order_data, scale
 
 from ...data.catalog import DataCatalog
@@ -17,7 +18,6 @@ class MLModelCatalog(MLModel):
         self,
         data: DataCatalog,
         model_type: str,
-        feature_input_order: List[str],
         backend: str = "tensorflow",
         cache: bool = True,
         models_home: str = None,
@@ -36,8 +36,6 @@ class MLModelCatalog(MLModel):
             Correct dataset for ML model
         model_type : str
             Architecture [ann]
-        feature_input_order : list
-            List containing all features in correct order for ML prediction
         backend : str
             Specifies the used framework [tensorflow, pytorch]
         cache : boolean, optional
@@ -58,14 +56,21 @@ class MLModelCatalog(MLModel):
         elif self._backend == "tensorflow":
             ext = "h5"
         else:
-            raise Exception("Model type not in catalog")
+            raise ValueError(
+                "Backend not available, please choose between pytorch and tensorflow"
+            )
+
+        # Load catalog
+        catalog = load_catalog("mlmodel_catalog.yaml", data.name)
+        if model_type not in catalog:
+            raise ValueError("Model type not in model catalog")
+        self._catalog = catalog[model_type][self._backend]
+        self._feature_input_order = self._catalog["feature_order"]
 
         self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
 
-        self._continuous: List[str] = data.continous
-        self._categoricals: List[str] = data.categoricals
-
-        self._feature_input_order = feature_input_order
+        self._continuous = data.continous
+        self._categoricals = data.categoricals
 
         # Preparing pipeline components
         self._use_pipeline = use_pipeline
