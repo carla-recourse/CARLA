@@ -22,11 +22,10 @@ def test_benchmarks():
     dice = Dice(model_tf, hyperparams)
 
     benchmark = Benchmark(model_tf, dice, test_factual)
-    dict_benchmark = benchmark.run_benchmark()
+    df_benchmark = benchmark.run_benchmark()
 
-    expected = ["Distances"]
-    actual = list(dict_benchmark.keys())
-
+    expected = (5, 4)
+    actual = df_benchmark.shape
     assert expected == actual
 
 
@@ -47,8 +46,8 @@ def test_distances():
     dice = Dice(model_tf, hyperparams)
 
     benchmark = Benchmark(model_tf, dice, test_factual)
-    dict_distances = benchmark.compute_distances()
+    df_distances = benchmark.compute_distances()
 
-    expected = 5
-    actual = len(dict_distances["Distances"])
+    expected = (5, 4)
+    actual = df_distances.shape
     assert expected == actual
