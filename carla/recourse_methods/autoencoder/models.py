@@ -2,8 +2,9 @@ import os
 from typing import Callable, List, Optional
 
 import numpy as np
+import tensorflow as tf
 from keras.layers import Dense, Input
-from keras.models import Model, Sequential
+from keras.models import Model, Sequential, model_from_json
 
 from carla.recourse_methods.autoencoder.losses import binary_crossentropy
 
@@ -11,8 +12,8 @@ from carla.recourse_methods.autoencoder.losses import binary_crossentropy
 class Autoencoder:
     def __init__(
         self,
-        layers: List,
         data_name: str,
+        layers: Optional[List] = None,
         optimizer: str = "rmsprop",
         loss: Optional[Callable] = None,
     ) -> None:
@@ -21,15 +22,17 @@ class Autoencoder:
 
         Parameters
         ----------
-        layers : Depending on the position and number elements, it determines the number and width of layers in the form of
+        data_name : Name of the dataset. Is used for saving model.
+        layers : Depending on the position and number elements, it determines the number and width of layers in the
+            form of:
             [input_layer, hidden_layer_1, ...., hidden_layer_n, latent_dimension]
             The encoder structure would be: input_layer -> [hidden_layers] -> latent_dimension
             The decoder structure would be: latent_dimension -> [hidden_layers] -> input_dimension
-        data_name : Name of the dataset. Is used for saving model.
         loss: Loss function for autoencoder model. Default is Binary Cross Entropy.
         optimizer: Optimizer which is used to train autoencoder model. See keras optimizer.
         """
-        if self.layers_valid(layers):
+        if layers is None or self.layers_valid(layers):
+            # None layers are used for loading pre-trained models
             self._layers = layers
         else:
             raise ValueError(
@@ -60,7 +63,9 @@ class Autoencoder:
     def train(
         self, xtrain: np.ndarray, xtest: np.ndarray, epochs: int, batch_size: int
     ) -> Model:
-
+        assert (
+            self._layers is not None
+        )  # Used for mypy to make sure layers are indexable
         x = Input(shape=(self._layers[0],))
 
         # Encoder
@@ -119,6 +124,46 @@ class Autoencoder:
             "w",
         ) as json_file:
             json_file.write(model_json)
+
+    def load(self, input_shape: int) -> Model:
+        """
+        Loads a pretrained ae from cache
+
+        Parameters
+        ----------
+        input_shape: determines which model is used
+
+        Returns
+        -------
+
+        """
+        cache_path = self.get_aes_home()
+
+        # load ae
+        json_file = open(
+            os.path.join(
+                cache_path,
+                "{}_{}.{}".format(self.data_name, input_shape, "json"),
+            ),
+            "r",
+        )
+        model_ae = model_from_json(json_file.read(), custom_objects={"tf": tf})
+        json_file.close()
+
+        model_ae.load_weights(
+            os.path.join(
+                cache_path,
+                "{}_{}.{}".format(self.data_name, input_shape, "h5"),
+            )
+        )
+
+        # Build layers property from loaded model
+        layers = []
+        for layer in model_ae.layers[:-1]:
+            layers.append(layer.output_shape[1])
+        self._layers = layers
+
+        return model_ae
 
     def get_aes_home(self, models_home=None):
         """Return a path to the cache directory for trained autoencoders.
