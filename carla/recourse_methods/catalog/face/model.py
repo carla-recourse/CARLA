@@ -1,13 +1,15 @@
 from typing import Any, Dict
 
-import numpy as np
 import pandas as pd
 
 from carla.models.api import MLModel
 from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.face.library import graph_search
-from carla.recourse_methods.processing import encode_feature_names
+from carla.recourse_methods.processing import (
+    counterfactual_to_dataframe,
+    encode_feature_names,
+)
 
 
 class Face(RecourseMethod):
@@ -102,13 +104,6 @@ class Face(RecourseMethod):
             )
             list_cfs.append(cf)
 
-        df_cfs = pd.DataFrame(
-            np.array(list_cfs), columns=self._mlmodel.feature_input_order
-        )
-        df_cfs[self._mlmodel.data.target] = np.argmax(
-            self._mlmodel.predict_proba(df_cfs), axis=1
-        )
-        # Change all wrong counterfactuals to nan
-        df_cfs.loc[df_cfs[self._mlmodel.data.target] == 0, :] = np.nan
+        df_cfs = counterfactual_to_dataframe(self._mlmodel, list_cfs)
 
         return df_cfs

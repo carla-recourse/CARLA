@@ -41,6 +41,7 @@ def growing_spheres_search(
     keys_immutable,
     continuous_cols,
     binary_cols,
+    feature_order,
     model,
     n_search_samples=1000,
     p_norm=2,
@@ -61,7 +62,7 @@ def growing_spheres_search(
     """  #
 
     # correct order of names
-    keys_correct = continuous_cols + binary_cols
+    keys_correct = feature_order
     # divide up keys
     keys_mutable_continuous = list(set(keys_mutable) - set(binary_cols))
     keys_mutable_binary = list(set(keys_mutable) - set(continuous_cols))
@@ -92,7 +93,7 @@ def growing_spheres_search(
     counter_step = 1
 
     # get predicted label of instance
-    instance_label = np.argmax(model.model.predict(instance.values.reshape(1, -1)))
+    instance_label = np.argmax(model.predict_proba(instance.values.reshape(1, -1)))
 
     while True:
         count = count + counter_step
@@ -141,7 +142,7 @@ def growing_spheres_search(
             print("Distance not defined yet")
 
         # counterfactual labels
-        y_candidate_logits = model.model.predict(candidate_counterfactuals.values)
+        y_candidate_logits = model.predict_proba(candidate_counterfactuals.values)
         y_candidate = np.argmax(y_candidate_logits, axis=1)
         indeces = np.where(y_candidate != instance_label)
         candidate_counterfactuals = candidate_counterfactuals.values[indeces]
