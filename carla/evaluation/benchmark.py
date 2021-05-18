@@ -23,7 +23,7 @@ class Benchmark:
             Instances we want to find counterfactuals
         """
         self._recmodel = recourse_method
-        self._counterfactuals = self._recmodel.get_counterfactuals(factuals)
+        self._counterfactuals = recourse_method.get_counterfactuals(factuals)
 
         # Normalizing and encoding factual for later use
         self._factuals = scale(mlmodel.scaler, mlmodel.data.continous, factuals)
