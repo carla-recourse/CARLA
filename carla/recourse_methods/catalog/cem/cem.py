@@ -1,5 +1,6 @@
 # flake8: noqa
 import timeit
+from typing import Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -53,6 +54,7 @@ class CEM(RecourseMethod):
     ):
 
         # TODO refactor names from img to more general
+        super().__init__(catalog_model)
         dimension = len(catalog_model.feature_input_order)
         shape = (batch_size, dimension)
 
@@ -68,7 +70,6 @@ class CEM(RecourseMethod):
         self.batch_size = batch_size
         self.AE = AE
         self.mode = mode
-        self.beta = beta
         self.gamma = gamma
 
         # these are variables to be more efficient in sending data to tf
@@ -94,202 +95,83 @@ class CEM(RecourseMethod):
         # BEGIN: conditions to compute the ell1 regularization
         # this should be the function S_beta(z) in the paper
 
-        self.zt = tf.divide(self.global_step, self.global_step + tf.cast(3, tf.float32))
+        # TODO check model.predict gets correct input
+        if self.mode not in ["PP", "PN"]:
+            raise ValueError("Mode not known, please use either PP or PN")
 
-        # cond 1 -- x^CF - x^F > beta
-        # cond 2 -- |x^CF - x^F| =< beta
-        # cond 3 -- x^CF - x^F < -beta
+        zt = tf.divide(self.global_step, self.global_step + tf.cast(3, tf.float32))
 
-        cond1 = tf.cast(
-            tf.greater(tf.subtract(self.adv_img_s, self.orig_img), self.beta),
-            tf.float32,
-        )
-        cond2 = tf.cast(
-            tf.less_equal(
-                tf.abs(tf.subtract(self.adv_img_s, self.orig_img)), self.beta
-            ),
-            tf.float32,
-        )
-        cond3 = tf.cast(
-            tf.less(tf.subtract(self.adv_img_s, self.orig_img), tf.negative(self.beta)),
-            tf.float32,
-        )
-
-        # lower -- min(x^CF - beta, 0.5)
-        # upper -- max(x^CF + beta, -0.5)
-
-        upper = tf.minimum(
-            tf.subtract(self.adv_img_s, self.beta), tf.cast(0.5, tf.float32)
-        )
-        lower = tf.maximum(tf.add(self.adv_img_s, self.beta), tf.cast(-0.5, tf.float32))
-
-        self.assign_adv_img = (
-            tf.multiply(cond1, upper)
-            + tf.multiply(cond2, self.orig_img)
-            + tf.multiply(cond3, lower)
-        )
-
-        # x^CF. := assigned adv img
-        # cond 4 -- x^CF. - x^F > 0
-        # cond 5 -- x^CF. - x^F =< 0
-
-        cond4 = tf.cast(
-            tf.greater(tf.subtract(self.assign_adv_img, self.orig_img), 0), tf.float32
-        )
-        cond5 = tf.cast(
-            tf.less_equal(tf.subtract(self.assign_adv_img, self.orig_img), 0),
-            tf.float32,
-        )
-
-        if self.mode == "PP":
-            self.assign_adv_img = tf.multiply(cond5, self.assign_adv_img) + tf.multiply(
-                cond4, self.orig_img
-            )
-        elif self.mode == "PN":
-            self.assign_adv_img = tf.multiply(cond4, self.assign_adv_img) + tf.multiply(
-                cond5, self.orig_img
-            )
-
-        self.assign_adv_img_s = self.assign_adv_img + tf.multiply(
-            self.zt, self.assign_adv_img - self.adv_img
-        )
-
-        # x^CF.s := assigned adv img s
-        # cond 6 -- x^CF.s - x^F > 0
-        # cond 7 -- x^CF.s - x^F =< 0
-
-        cond6 = tf.cast(
-            tf.greater(tf.subtract(self.assign_adv_img_s, self.orig_img), 0), tf.float32
-        )
-        cond7 = tf.cast(
-            tf.less_equal(tf.subtract(self.assign_adv_img_s, self.orig_img), 0),
-            tf.float32,
-        )
-
-        if self.mode == "PP":
-            self.assign_adv_img_s = tf.multiply(
-                cond7, self.assign_adv_img_s
-            ) + tf.multiply(cond6, self.orig_img)
-        elif self.mode == "PN":
-            self.assign_adv_img_s = tf.multiply(
-                cond6, self.assign_adv_img_s
-            ) + tf.multiply(cond7, self.orig_img)
+        self.assign_adv_img = self.__compute_adv_img(beta)
+        self.assign_adv_img_s = self.__compute_adv_img_s(zt)
 
         self.adv_updater = tf.assign(self.adv_img, self.assign_adv_img)
         self.adv_updater_s = tf.assign(self.adv_img_s, self.assign_adv_img_s)
 
-        # END: conditions to compute the ell1 regularization
-        """--------------------------------"""
-
-        # delta_img := delta^k+1
-        # delta_ims_s := y^k+1 (slack variable to account for momentum acceleration)
-
-        # prediction BEFORE-SOFTMAX of the model
-        self.delta_img = self.orig_img - self.adv_img
-        self.delta_img_s = self.orig_img - self.adv_img_s
-
-        # TODO check model.predict gets correct input
-        if self.mode == "PP":
-            self.ImgToEnforceLabel_Score = catalog_model.raw_model(self.delta_img)
-            self.ImgToEnforceLabel_Score_s = catalog_model.raw_model(self.delta_img_s)
-        elif self.mode == "PN":
-            self.ImgToEnforceLabel_Score = catalog_model.raw_model(self.adv_img)
-            self.ImgToEnforceLabel_Score_s = catalog_model.raw_model(self.adv_img_s)
+        delta_img = self.orig_img - self.adv_img
+        delta_img_s = self.orig_img - self.adv_img_s
 
         # distance to the input data
-        """ # use this way in combination with pictures and convolutions
-        self.L2_dist = tf.reduce_sum(tf.square(self.delta_img), [1, 2, 3])
-        self.L2_dist_s = tf.reduce_sum(tf.square(self.delta_img_s), [1, 2, 3])
-        self.L1_dist = tf.reduce_sum(tf.abs(self.delta_img), [1, 2, 3])
-        self.L1_dist_s = tf.reduce_sum(tf.abs(self.delta_img_s), [1, 2, 3])
-        """
+        L2_dist = tf.reduce_sum(tf.square(delta_img), [1])
+        L2_dist_s = tf.reduce_sum(tf.square(delta_img_s), [1])
+        L1_dist = tf.reduce_sum(tf.abs(delta_img), [1])
 
-        self.L2_dist = tf.reduce_sum(tf.square(self.delta_img), [1])
-        self.L2_dist_s = tf.reduce_sum(tf.square(self.delta_img_s), [1])
-
-        self.L1_dist = tf.reduce_sum(tf.abs(self.delta_img), [1])
-        self.L1_dist_s = tf.reduce_sum(tf.abs(self.delta_img_s), [1])
+        enforce_input = delta_img if self.mode == "PP" else self.adv_img
+        enforce_input_s = delta_img_s if self.mode == "PP" else self.adv_img_s
+        self.ImgToEnforceLabel_Score = catalog_model.raw_model(enforce_input)
+        ImgToEnforceLabel_Score_s = catalog_model.raw_model(enforce_input_s)
 
         # composite distance loss
-        self.EN_dist = self.L2_dist + tf.multiply(self.L1_dist, self.beta)
-        self.EN_dist_s = self.L2_dist_s + tf.multiply(self.L1_dist_s, self.beta)
+        self.EN_dist = L2_dist + tf.multiply(L1_dist, beta)
 
-        # compute the probability of the label class versus the maximum other
-        self.target_lab_score = tf.reduce_sum(
-            self.target_lab * self.ImgToEnforceLabel_Score, 1
+        self.target_lab_score = self.__compute_target_lab_score(
+            self.ImgToEnforceLabel_Score
         )
-        target_lab_score_s = tf.reduce_sum(
-            self.target_lab * self.ImgToEnforceLabel_Score_s, 1
-        )
+        target_lab_score_s = self.__compute_target_lab_score(ImgToEnforceLabel_Score_s)
 
-        self.max_nontarget_lab_score = tf.reduce_max(
-            (1 - self.target_lab) * self.ImgToEnforceLabel_Score
-            - (self.target_lab * 10000),
-            1,
+        self.max_nontarget_lab_score = self.__compute_non_target_lab_score(
+            self.ImgToEnforceLabel_Score
         )
-        max_nontarget_lab_score_s = tf.reduce_max(
-            (1 - self.target_lab) * self.ImgToEnforceLabel_Score_s
-            - (self.target_lab * 10000),
-            1,
+        max_nontarget_lab_score_s = self.__compute_non_target_lab_score(
+            ImgToEnforceLabel_Score_s
         )
 
-        if self.mode == "PP":
-            Loss_Attack = tf.maximum(
-                0.0, self.max_nontarget_lab_score - self.target_lab_score + self.kappa
-            )
-            Loss_Attack_s = tf.maximum(
-                0.0, max_nontarget_lab_score_s - target_lab_score_s + self.kappa
-            )
-        elif self.mode == "PN":
-            Loss_Attack = tf.maximum(
-                0.0, -self.max_nontarget_lab_score + self.target_lab_score + self.kappa
-            )
-            Loss_Attack_s = tf.maximum(
-                0.0, -max_nontarget_lab_score_s + target_lab_score_s + self.kappa
-            )
+        Loss_Attack = self.__compute_attack_loss(
+            self.max_nontarget_lab_score, self.target_lab_score, self.mode
+        )
+        Loss_Attack_s = self.__compute_attack_loss(
+            max_nontarget_lab_score_s, target_lab_score_s, self.mode
+        )
 
         # sum up the losses
-        self.Loss_L1Dist = tf.reduce_sum(self.L1_dist)
-        self.Loss_L1Dist_s = tf.reduce_sum(self.L1_dist_s)
+        self.Loss_L1Dist = tf.reduce_sum(L1_dist)
 
-        self.Loss_L2Dist = tf.reduce_sum(self.L2_dist)
-        self.Loss_L2Dist_s = tf.reduce_sum(self.L2_dist_s)
+        self.Loss_L2Dist = tf.reduce_sum(L2_dist)
+        Loss_L2Dist_s = tf.reduce_sum(L2_dist_s)
 
         self.Loss_Attack = tf.reduce_sum(self.const * Loss_Attack)
-        self.Loss_Attack_s = tf.reduce_sum(self.const * Loss_Attack_s)
+        Loss_Attack_s = tf.reduce_sum(self.const * Loss_Attack_s)
 
-        if self.mode == "PP":
-            self.Loss_AE_Dist = self.gamma * tf.square(
-                tf.norm(self.AE(self.delta_img) - self.delta_img)
-            )
-            self.Loss_AE_Dist_s = self.gamma * tf.square(
-                tf.norm(self.AE(self.delta_img) - self.delta_img_s)
-            )
-        elif self.mode == "PN":
-            self.Loss_AE_Dist = self.gamma * tf.square(
-                tf.norm(self.AE(self.adv_img) - self.adv_img)
-            )
-            self.Loss_AE_Dist_s = self.gamma * tf.square(
-                tf.norm(self.AE(self.adv_img_s) - self.adv_img_s)
-            )
+        delta_input_ae = delta_img if self.mode == "PP" else self.adv_img
+        delta_input_ae_s = delta_img_s if self.mode == "PP" else self.adv_img_s
 
-        self.Loss_ToOptimize = (
-            self.Loss_Attack_s + self.Loss_L2Dist_s + self.Loss_AE_Dist_s
-        )
+        self.Loss_AE_Dist = self.__compute_AE_lost(delta_input_ae)
+        Loss_AE_Dist_s = self.__compute_AE_lost(delta_input_ae_s)
+
+        Loss_ToOptimize = Loss_Attack_s + Loss_L2Dist_s + Loss_AE_Dist_s
         self.Loss_Overall = (
             self.Loss_Attack
             + self.Loss_L2Dist
             + self.Loss_AE_Dist
-            + tf.multiply(self.beta, self.Loss_L1Dist)
+            + tf.multiply(beta, self.Loss_L1Dist)
         )
 
-        self.learning_rate = tf.train.polynomial_decay(
+        learning_rate = tf.train.polynomial_decay(
             self.INIT_LEARNING_RATE, self.global_step, self.MAX_ITERATIONS, 0, power=0.5
         )
-        optimizer = tf.train.GradientDescentOptimizer(self.learning_rate)
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
         start_vars = set(x.name for x in tf.global_variables())
         self.train = optimizer.minimize(
-            self.Loss_ToOptimize,
+            Loss_ToOptimize,
             var_list=[self.adv_img_s],
             global_step=self.global_step,
         )
@@ -307,6 +189,80 @@ class CEM(RecourseMethod):
         self.init = tf.variables_initializer(
             var_list=[self.global_step] + [self.adv_img_s] + [self.adv_img] + new_vars
         )
+
+    def __compute_target_lab_score(self, label_score: tf.Tensor) -> tf.Tensor:
+        return tf.reduce_sum(self.target_lab * label_score, 1)
+
+    def __compute_non_target_lab_score(self, label_score: tf.Tensor) -> tf.Tensor:
+        return tf.reduce_max(
+            (1 - self.target_lab) * label_score - (self.target_lab * 10000),
+            1,
+        )
+
+    def __compute_AE_lost(self, delta_img: tf.Tensor) -> tf.Tensor:
+        return self.gamma * tf.square(tf.norm(self.AE(delta_img) - delta_img))
+
+    def __compute_attack_loss(
+        self, nontarget_lab_score: tf.Tensor, target_lab_score: tf.Tensor, mode: str
+    ) -> tf.Tensor:
+        sign = 1 if mode == "PP" else -1
+
+        return tf.maximum(
+            0.0, (sign * nontarget_lab_score) - (sign * target_lab_score) + self.kappa
+        )
+
+    def __compute_img_with_mode(self, assign_adv_img_s) -> tf.Tensor:
+        # x^CF.s := assigned adv img s
+        # cond 6 -- x^CF.s - x^F > 0
+        # cond 7 -- x^CF.s - x^F =< 0
+        cond6, cond7, _ = self.__get_conditions(assign_adv_img_s)
+        if self.mode == "PP":
+            assign_adv_img_s = tf.multiply(cond7, assign_adv_img_s) + tf.multiply(
+                cond6, self.orig_img
+            )
+        elif self.mode == "PN":
+            assign_adv_img_s = tf.multiply(cond6, assign_adv_img_s) + tf.multiply(
+                cond7, self.orig_img
+            )
+        return assign_adv_img_s
+
+    def __compute_adv_img_s(self, zt) -> tf.Tensor:
+        assign_adv_img_s = self.assign_adv_img + tf.multiply(
+            zt, self.assign_adv_img - self.adv_img
+        )
+        return self.__compute_img_with_mode(assign_adv_img_s)
+
+    def __compute_adv_img(self, beta: float) -> tf.Tensor:
+        cond1, cond2, cond3 = self.__get_conditions(self.adv_img_s, beta)
+        # lower -- min(x^CF - beta, 0.5)
+        # upper -- max(x^CF + beta, -0.5)
+        upper = tf.minimum(tf.subtract(self.adv_img_s, beta), tf.cast(0.5, tf.float32))
+        lower = tf.maximum(tf.add(self.adv_img_s, beta), tf.cast(-0.5, tf.float32))
+        assign_adv_img = (
+            tf.multiply(cond1, upper)
+            + tf.multiply(cond2, self.orig_img)
+            + tf.multiply(cond3, lower)
+        )
+
+        return self.__compute_img_with_mode(assign_adv_img)
+
+    def __get_conditions(
+        self, adv_img: Union[tf.Tensor, tf.Variable], beta: float = 0.0
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+        cond_greater = tf.cast(
+            tf.greater(tf.subtract(adv_img, self.orig_img), beta),
+            tf.float32,
+        )
+        cond_less_equal = tf.cast(
+            tf.less_equal(tf.abs(tf.subtract(adv_img, self.orig_img)), beta),
+            tf.float32,
+        )
+        cond_less = tf.cast(
+            tf.less(tf.subtract(adv_img, self.orig_img), tf.negative(beta)),
+            tf.float32,
+        )
+
+        return cond_greater, cond_less_equal, cond_less
 
     def attack(self, X, Y):
         def compare(x, y) -> bool:
@@ -535,9 +491,11 @@ class CEM(RecourseMethod):
         instances = instances.iloc[counterfactuals_indices]
 
         # Obtain labels
-        instance_label = np.argmax(self.catalog_model.predict(instances.values), axis=1)
+        instance_label = np.argmax(
+            self.catalog_model.predict_proba(instances.values), axis=1
+        )
         counterfactual_label = np.argmax(
-            self.catalog_model.predict(counterfactuals_df.values), axis=1
+            self.catalog_model.predict_proba(counterfactuals_df.values), axis=1
         )
 
         # Order counterfactuals and instances in original data order
