@@ -22,7 +22,6 @@ class Benchmark:
         factuals: pd.DataFrame
             Instances we want to find counterfactuals
         """
-        self._recmodel = recourse_method
         self._counterfactuals = recourse_method.get_counterfactuals(factuals)
 
         # Normalizing and encoding factual for later use
