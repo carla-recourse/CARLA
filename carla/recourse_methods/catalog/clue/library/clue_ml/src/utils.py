@@ -8,9 +8,9 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 try:
-    import cPickle as pickle
+    import cPickle as pickle  # type: ignore
 except:
-    import pickle
+    import pickle  # type: ignore
 
 
 def mkdir(paths):

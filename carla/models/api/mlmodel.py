@@ -1,36 +1,47 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
+import numpy as np
+import pandas as pd
 from sklearn import preprocessing
+from sklearn.base import BaseEstimator
+
+from carla.data.api import Data
 
 
 class MLModel(ABC):
-    def __init__(self, data, scaling_method="MinMax", encoding_method="OneHot"):
-        self.data = data
+    def __init__(
+        self,
+        data: Data,
+        scaling_method: str = "MinMax",
+        encoding_method: str = "OneHot",
+    ) -> None:
+        self.data: Data = data
 
         if scaling_method == "MinMax":
             fitted_scaler = preprocessing.MinMaxScaler().fit(data.raw[data.continous])
-            self.scaler = fitted_scaler
+            self.scaler: BaseEstimator = fitted_scaler
 
         if encoding_method == "OneHot":
             fitted_encoder = preprocessing.OneHotEncoder(
                 handle_unknown="ignore", sparse=False
             ).fit(data.raw[data.categoricals])
-            self.encoder = fitted_encoder
+            self.encoder: BaseEstimator = fitted_encoder
 
     @property
-    def data(self):
+    def data(self) -> Data:
         return self._data
 
     @data.setter
-    def data(self, data):
+    def data(self, data: Data):
         self._data = data
 
     @property
-    def scaler(self):
+    def scaler(self) -> BaseEstimator:
         return self._scaler
 
     @scaler.setter
-    def scaler(self, scaler):
+    def scaler(self, scaler: BaseEstimator):
         """
         Sets a new fitted sklearn scaler.
 
@@ -46,11 +57,11 @@ class MLModel(ABC):
         self._scaler = scaler
 
     @property
-    def encoder(self):
+    def encoder(self) -> BaseEstimator:
         return self._encoder
 
     @encoder.setter
-    def encoder(self, encoder):
+    def encoder(self, encoder: BaseEstimator):
         """
         Sets a new fitted sklearn encoder.
 
@@ -109,7 +120,7 @@ class MLModel(ABC):
         pass
 
     @abstractmethod
-    def predict(self, x):
+    def predict(self, x: Union[np.ndarray, pd.DataFrame]):
         """
         One-dimensional prediction of ml model for an output interval of [0, 1].
 
@@ -128,7 +139,7 @@ class MLModel(ABC):
         pass
 
     @abstractmethod
-    def predict_proba(self, x):
+    def predict_proba(self, x: Union[np.ndarray, pd.DataFrame]):
         """
         Two-dimensional probability prediction of ml model
 

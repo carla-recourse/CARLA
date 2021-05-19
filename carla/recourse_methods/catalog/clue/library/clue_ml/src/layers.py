@@ -1,5 +1,7 @@
 from __future__ import division
 
+from typing import Dict
+
 import torch
 import torch.nn as nn
 
@@ -113,7 +115,7 @@ class MemoryLayer(nn.Module):
     ```
     """
 
-    storage = {}
+    storage: Dict = {}
 
     def __init__(self, id, output=False, add=False):
         super(MemoryLayer, self).__init__()
