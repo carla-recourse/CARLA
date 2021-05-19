@@ -1,10 +1,7 @@
 from __future__ import division, print_function
 
-import numpy as np
-import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torch.optim import SGD, Adam
+from torch.optim import Adam
 
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.probability import (
     decompose_entropy_cat,
@@ -115,7 +112,6 @@ def vae_gradient_search(
     produced counterfactuals not more than 20% percent of the time. E.g. running optimization to end
     leads to 16% of successfuly generated counterfactuals for their LSAT data set.
     """
-    a = counterfactual[:, 0, :]
 
     cf_preds = model.predict_proba(counterfactual[:, 0, :])
     indeces_counterfactual = np.where(
@@ -130,7 +126,6 @@ def vae_gradient_search(
         distance = np.abs(instance - counterfactual[indeces_counterfactual, :, :]).sum(
             axis=2
         )
-        a = np.argmin(distance)
         index_min = indeces_counterfactual[np.argmin(distance)]
         counterfactual = counterfactual[index_min, :, :]
 
@@ -170,8 +165,6 @@ class CLUE(BaseNet):
         # Load models
         self.VAE = VAE
         self.BNN = BNN
-        # self.BNN.set_mode_train(train=False) # We commented these out
-        # self.VAE.set_mode_train(train=False)
 
         # Objective function definition
         self.uncertainty_weight = uncertainty_weight
@@ -184,14 +177,9 @@ class CLUE(BaseNet):
         self.latent_L2_weight = latent_L2_weight
         self.prediction_similarity_weight = prediction_similarity_weight
         self.desired_preds = desired_preds
-        # if self.desired_preds is not None:
-        #     self.desired_preds = torch.Tensor(self.desired_preds)
-        # if not regression:
-        #     self.desired_preds = self.desired_preds#.type(torch.LongTensor)
 
         # Other CLUE parameters
         self.regression = regression
-        # self.vae_sig = vae_sig  # We dont actually use this in our CLUE generative models as it performs worse
         self.flatten_BNN = flatten_BNN
         self.norm_MNIST = norm_MNIST
         self.original_x = torch.Tensor(original_x)
@@ -235,8 +223,6 @@ class CLUE(BaseNet):
         # Optimiser
         self.optimizer = Adam(self.trainable_params, lr=lr)
 
-    # SGD(self.trainable_params, lr=lr, momentum=0.5, nesterov=True)
-
     def randomise_z_init(self, std):
         # assert (self.z.data == self.z_init).all()
         eps = torch.randn(self.z.shape).type(self.z.type())
@@ -258,9 +244,6 @@ class CLUE(BaseNet):
         return dist
 
     def uncertainty_from_z(self):
-        # if self.vae_sig:
-        #     x = self.VAE.regenerate(self.z, grad=True).loc
-        # else:
         # We dont use unflatten option because BNNs always take flattened input and unflatten doesnt support grad
         x = self.VAE.regenerate(self.z, grad=True)
 
@@ -297,13 +280,7 @@ class CLUE(BaseNet):
                 epistemic_uncertainty = total_uncertainty * 0
                 preds = mu
             else:
-                # probs = self.BNN.predict(to_BNN, grad=True) #original version
-                # probs = self.BNN.predict(to_BNN, grad=False)
-                # probs = self.BNN.predict_proba(
-                #     to_BNN.cpu().detach().numpy()
-                # )
                 probs = self.BNN.predict_proba(to_BNN)
-                # probs = torch.from_numpy(probs)
                 total_uncertainty = -(probs * torch.log(probs + 1e-10)).sum(
                     dim=1, keepdim=False
                 )
@@ -335,7 +312,6 @@ class CLUE(BaseNet):
             objective += self.prior_weight * prior_loglike
 
         if self.latent_L2_weight != 0 and self.latent_L2_weight is not None:
-            # print('latent_L2_weight is not implement correctly as distances are computed across batches')
             latent_dist = (
                 F.mse_loss(self.z, self.z_init, reduction="none")
                 .view(x.shape[0], -1)
@@ -522,7 +498,6 @@ class CLUE(BaseNet):
 
             torch.autograd.set_detect_anomaly(False)
 
-            # clue_instance.optimizer = SGD(self.trainable_params, lr=lr, momentum=0.5, nesterov=True)
             (
                 z_vec,
                 x_vec,

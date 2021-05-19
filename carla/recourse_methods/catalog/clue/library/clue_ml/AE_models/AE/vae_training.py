@@ -56,7 +56,6 @@ def training(
         cuda=cuda,
         flatten=False,
     )
-    # net.load(save_dir+'_models/theta_best.dat')
 
     # train & save model
     vlb_train, vlb_dev = train_VAE(

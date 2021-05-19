@@ -4,7 +4,6 @@ import os
 import sys
 
 import torch
-import torch.nn as nn
 from torch.autograd import Variable
 
 try:
@@ -167,9 +166,6 @@ def fgsm_attack(image, epsilon, data_grad):
     sign_data_grad = data_grad.sign()
     # Create the perturbed image by adjusting each pixel of the input image
     perturbed_image = image + epsilon * sign_data_grad
-    # Adding clipping to maintain [0,1] range
-    #     perturbed_image = torch.clamp(perturbed_image, 0, 1)
-    # Return the perturbed image
     return perturbed_image
 
 
@@ -183,15 +179,6 @@ def torch_onehot(y, Nclass):
     y_onehot.scatter_(1, y.unsqueeze(1), 1)
     return y_onehot
 
-
-# def save_object(obj, filename):
-#    with open(filename, 'wb') as output:  # Overwrites any existing file.
-#        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
-
-# This one also led to the magic number error
-# def save_object(obj, filename):
-#    with open(filename, 'wb') as output:  # Overwrites any existing file.
-#        torch.save(obj, output)
 
 # Changed to this: https://discuss.pytorch.org/t/runtime-error-when-loading-pytorch-model-from-pkl/38330
 def save_object(obj, filename):
@@ -225,26 +212,11 @@ def _load_from_bytes(b):
     return torch.load(io.BytesIO(b), map_location=_map_location[-1])
 
 
-# def load_object(filename):
-#    with torch.storage.map_location('cpu'):
-#        return pickle.load(open(filename, 'rb'), encoding='bytes')
-
-
 def load_object(filename):
     with open(filename, "rb") as input:
         ##try:
         print(input)
         return torch.load(input, encoding="bytes")
-
-        """
-        except Exception as e:
-            try:
-                print(e)
-                return pickle.load(input, encoding="latin1")
-            except Exception as a:
-                print(a)
-                return pickle.load(input, encoding='bytes')
-        """
 
 
 def array_to_bin_np(array, ncats):

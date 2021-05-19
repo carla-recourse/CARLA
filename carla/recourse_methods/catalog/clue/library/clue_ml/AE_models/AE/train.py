@@ -1,13 +1,10 @@
 from __future__ import division, print_function
 
-import os
 import time
 
-import matplotlib.pyplot as plt
-import torch
 import torch.utils.data
 from numpy.random import normal
-from torchvision.utils import make_grid, save_image
+from torchvision.utils import make_grid
 
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.utils import *
 
@@ -27,14 +24,8 @@ def train_VAE(
     script_mode=False,
 ):
 
-    # models_dir = name + "_models"
     models_dir = name
     results_dir = name + "_results"
-
-    cwd = os.getcwd()
-
-    # mkdir(models_dir)
-    # mkdir(results_dir)
 
     if cuda:
         trainloader = torch.utils.data.DataLoader(
@@ -146,7 +137,6 @@ def train_VAE(
                     x = x.view(-1, 1, side, side).data
                     o = o.view(-1, 1, side, side).data
 
-                # save_image(torch.cat([x[:8], o[:8]]), results_dir + '/rec_%d.png' % i, nrow=8)
                 import matplotlib.pyplot as plt
 
                 plt.figure()
@@ -199,22 +189,4 @@ def train_VAE(
     print("  nb_parameters: %d (%s)\n" % (nb_parameters, humansize(nb_parameters)))
 
     ## ---------------------------------------------------------------------------------------------------------------------
-    # fig cost vs its
-    if not train_plot:
-        import matplotlib
-
-        matplotlib.use("agg")
-    import matplotlib.pyplot as plt
-
-    if train_plot:
-        plt.figure()
-        plt.plot(np.clip(vlb_train, -1000, 1000), "r")
-        plt.plot(np.clip(vlb_dev[::nb_its_dev], -1000, 1000), "b")
-        plt.legend(["cost_train", "cost_dev"])
-        plt.ylabel("vlb")
-        plt.xlabel("it")
-        plt.grid(True)
-        plt.savefig(results_dir + "/train_cost.png")
-        if train_plot:
-            plt.show()
     return vlb_train, vlb_dev

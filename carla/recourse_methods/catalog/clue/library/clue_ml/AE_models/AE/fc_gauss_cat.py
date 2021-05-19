@@ -1,33 +1,22 @@
 from __future__ import division
 
 import numpy as np
-import torch
 import torch.backends.cudnn as cudnn
-import torch.nn as nn
 from torch.distributions import kl_divergence
 from torch.distributions.normal import Normal
-from torch.nn import MSELoss
 
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.gauss_cat import *
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.probability import (
-    GaussianLoglike,
     normal_parse_params,
 )
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.radam import RAdam
-
-# from CF_models.clue_ml.src.layers import SkipConnection
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.utils import (
     BaseNet,
     cprint,
     to_variable,
 )
 
-from .models import (
-    MLP_generator_net,
-    MLP_preact_generator_net,
-    MLP_preact_recognition_net,
-    MLP_recognition_net,
-)
+from .models import MLP_preact_generator_net, MLP_preact_recognition_net
 
 # TODO: implement for std changeable gaussian instead of rms
 
@@ -44,8 +33,6 @@ class VAE_gauss_cat(nn.Module):
         self.encoder = MLP_preact_recognition_net(input_dim, width, depth, latent_dim)
         if pred_sig:
             raise NotImplementedError()
-            # self.decoder = generator_net(2*input_dim, width, depth, latent_dim)
-            # self.rec_loglike = GaussianLoglike(min_sigma=1e-2)
         else:
             self.decoder = MLP_preact_generator_net(input_dim, width, depth, latent_dim)
             self.rec_loglike = rms_cat_loglike(self.input_dim_vec, reduction="none")
@@ -120,7 +107,6 @@ class VAE_gauss_cat_net(BaseNet):
         self.flatten = flatten
         if not self.flatten:
             pass
-            # raise Exception('Error calculation not supported without flattening')
 
         self.width = width
         self.depth = depth

@@ -3,7 +3,7 @@ from __future__ import division
 
 import numpy as np
 import torch
-from torch.distributions import Categorical, Normal, constraints
+from torch.distributions import Categorical, constraints
 from torch.distributions.normal import Normal
 from torch.distributions.transformed_distribution import TransformedDistribution
 from torch.distributions.transforms import StickBreakingTransform
@@ -212,20 +212,6 @@ def decompose_std_gauss(mu, sigma, sum_dims=True):
         epistemic_var = epistemic_var.sum(dim=1)
         total_var = total_var.sum(dim=1)
     return total_var.sqrt(), aleatoric_var.sqrt(), epistemic_var.sqrt()
-
-
-# This method makes some heavy assumptions and is being phased out of usage
-# def decompose_entropy_N_gauss(mu, sigma):
-#     # probs (Nsamples, batch_size, output_sims)
-#     eps = 1e-10
-#     posterior_mu = mu.mean(dim=0, keepdim=False)
-#     posterior_sigma = marginal_std(mu, sigma)
-#     d = sigma.shape[2]
-#     total_entropy = 0.5 * d * (1 + np.log(2 * np.pi)) + 0.5 * torch.log(posterior_sigma ** 2).sum(dim=1)
-#     individual_entropy = 0.5 * d * (1 + np.log(2 * np.pi)) + 0.5 * torch.log(sigma ** 2).sum(dim=2)
-#     aleatoric_entropy = individual_entropy.mean(dim=0)
-#     epistemic_entropy = total_entropy - aleatoric_entropy
-#     return total_entropy, aleatoric_entropy, epistemic_entropy
 
 
 def decompose_entropy_cat(probs, eps=1e-10):

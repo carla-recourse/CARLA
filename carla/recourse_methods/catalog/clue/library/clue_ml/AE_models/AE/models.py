@@ -1,7 +1,6 @@
 from __future__ import division
 
 import torch.nn as nn
-import torch.nn.functional as F
 
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.layers import (
     MLPBlock,

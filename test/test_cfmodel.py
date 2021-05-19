@@ -79,7 +79,7 @@ def test_clue():
     model = MLModelCatalog(data, "ann", backend="pytorch")
     # get factuals
     factuals = predict_negative_instances(model, data)
-    test_factual = factuals.iloc[:5]
+    test_factual = factuals.iloc[:20]
 
     hyperparams = {
         "data_name": "adult",
