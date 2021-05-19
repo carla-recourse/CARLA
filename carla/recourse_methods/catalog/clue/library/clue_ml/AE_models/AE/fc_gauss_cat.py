@@ -12,9 +12,9 @@ from carla.recourse_methods.catalog.clue.library.clue_ml.src.probability import 
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.radam import RAdam
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.utils import (
     BaseNet,
-    cprint,
     to_variable,
 )
+from carla.visualisation import cprint
 
 from .models import MLP_preact_generator_net, MLP_preact_recognition_net
 

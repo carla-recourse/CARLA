@@ -1,10 +1,11 @@
 from __future__ import division, print_function
 
 import os
-import sys
 
 import torch
 from torch.autograd import Variable
+
+from carla.visualisation import cprint
 
 try:
     import cPickle as pickle  # type: ignore
@@ -63,26 +64,6 @@ def to_variable(var=(), cuda=False, volatile=False):
             v = Variable(v, volatile=volatile)
         out.append(v)
     return out
-
-
-def cprint(color, text, **kwargs):
-    if color[0] == "*":
-        pre_code = "1;"
-        color = color[1:]
-    else:
-        pre_code = ""
-    code = {
-        "a": "30",
-        "r": "31",
-        "g": "32",
-        "y": "33",
-        "b": "34",
-        "p": "35",
-        "c": "36",
-        "w": "37",
-    }
-    print("\x1b[%s%sm%s\x1b[0m" % (pre_code, code[color], text), **kwargs)
-    sys.stdout.flush()
 
 
 def shuffle_in_unison_scary(a, b):
