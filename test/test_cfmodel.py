@@ -1,3 +1,5 @@
+import pytest
+
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
@@ -5,13 +7,16 @@ from carla.recourse_methods.catalog.actionable_recourse import ActionableRecours
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
 
+testmodel = ["ann", "linear"]
 
-def test_dice_get_counterfactuals():
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_dice_get_counterfactuals(model_type):
     # Build data and mlmodel
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model_tf = MLModelCatalog(data, "ann")
+    model_tf = MLModelCatalog(data, model_type)
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
 
@@ -44,12 +49,13 @@ def test_ar_get_counterfactual():
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
 
-def test_face_get_counterfactuals():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_face_get_counterfactuals(model_type):
     # Build data and mlmodel
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model_tf = MLModelCatalog(data, "ann")
+    model_tf = MLModelCatalog(data, model_type)
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
     test_factual = factuals.iloc[:2]
