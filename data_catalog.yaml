@@ -18,3 +18,19 @@ adult:
   immutable:
     - age
     - sex
+give-me-some-credit:
+  target: SeriousDlqin2yrs
+  continous:
+    - RevolvingUtilizationOfUnsecuredLines
+    - age
+    - NumberOfTime30-59DaysPastDueNotWorse
+    - DebtRatio
+    - MonthlyIncome
+    - NumberOfOpenCreditLinesAndLoans
+    - NumberOfTimes90DaysLate
+    - NumberRealEstateLoansOrLines
+    - NumberOfTime60-89DaysPastDueNotWorse
+    - NumberOfDependents
+  categorical:
+  immutable:
+    - age
