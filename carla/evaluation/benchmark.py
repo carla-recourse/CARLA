@@ -1,6 +1,7 @@
 import pandas as pd
 
 from carla.evaluation.distances import get_distances
+from carla.evaluation.process_nans import remove_nans
 from carla.evaluation.violations import constraint_violation
 from carla.models.api import MLModel
 from carla.models.pipelining import encode, scale
@@ -46,8 +47,11 @@ class Benchmark:
         -------
         pd.DataFrame
         """
-        arr_f = self._enc_norm_factuals.to_numpy()
-        arr_cf = self._counterfactuals.to_numpy()
+        factual_without_nans, counterfactuals_without_nans = remove_nans(
+            self._enc_norm_factuals, self._counterfactuals
+        )
+        arr_f = factual_without_nans.to_numpy()
+        arr_cf = counterfactuals_without_nans.to_numpy()
 
         distances = get_distances(arr_f, arr_cf)
         columns = ["Distance_1", "Distance_2", "Distance_3", "Distance_4"]
@@ -64,8 +68,12 @@ class Benchmark:
         -------
         pd.Dataframe
         """
+        factual_without_nans, counterfactuals_without_nans = remove_nans(
+            self._factuals, self._counterfactuals
+        )
+
         violations = constraint_violation(
-            self._mlmodel, self._counterfactuals, self._factuals
+            self._mlmodel, counterfactuals_without_nans, factual_without_nans
         )
         columns = ["Constraint_Violation"]
 
