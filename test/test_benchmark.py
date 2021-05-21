@@ -24,7 +24,7 @@ def test_benchmarks():
     benchmark = Benchmark(model_tf, dice, test_factual)
     df_benchmark = benchmark.run_benchmark()
 
-    expected = (5, 4)
+    expected = (5, 5)
     actual = df_benchmark.shape
     assert expected == actual
 
@@ -50,4 +50,29 @@ def test_distances():
 
     expected = (5, 4)
     actual = df_distances.shape
+    assert expected == actual
+
+
+def test_violation():
+    # Build data and mlmodel
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    model_tf = MLModelCatalog(data, "ann")
+    # get factuals
+    factuals = predict_negative_instances(model_tf, data)
+
+    hyperparams = {"num": 1, "desired_class": 1}
+    # Pipeline needed for dice, but not for predicting negative instances
+    model_tf.use_pipeline = True
+    test_factual = factuals.iloc[:5]
+
+    dice = Dice(model_tf, hyperparams)
+
+    benchmark = Benchmark(model_tf, dice, test_factual)
+    df_violation = benchmark.compute_constraint_violation()
+
+    expected = (5, 1)
+    actual = df_violation.shape
+
     assert expected == actual

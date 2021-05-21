@@ -48,17 +48,19 @@ class MLModelCatalog(MLModel):
         use_pipeline : bool, optional
             If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
         """
-        super().__init__(data)
         self._backend = backend
 
         if self._backend == "pytorch":
             ext = "pt"
+            encoding_method = "OneHot"
         elif self._backend == "tensorflow":
             ext = "h5"
+            encoding_method = "OneHot_drop_binary"
         else:
             raise ValueError(
                 "Backend not available, please choose between pytorch and tensorflow"
             )
+        super().__init__(data, encoding_method=encoding_method)
 
         # Load catalog
         catalog = load_catalog("mlmodel_catalog.yaml", data.name)

@@ -1,6 +1,7 @@
 import pandas as pd
 
 from carla.evaluation.distances import get_distances
+from carla.evaluation.violations import constraint_violation
 from carla.models.api import MLModel
 from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
@@ -22,6 +23,7 @@ class Benchmark:
         factuals: pd.DataFrame
             Instances we want to find counterfactuals
         """
+        self._mlmodel = mlmodel
         self._counterfactuals = recourse_method.get_counterfactuals(factuals)
         self._factuals = factuals.copy()
 
@@ -54,6 +56,21 @@ class Benchmark:
 
         return output
 
+    def compute_constraint_violation(self) -> pd.DataFrame:
+        """
+        Computes the constraint violation per factual as dataframe
+
+        Returns
+        -------
+        pd.Dataframe
+        """
+        violations = constraint_violation(
+            self._mlmodel, self._counterfactuals, self._factuals
+        )
+        columns = ["Constraint_Violation"]
+
+        return pd.DataFrame(violations, columns=columns)
+
     def run_benchmark(self) -> pd.DataFrame:
         """
         Runs every measurement and returns every value as dict.
@@ -63,7 +80,7 @@ class Benchmark:
         pd.DataFrame
         """
         # TODO: Extend with implementation of further measurements
-        pipeline = [self.compute_distances()]
+        pipeline = [self.compute_distances(), self.compute_constraint_violation()]
 
         output = pd.concat(pipeline, axis=1)
 
