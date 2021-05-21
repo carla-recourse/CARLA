@@ -1,3 +1,4 @@
+import timeit
 from typing import Union
 
 import pandas as pd
@@ -33,7 +34,10 @@ class Benchmark:
             Instances we want to find counterfactuals
         """
         self._mlmodel = mlmodel
+        start = timeit.default_timer()
         self._counterfactuals = recourse_method.get_counterfactuals(factuals)
+        stop = timeit.default_timer()
+        self._timer = stop - start
 
         # Avoid using scaling and normalizing more than once
         if isinstance(mlmodel, MLModelCatalog):
@@ -51,6 +55,21 @@ class Benchmark:
         self._enc_norm_factuals = self._enc_norm_factuals[
             mlmodel.feature_input_order + [mlmodel.data.target]
         ]
+
+    def compute_average_time(self) -> pd.DataFrame:
+        """
+        Computes average time for generating counterfactual
+
+        Returns
+        -------
+        pd.DataFrame
+        """
+
+        avg_time = self._timer / self._counterfactuals.shape[0]
+
+        columns = ["Average_Time"]
+
+        return pd.DataFrame([[avg_time]], columns=columns)
 
     def compute_distances(self) -> pd.DataFrame:
         """
@@ -139,6 +158,7 @@ class Benchmark:
             self.compute_constraint_violation(),
             self.compute_redundancy(),
             self.compute_success_rate(),
+            self.compute_average_time(),
         ]
 
         output = pd.concat(pipeline, axis=1)
