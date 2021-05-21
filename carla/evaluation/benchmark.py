@@ -5,6 +5,7 @@ import pandas as pd
 from carla.evaluation.distances import get_distances
 from carla.evaluation.process_nans import remove_nans
 from carla.evaluation.redundancy import redundancy
+from carla.evaluation.success_rate import success_rate
 from carla.evaluation.violations import constraint_violation
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
@@ -91,7 +92,14 @@ class Benchmark:
 
         return pd.DataFrame(violations, columns=columns)
 
-    def compute_redundancy(self):
+    def compute_redundancy(self) -> pd.DataFrame:
+        """
+        Computes redundancy for each counterfactual
+
+        Returns
+        -------
+        pd.Dataframe
+        """
         factual_without_nans, counterfactuals_without_nans = remove_nans(
             self._enc_norm_factuals, self._counterfactuals
         )
@@ -102,6 +110,20 @@ class Benchmark:
         columns = ["Redundancy"]
 
         return pd.DataFrame(redundancies, columns=columns)
+
+    def compute_success_rate(self) -> pd.DataFrame:
+        """
+        Computes success rate for the whole recourse method.
+
+        Returns
+        -------
+        pd.Dataframe
+        """
+
+        rate = success_rate(self._counterfactuals)
+        columns = ["Success_Rate"]
+
+        return pd.DataFrame([[rate]], columns=columns)
 
     def run_benchmark(self) -> pd.DataFrame:
         """
@@ -116,6 +138,7 @@ class Benchmark:
             self.compute_distances(),
             self.compute_constraint_violation(),
             self.compute_redundancy(),
+            self.compute_success_rate(),
         ]
 
         output = pd.concat(pipeline, axis=1)
