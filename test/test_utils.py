@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from carla import utils
+from carla.evaluation import utils
 
 
 def test_succes_rate():

@@ -23,13 +23,16 @@ class Benchmark:
             Instances we want to find counterfactuals
         """
         self._counterfactuals = recourse_method.get_counterfactuals(factuals)
+        self._factuals = factuals.copy()
 
         # Normalizing and encoding factual for later use
-        self._factuals = scale(mlmodel.scaler, mlmodel.data.continous, factuals)
-        self._factuals = encode(
-            mlmodel.encoder, mlmodel.data.categoricals, self._factuals
+        self._enc_norm_factuals = scale(
+            mlmodel.scaler, mlmodel.data.continous, factuals
         )
-        self._factuals = self._factuals[
+        self._enc_norm_factuals = encode(
+            mlmodel.encoder, mlmodel.data.categoricals, self._enc_norm_factuals
+        )
+        self._enc_norm_factuals = self._enc_norm_factuals[
             mlmodel.feature_input_order + [mlmodel.data.target]
         ]
 
@@ -41,7 +44,7 @@ class Benchmark:
         -------
         pd.DataFrame
         """
-        arr_f = self._factuals.to_numpy()
+        arr_f = self._enc_norm_factuals.to_numpy()
         arr_cf = self._counterfactuals.to_numpy()
 
         distances = get_distances(arr_f, arr_cf)
