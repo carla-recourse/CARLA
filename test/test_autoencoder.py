@@ -15,7 +15,7 @@ def test_autoencoder():
     model = MLModelCatalog(data, "ann")
     test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
 
-    ae = Autoencoder([len(model.feature_input_order), 20, 10, 5], data_name)
+    ae = Autoencoder(data_name, [len(model.feature_input_order), 20, 10, 5])
     fitted_ae = train_autoencoder(
         ae,
         data,
@@ -31,7 +31,7 @@ def test_autoencoder():
     assert test_output.shape == expected_shape
 
     # test with different lengths
-    ae = Autoencoder([len(model.feature_input_order), 5], data_name)
+    ae = Autoencoder(data_name, [len(model.feature_input_order), 5])
     fitted_ae = train_autoencoder(
         ae,
         data,
@@ -51,7 +51,7 @@ def test_autoencoder():
         return K.max(y_true - y_pred)
 
     ae = Autoencoder(
-        [len(model.feature_input_order), 20, 15, 10, 8, 5], data_name, loss=custom_loss
+        data_name, [len(model.feature_input_order), 20, 15, 10, 8, 5], loss=custom_loss
     )
     fitted_ae = train_autoencoder(
         ae,
@@ -66,3 +66,31 @@ def test_autoencoder():
 
     expected_shape = (1, 13)
     assert test_output.shape == expected_shape
+
+
+def test_save_and_load():
+    with tf.Session() as sess:
+        # Build data and mlmodel
+        data_name = "adult"
+        data = DataCatalog(data_name)
+
+        model = MLModelCatalog(data, "ann")
+        test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
+
+        ae = Autoencoder(data_name, [len(model.feature_input_order), 20, 10, 5])
+        fitted_ae = train_autoencoder(
+            ae,
+            data,
+            model.scaler,
+            model.encoder,
+            model.feature_input_order,
+            epochs=5,
+            save=True,
+        )
+
+        expected = fitted_ae(test_input)
+
+        loaded_ae = Autoencoder(data_name).load(len(model.feature_input_order))
+        actual = loaded_ae(test_input)
+
+        assert (actual.eval(session=sess) == expected.eval(session=sess)).all()

@@ -74,7 +74,8 @@ def test_cem_get_counterfactuals():
                 save=False,
             )
 
-            factuals = predict_negative_instances(model_ann, data)
+            # factuals = predict_negative_instances(model_ann, data)
+            factuals = pd.read_csv("factuals.csv")
             test_factuals = factuals.iloc[:5]
 
             recourse = CEM(

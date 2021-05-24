@@ -2,34 +2,18 @@ import os
 from typing import Callable, List, Optional
 
 import numpy as np
-from keras import backend as K
+import tensorflow as tf
 from keras.layers import Dense, Input
-from keras.models import Model, Sequential
+from keras.models import Model, Sequential, model_from_json
 
-
-def layers_valid(layers: List) -> bool:
-    """
-    Checks if the layers parameter has at least minimal requirements
-
-    Returns
-    -------
-    bool
-    """
-    if len(layers) < 2:
-        return False
-
-    for layer in layers:
-        if layer <= 0:
-            return False
-
-    return True
+from carla.recourse_methods.autoencoder.losses import binary_crossentropy
 
 
 class Autoencoder:
     def __init__(
         self,
-        layers: List,
         data_name: str,
+        layers: Optional[List] = None,
         optimizer: str = "rmsprop",
         loss: Optional[Callable] = None,
     ) -> None:
@@ -38,17 +22,17 @@ class Autoencoder:
 
         Parameters
         ----------
-        layers : list(int > 0)
-            Depending on the position and number elements, it determines the number and width of layers in the form of
+        data_name : Name of the dataset. Is used for saving model.
+        layers : Depending on the position and number elements, it determines the number and width of layers in the
+            form of:
             [input_layer, hidden_layer_1, ...., hidden_layer_n, latent_dimension]
-        data_name : str
-            Name of the dataset. Is used for saving model.
-        loss: Callable, optional
-            Loss function for autoencoder model. Default is Binary Cross Entropy.
-        optimizer: str, optional
-            Optimizer which is used to train autoencoder model. See keras optimizer.
+            The encoder structure would be: input_layer -> [hidden_layers] -> latent_dimension
+            The decoder structure would be: latent_dimension -> [hidden_layers] -> input_dimension
+        loss: Loss function for autoencoder model. Default is Binary Cross Entropy.
+        optimizer: Optimizer which is used to train autoencoder model. See keras optimizer.
         """
-        if layers_valid(layers):
+        if layers is None or self.layers_valid(layers):
+            # None layers are used for loading pre-trained models
             self._layers = layers
         else:
             raise ValueError(
@@ -56,26 +40,39 @@ class Autoencoder:
             )
 
         if loss is None:
-            self._loss = lambda y_true, y_pred: K.sum(
-                K.binary_crossentropy(y_true, y_pred), axis=-1
-            )
+            self._loss = binary_crossentropy
         else:
             self._loss = loss
 
         self.data_name = data_name
         self._optimizer = optimizer
 
+    def layers_valid(self, layers: List) -> bool:
+        """
+        Checks if the layers parameter has at least minimal requirements
+        """
+        if len(layers) < 2:
+            return False
+
+        for layer in layers:
+            if layer <= 0:
+                return False
+
+        return True
+
     def train(
         self, xtrain: np.ndarray, xtest: np.ndarray, epochs: int, batch_size: int
     ) -> Model:
-
+        assert (
+            self._layers is not None
+        )  # Used for mypy to make sure layers are indexable
         x = Input(shape=(self._layers[0],))
 
         # Encoder
         encoded = Dense(self._layers[1], activation="relu")(x)
         for i in range(2, len(self._layers) - 1):
             encoded = Dense(self._layers[i], activation="relu")(encoded)
-        z = Dense(self._layers[-1], activation="relu")(encoded)
+        latent_space = Dense(self._layers[-1], activation="relu")(encoded)
 
         # Decoder
         list_decoder = [
@@ -87,9 +84,9 @@ class Autoencoder:
         decoder = Sequential(list_decoder)
 
         # Compile Autoencoder, Encoder & Decoder
-        # encoder = Model(x, z)
-        xhat = decoder(z)
-        autoencoder = Model(x, xhat)
+        # encoder = Model(x, latent_space)
+        x_reconstructed = decoder(latent_space)
+        autoencoder = Model(x, x_reconstructed)
         autoencoder.compile(optimizer=self._optimizer, loss=self._loss)
 
         # Train model
@@ -119,14 +116,52 @@ class Autoencoder:
         # save model
         model_json = fitted_ae.to_json()
 
+        path = os.path.join(
+            cache_path,
+            "{}_{}.{}".format(self.data_name, fitted_ae.input_shape[1], "json"),
+        )
+
         with open(
-            os.path.join(
-                cache_path,
-                "{}_{}.{}".format(self.data_name, fitted_ae.input_shape[1], "json"),
-            ),
+            path,
             "w",
         ) as json_file:
             json_file.write(model_json)
+
+    def load(self, input_shape: int) -> Model:
+        """
+        Loads a pretrained ae from cache
+
+        Parameters
+        ----------
+        input_shape: determines which model is used
+
+        Returns
+        -------
+
+        """
+        cache_path = self.get_aes_home()
+        path = os.path.join(
+            cache_path,
+            "{}_{}".format(self.data_name, input_shape),
+        )
+
+        # load ae
+        json_file = open(
+            "{}.{}".format(path, "json"),
+            "r",
+        )
+        model_ae = model_from_json(json_file.read(), custom_objects={"tf": tf})
+        json_file.close()
+
+        model_ae.load_weights("{}.{}".format(path, "h5"))
+
+        # Build layers property from loaded model
+        layers = []
+        for layer in model_ae.layers[:-1]:
+            layers.append(layer.output_shape[1])
+        self._layers = layers
+
+        return model_ae
 
     def get_aes_home(self, models_home=None):
         """Return a path to the cache directory for trained autoencoders.

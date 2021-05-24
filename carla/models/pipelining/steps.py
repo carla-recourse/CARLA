@@ -59,7 +59,9 @@ def encode(
     return output
 
 
-def decode(fitted_encoder, features, df: pd.DataFrame):
+def decode(
+    fitted_encoder: BaseEstimator, features: List[str], df: pd.DataFrame
+) -> pd.DataFrame:
     """
     Pipeline function to decode data with fitted sklearn OneHotEncoder.
 
@@ -75,23 +77,17 @@ def decode(fitted_encoder, features, df: pd.DataFrame):
     Returns
     -------
     output : pd.DataFrame
-        Whole DataFrame with decoded values
+        Whole DataFrame with encoded values
     """
-
-    def intersection(l1, l2):
-        return list(set(l1) & set(l2))
-
     output = df.copy()
     encoded_features = fitted_encoder.get_feature_names(features)
-
-    encoded_features = intersection(output.columns, encoded_features)
     output[features] = fitted_encoder.inverse_transform(output[encoded_features])
     output = output.drop(encoded_features, axis=1)
 
     return output
 
 
-def order_data(feature_order, df):
+def order_data(feature_order: List[str], df: pd.DataFrame) -> pd.DataFrame:
     """
     Restores the correct input feature order for the ML model
 
