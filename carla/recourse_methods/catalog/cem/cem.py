@@ -1,5 +1,3 @@
-# flake8: noqa
-import timeit
 from typing import Tuple, Union
 
 import numpy as np
@@ -9,7 +7,6 @@ import tensorflow as tf
 from carla.models.api import MLModel
 from carla.recourse_methods.autoencoder import Autoencoder
 
-from ....evaluation.success_rate import success_rate
 from ....models.pipelining.steps import decode
 from ...api import RecourseMethod
 
