@@ -280,7 +280,7 @@ class CEM(RecourseMethod):
 
         # the best l2, score, and image attack
         overall_best_dist = [1e10] * batch_size
-        overall_best_attack = [np.zeros(X[0].shape)] * batch_size
+        overall_best_attack = np.array([np.zeros(X[0].shape)] * batch_size)
 
         for binary_search_steps_idx in range(self.hyperparams["binary_search_steps"]):
             # completely reset adam's internal state.
@@ -379,10 +379,10 @@ class CEM(RecourseMethod):
                         CONST[batch_idx] *= 10
 
         # return the best solution found
-        overall_best_attack = np.array(overall_best_attack[0]).reshape(
-            (1,) + np.array(overall_best_attack).shape
+        overall_best_attack = np.array(overall_best_attack[0])
+        overall_best_attack = overall_best_attack.reshape(
+            (1,) + overall_best_attack.shape
         )
-        # return overall_best_attack.reshape((1,) + overall_best_attack.shape)
         return overall_best_attack
 
     def counterfactual_search(
