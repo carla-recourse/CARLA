@@ -6,71 +6,44 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from ....evaluation.utils import success_rate_and_indices
-from ....models.catalog.catalog import MLModelCatalog
+from carla.models.api import MLModel
+from carla.recourse_methods.autoencoder import Autoencoder
+
+from ....evaluation.success_rate import success_rate
 from ....models.pipelining.steps import decode
 from ...api import RecourseMethod
 
 
-# TODO helper function in utils?
-def generate_data(instance, target_label):
-    inputs = []
-    target_vec = []
-
-    inputs.append(instance)
-    target_vec.append(
-        np.eye(2)[target_label]
-    )  # 2: since we only look at binary classification
-
-    inputs = np.array(inputs)
-    target_vec = np.array(target_vec)
-
-    return inputs, target_vec
-
-
-def model_prediction(model, inputs):
-    prob = model.predict(inputs)
-    predicted_class = np.argmax(prob)
-    prob_str = np.array2string(prob).replace("\n", "")
-    return prob, predicted_class, prob_str
-
-
 class CEM(RecourseMethod):
-    def __init__(
-        self,
-        sess,
-        catalog_model: MLModelCatalog,
-        mode,
-        AE,
-        batch_size,
-        kappa,
-        init_learning_rate,
-        binary_search_steps,
-        max_iterations,
-        initial_const,
-        beta,
-        gamma,
-        num_classes=2,
-    ):
+    def __init__(self, sess, catalog_model: MLModel, hyperparams):
+        self.sess = sess
+        self.hyperparams = hyperparams
+        self.catalog_model = catalog_model
+
+        self.data = catalog_model.data
+        self.kappa = hyperparams["kappa"]
+        self.mode = hyperparams["mode"]
+
+        batch_size = hyperparams["batch_size"]
+        num_classes = hyperparams["num_classes"]
+        beta = hyperparams["beta"]
 
         # TODO refactor names from img to more general
         super().__init__(catalog_model)
         dimension = len(catalog_model.feature_input_order)
         shape = (batch_size, dimension)
 
-        self.catalog_model = catalog_model
-        self.data = catalog_model.data
-
-        self.sess = sess
-        self.INIT_LEARNING_RATE = init_learning_rate
-        self.MAX_ITERATIONS = max_iterations
-        self.BINARY_SEARCH_STEPS = binary_search_steps
-        self.kappa = kappa
-        self.init_const = initial_const
-        self.batch_size = batch_size
-        self.AE = AE
-        self.mode = mode
-        self.gamma = gamma
+        ae_params = hyperparams["ae_params"]
+        ae = Autoencoder(
+            data_name=hyperparams["data_name"],
+            layers=[
+                len(catalog_model.feature_input_order),
+                ae_params["h1"],
+                ae_params["h2"],
+                ae_params["d"],
+            ],
+        )
+        self.AE = ae.load(input_shape=len(catalog_model.feature_input_order))
 
         # these are variables to be more efficient in sending data to tf
         self.orig_img = tf.Variable(np.zeros(shape), dtype=tf.float32)
@@ -166,7 +139,11 @@ class CEM(RecourseMethod):
         )
 
         learning_rate = tf.train.polynomial_decay(
-            self.INIT_LEARNING_RATE, self.global_step, self.MAX_ITERATIONS, 0, power=0.5
+            hyperparams["init_learning_rate"],
+            self.global_step,
+            hyperparams["max_iterations"],
+            0,
+            power=0.5,
         )
         optimizer = tf.train.GradientDescentOptimizer(learning_rate)
         start_vars = set(x.name for x in tf.global_variables())
@@ -200,7 +177,9 @@ class CEM(RecourseMethod):
         )
 
     def __compute_AE_lost(self, delta_img: tf.Tensor) -> tf.Tensor:
-        return self.gamma * tf.square(tf.norm(self.AE(delta_img) - delta_img))
+        return self.hyperparams["gamma"] * tf.square(
+            tf.norm(self.AE(delta_img) - delta_img)
+        )
 
     def __compute_attack_loss(
         self, nontarget_lab_score: tf.Tensor, target_lab_score: tf.Tensor, mode: str
@@ -264,7 +243,7 @@ class CEM(RecourseMethod):
 
         return cond_greater, cond_less_equal, cond_less
 
-    def attack(self, X, Y):
+    def attack(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
         def compare(x, y) -> bool:
             """
             Compare predictions with target labels and return whether PP or PN conditions hold.
@@ -292,18 +271,18 @@ class CEM(RecourseMethod):
             else:
                 return x != y
 
-        batch_size = self.batch_size
+        batch_size = self.hyperparams["batch_size"]
 
         # set the lower and upper bounds accordingly
         Const_LB = np.zeros(batch_size)
-        CONST = np.ones(batch_size) * self.init_const
+        CONST = np.ones(batch_size) * self.hyperparams["initial_const"]
         Const_UB = np.ones(batch_size) * 1e10
 
         # the best l2, score, and image attack
         overall_best_dist = [1e10] * batch_size
         overall_best_attack = [np.zeros(X[0].shape)] * batch_size
 
-        for binary_search_steps_idx in range(self.BINARY_SEARCH_STEPS):
+        for binary_search_steps_idx in range(self.hyperparams["binary_search_steps"]):
             # completely reset adam's internal state.
             self.sess.run(self.init)
             img_batch = X[:batch_size]
@@ -324,7 +303,7 @@ class CEM(RecourseMethod):
                 },
             )
 
-            for iteration in range(self.MAX_ITERATIONS):
+            for iteration in range(self.hyperparams["max_iterations"]):
                 # perform the attack
                 self.sess.run([self.train])
                 self.sess.run([self.adv_updater, self.adv_updater_s])
@@ -400,25 +379,30 @@ class CEM(RecourseMethod):
                         CONST[batch_idx] *= 10
 
         # return the best solution found
-        overall_best_attack = overall_best_attack[0]
-        return overall_best_attack.reshape((1,) + overall_best_attack.shape)
+        overall_best_attack = np.array(overall_best_attack[0]).reshape(
+            (1,) + np.array(overall_best_attack).shape
+        )
+        # return overall_best_attack.reshape((1,) + overall_best_attack.shape)
+        return overall_best_attack
 
-    def counterfactual_search(self, instance):
+    def counterfactual_search(
+        self, instance: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
 
-        orig_prob, orig_class, orig_prob_str = model_prediction(
+        orig_prob, orig_class, orig_prob_str = self.model_prediction(
             self.catalog_model.raw_model, np.expand_dims(instance, axis=0)
         )
 
         target_label = orig_class
-        orig_sample, target = generate_data(instance, target_label)
+        orig_sample, target = self.generate_data(instance, target_label)
 
         # start the search
         counterfactual = self.attack(orig_sample, target)
 
-        adv_prob, adv_class, adv_prob_str = model_prediction(
+        adv_prob, adv_class, adv_prob_str = self.model_prediction(
             self.catalog_model.raw_model, counterfactual
         )
-        delta_prob, delta_class, delta_prob_str = model_prediction(
+        delta_prob, delta_class, delta_prob_str = self.model_prediction(
             self.catalog_model.raw_model, orig_sample - counterfactual
         )
 
@@ -445,7 +429,7 @@ class CEM(RecourseMethod):
 
         return instance, counterfactual.reshape(-1)
 
-    def get_counterfactuals(self, factuals: pd.DataFrame):
+    def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         """
         Compute a certain number of counterfactuals per factual example.
 
@@ -462,31 +446,34 @@ class CEM(RecourseMethod):
         """
         # drop targets
         target_name = self.data.target
-        instances = factuals.drop(columns=[target_name])
+        instances = factuals.copy()
+
+        continous_cols = self.data.continous
+        fitted_scaler = self.catalog_model.scaler
+        categorical_cols = self.data.categoricals
+        fitted_encoder = self.catalog_model.encoder
+        encoded_features = fitted_encoder.get_feature_names(categorical_cols)
 
         # normalize and one-hot-encoding
-        instances = self.catalog_model.perform_pipeline(instances)
+        instances[continous_cols] = fitted_scaler.transform(instances[continous_cols])
+        instances[encoded_features] = fitted_encoder.transform(
+            instances[categorical_cols]
+        )
         instances = instances[self.catalog_model.feature_input_order]
 
         counterfactuals = []
-        times_list = []
 
-        for i in range(instances.values.shape[0]):
-            start = timeit.default_timer()
+        for i, row in instances.iterrows():
             _, counterfactual = self.counterfactual_search(instances.values[i, :])
-            stop = timeit.default_timer()
-            time_taken = stop - start
-
             counterfactuals.append(counterfactual)
-            times_list.append(time_taken)
 
         counterfactuals_df = pd.DataFrame(np.array(counterfactuals))
         counterfactuals_df.columns = instances.columns
 
         # Success rate & drop not successful counterfactuals & process remainder
-        success_rate, counterfactuals_indices = success_rate_and_indices(
-            counterfactuals_df
-        )
+        counterfactuals_indices = np.where(
+            np.logical_not(np.any(np.isnan(counterfactuals_df.values), axis=1))
+        )[0]
         counterfactuals_df = counterfactuals_df.iloc[counterfactuals_indices]
         instances = instances.iloc[counterfactuals_indices]
 
@@ -502,11 +489,9 @@ class CEM(RecourseMethod):
         counterfactuals_df = counterfactuals_df[self.catalog_model.feature_input_order]
         instances = instances[self.catalog_model.feature_input_order]
 
-        categorical_cols = self.data.categoricals
         if len(categorical_cols) > 0:
             # Convert binary cols of counterfactuals and instances into strings: Required for >>Measurement<< in script
             # Convert binary cols back to original string encoding
-            fitted_encoder = self.catalog_model.encoder
             counterfactuals_df = decode(
                 fitted_encoder, categorical_cols, counterfactuals_df
             )
@@ -516,21 +501,28 @@ class CEM(RecourseMethod):
         counterfactuals_df[target_name] = counterfactual_label
         instances[target_name] = instance_label
 
-        # Collect in list making use of pandas
-        instances_list = []
-        counterfactuals_list = []
+        return counterfactuals_df
 
-        for i in range(counterfactuals_df.shape[0]):
-            counterfactuals_list.append(
-                pd.DataFrame(
-                    counterfactuals_df.iloc[i].values.reshape((1, -1)),
-                    columns=counterfactuals_df.columns,
-                )
-            )
-            instances_list.append(
-                pd.DataFrame(
-                    instances.iloc[i].values.reshape((1, -1)), columns=instances.columns
-                )
-            )
+    @staticmethod
+    def generate_data(
+        instance: np.ndarray, target_label: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        inputs = []
+        target_vec = []
 
-        return instances_list, counterfactuals_list, times_list, success_rate
+        inputs.append(instance)
+        target_vec.append(
+            np.eye(2)[target_label]
+        )  # 2: since we only look at binary classification
+
+        inputs = np.array(inputs)
+        target_vec = np.array(target_vec)
+
+        return inputs, target_vec
+
+    @staticmethod
+    def model_prediction(model, inputs: np.ndarray) -> Tuple[np.ndarray, int, str]:
+        prob = model.predict(inputs)
+        predicted_class = np.argmax(prob)
+        prob_str = np.array2string(prob).replace("\n", "")
+        return prob, predicted_class, prob_str

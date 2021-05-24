@@ -26,12 +26,6 @@ class MLModel(ABC):
             fitted_encoder = preprocessing.OneHotEncoder(
                 handle_unknown="error", sparse=False
             ).fit(data.raw[data.categoricals])
-            self.encoder: BaseEstimator = fitted_encoder
-
-        if encoding_method == "Binary":
-            fitted_encoder = preprocessing.OneHotEncoder(
-                drop="if_binary", handle_unknown="error", sparse=False
-            ).fit(data.raw[data.categoricals])
         elif encoding_method == "OneHot_drop_binary":
             fitted_encoder = preprocessing.OneHotEncoder(
                 drop="if_binary", handle_unknown="error", sparse=False
