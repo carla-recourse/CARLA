@@ -95,7 +95,8 @@ def growing_spheres_search(
     # get predicted label of instance
     instance_label = np.argmax(model.predict_proba(instance.values.reshape(1, -1)))
 
-    while True:
+    counterfactuals_found = False
+    while not counterfactuals_found:
         count = count + counter_step
 
         if count > max_iter:
@@ -148,12 +149,13 @@ def growing_spheres_search(
         candidate_counterfactuals = candidate_counterfactuals.values[indeces]
         candidate_dist = distances[indeces]
 
-        if len(candidate_dist) == 0:  # no candidate found & push search range outside
-            low = high
-            high = low + step
-        else:  # certain candidates generated
+        if len(candidate_dist) > 0:  # certain candidates generated
             min_index = np.argmin(candidate_dist)
             candidate_counterfactual_star = candidate_counterfactuals[min_index]
-            break
+            counterfactuals_found = True
+
+        # no candidate found & push search range outside
+        low = high
+        high = low + step
 
     return candidate_counterfactual_star
