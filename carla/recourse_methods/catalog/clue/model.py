@@ -82,7 +82,7 @@ class Clue(RecourseMethod):
             ),
         )
 
-        if not os.path.isfile(path):
+        if not os.path.isfile(path) and not self._train_vae:
             raise ValueError(
                 'No pre-trained VAE available. Please set "train_vae" to true in parameter "hyperparams" to train a VAE.'
             )
