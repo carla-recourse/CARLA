@@ -146,6 +146,8 @@ class ActionableRecourse(RecourseMethod):
         intercepts = self._intercepts
         action_set = self._action_set
 
+        # to keep matching indexes for iterrows and coeffs
+        factuals = factuals.reset_index()
         factuals_enc_norm = self.encode_normalize_order_factuals(factuals)
 
         # Check if we need lime to build coefficients
@@ -153,6 +155,11 @@ class ActionableRecourse(RecourseMethod):
             print("Start generating LIME coefficients")
             coeffs, intercepts = self.get_lime_coefficients(factuals_enc_norm)
             print("Finished generating LIME coefficients")
+        else:
+            # Local explanations via LIME generate coeffs and intercepts per instance, while global explanations
+            # via input parameter need to be set into correct shape [num_of_instances, num_of_features]
+            coeffs = np.vstack([self._coeffs] * factuals.shape[0])
+            intercepts = np.vstack([self._intercepts] * factuals.shape[0]).squeeze()
 
         # generate counterfactuals
         for index, row in factuals_enc_norm.iterrows():
