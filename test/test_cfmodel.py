@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from carla.data.catalog import DataCatalog
@@ -31,11 +32,19 @@ def test_dice_get_counterfactuals(model_type):
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
 
-def test_ar_get_counterfactual():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_ar_get_counterfactual(model_type):
     # Build data and mlmodel
     data_name = "adult"
     data = DataCatalog(data_name)
-    model_tf = MLModelCatalog(data, "ann")
+    model_tf = MLModelCatalog(data, model_type)
+
+    coeffs, intercepts = None, None
+
+    if model_type == "linear":
+        # get weights and bias of linear layer for negative class 0
+        coeffs = model_tf.raw_model.layers[0].get_weights()[0][:, 0]
+        intercepts = np.array(model_tf.raw_model.layers[0].get_weights()[1][0])
 
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
@@ -43,7 +52,9 @@ def test_ar_get_counterfactual():
 
     # get counterfactuals
     hyperparams = {"fs_size": 150}
-    cfs = ActionableRecourse(model_tf, hyperparams).get_counterfactuals(test_factual)
+    cfs = ActionableRecourse(
+        model_tf, hyperparams, coeffs=coeffs, intercepts=intercepts
+    ).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == cfs.shape[0]
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
