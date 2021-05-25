@@ -13,14 +13,6 @@ except:
     import pickle  # type: ignore
 
 
-def mkdir(paths):
-    if not isinstance(paths, (list, tuple)):
-        paths = [paths]
-    for path in paths:
-        if not os.path.isdir(path):
-            os.makedirs(path, mode=0o777)
-
-
 import torch.nn as nn
 
 suffixes = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -64,13 +56,6 @@ def to_variable(var=(), cuda=False, volatile=False):
             v = Variable(v, volatile=volatile)
         out.append(v)
     return out
-
-
-def shuffle_in_unison_scary(a, b):
-    rng_state = np.random.get_state()
-    np.random.shuffle(a)
-    np.random.set_state(rng_state)
-    np.random.shuffle(b)
 
 
 import numpy as np
@@ -142,14 +127,6 @@ class BaseNet(object):
         return self.epoch
 
 
-def fgsm_attack(image, epsilon, data_grad):
-    # Collect the element-wise sign of the data gradient
-    sign_data_grad = data_grad.sign()
-    # Create the perturbed image by adjusting each pixel of the input image
-    perturbed_image = image + epsilon * sign_data_grad
-    return perturbed_image
-
-
 def torch_onehot(y, Nclass):
     if y.is_cuda:
         y = y.type(torch.cuda.LongTensor)
@@ -161,50 +138,9 @@ def torch_onehot(y, Nclass):
     return y_onehot
 
 
-# Changed to this: https://discuss.pytorch.org/t/runtime-error-when-loading-pytorch-model-from-pkl/38330
-def save_object(obj, filename):
-    torch.save(obj, filename)
-
-
-class StrToBytes:
-    def __init__(self, fileobj):
-        self.fileobj = fileobj
-
-    def read(self, size):
-        return self.fileobj.read(size).encode()
-
-    def readline(self, size=-1):
-        return self.fileobj.readline(size).encode()
-
-
 import contextlib
 
 _map_location = [None]
-
-
-@contextlib.contextmanager
-def map_location(location):
-    _map_location.append(location)
-    yield
-    _map_location.pop()
-
-
-def _load_from_bytes(b):
-    return torch.load(io.BytesIO(b), map_location=_map_location[-1])
-
-
-def load_object(filename):
-    with open(filename, "rb") as input:
-        ##try:
-        print(input)
-        return torch.load(input, encoding="bytes")
-
-
-def array_to_bin_np(array, ncats):
-    array = np.array(array)
-    bin_vec = np.zeros(ncats)
-    bin_vec[array] = 1
-    return bin_vec.astype(bool)
 
 
 def MNIST_mean_std_norm(x):
@@ -213,12 +149,6 @@ def MNIST_mean_std_norm(x):
     x = x - mean
     x = x / std
     return x
-
-
-def complete_logit_norm_vec(vec):
-    last_term = 1 - vec.sum(dim=1, keepdim=True)
-    cvec = torch.cat((vec, last_term), dim=1)
-    return cvec
 
 
 class Ln_distance(nn.Module):
