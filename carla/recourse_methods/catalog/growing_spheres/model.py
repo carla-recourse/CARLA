@@ -6,7 +6,7 @@ from carla.recourse_methods.catalog.growing_spheres.library import (
     growing_spheres_search,
 )
 from carla.recourse_methods.processing import (
-    counterfactual_to_dataframe,
+    check_counterfactuals,
     encode_feature_names,
 )
 
@@ -58,6 +58,6 @@ class GrowingSpheres(RecourseMethod):
             )
             list_cfs.append(counterfactual)
 
-        df_cfs = counterfactual_to_dataframe(self._mlmodel, list_cfs)
+        df_cfs = check_counterfactuals(self._mlmodel, list_cfs)
 
         return df_cfs

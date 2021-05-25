@@ -6,7 +6,7 @@ from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.face.library import graph_search
 from carla.recourse_methods.processing import (
-    counterfactual_to_dataframe,
+    check_counterfactuals,
     encode_feature_names,
 )
 
@@ -91,6 +91,6 @@ class Face(RecourseMethod):
             )
             list_cfs.append(cf)
 
-        df_cfs = counterfactual_to_dataframe(self._mlmodel, list_cfs)
+        df_cfs = check_counterfactuals(self._mlmodel, list_cfs)
 
         return df_cfs
