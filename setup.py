@@ -19,6 +19,7 @@ setup(
         "h5py==2.10.0",
         "dice-ml==0.5",
         "ipython",
+        "keras==2.3.0",
     ],
     entry_points="""
                 [console_scripts]
