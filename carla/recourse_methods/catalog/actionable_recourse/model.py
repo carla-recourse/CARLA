@@ -146,9 +146,8 @@ class ActionableRecourse(RecourseMethod):
         intercepts = self._intercepts
         action_set = self._action_set
 
-        factuals = (
-            factuals.reset_index()
-        )  # to keep matching indexes for iterrows and coeffs
+        # to keep matching indexes for iterrows and coeffs
+        factuals = factuals.reset_index()
         factuals_enc_norm = self.encode_normalize_order_factuals(factuals)
 
         # Check if we need lime to build coefficients
