@@ -81,6 +81,12 @@ class Clue(RecourseMethod):
                 "fc_VAE_{}_models".format(self._data_name),
             ),
         )
+
+        if not os.path.isfile(path):
+            raise ValueError(
+                'No pre-trained VAE available. Please set "train_vae" to true in parameter "hyperparams" to train a VAE.'
+            )
+
         path = os.path.expanduser(path)
         if not os.path.exists(path):
             os.makedirs(path)
