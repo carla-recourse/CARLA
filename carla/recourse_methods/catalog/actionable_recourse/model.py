@@ -5,7 +5,6 @@ import pandas as pd
 import recourse as rs
 from lime.lime_tabular import LimeTabularExplainer
 
-from carla.models.pipelining import encode, scale
 from carla.recourse_methods.processing import encode_feature_names
 
 from ...api import RecourseMethod
@@ -52,11 +51,8 @@ class ActionableRecourse(RecourseMethod):
         self._data = mlmodel.data
 
         # normalize and encode data
-        self._norm_enc_data = scale(
-            mlmodel.scaler, self._data.continous, self._data.raw
-        )
-        self._norm_enc_data = encode(
-            mlmodel.encoder, self._data.categoricals, self._norm_enc_data
+        self._norm_enc_data = self.encode_normalize_order_factuals(
+            self._data.raw, with_target=True
         )
 
         # Get hyperparameter

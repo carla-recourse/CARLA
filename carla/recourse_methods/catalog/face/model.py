@@ -3,7 +3,6 @@ from typing import Any, Dict
 import pandas as pd
 
 from carla.models.api import MLModel
-from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.face.library import graph_search
 from carla.recourse_methods.processing import (
@@ -39,13 +38,7 @@ class Face(RecourseMethod):
         self.fraction = hyperparams["fraction"]
 
         # Normalize and encode data
-        self._df_enc_norm = scale(
-            self._mlmodel.scaler, self._mlmodel.data.continous, self._mlmodel.data.raw
-        )
-        self._df_enc_norm = encode(
-            self._mlmodel.encoder, self._mlmodel.data.categoricals, self._df_enc_norm
-        )
-        self._df_enc_norm = self._df_enc_norm[self._mlmodel.feature_input_order]
+        self._df_enc_norm = self.encode_normalize_order_factuals(self._mlmodel.data.raw)
 
         self._immutables = encode_feature_names(
             self._mlmodel.data.immutables, self._mlmodel.feature_input_order
@@ -75,13 +68,7 @@ class Face(RecourseMethod):
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         # Normalize and encode factual
-        df_enc_norm_fact = scale(
-            self._mlmodel.scaler, self._mlmodel.data.continous, factuals
-        )
-        df_enc_norm_fact = encode(
-            self._mlmodel.encoder, self._mlmodel.data.categoricals, df_enc_norm_fact
-        )
-        df_enc_norm_fact = df_enc_norm_fact[self._mlmodel.feature_input_order]
+        df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
 
         # >drop< factuals from dataset to prevent duplicates,
         # >reorder< and >add< factuals to top; necessary in order to use the index

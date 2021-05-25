@@ -2,7 +2,6 @@ import pandas as pd
 
 from carla.evaluation.distances import get_distances
 from carla.models.api import MLModel
-from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
 
 
@@ -25,13 +24,9 @@ class Benchmark:
         self._counterfactuals = recourse_method.get_counterfactuals(factuals)
 
         # Normalizing and encoding factual for later use
-        self._factuals = scale(mlmodel.scaler, mlmodel.data.continous, factuals)
-        self._factuals = encode(
-            mlmodel.encoder, mlmodel.data.categoricals, self._factuals
+        self._factuals = recourse_method.encode_normalize_order_factuals(
+            factuals, with_target=True
         )
-        self._factuals = self._factuals[
-            mlmodel.feature_input_order + [mlmodel.data.target]
-        ]
 
     def compute_distances(self) -> pd.DataFrame:
         """

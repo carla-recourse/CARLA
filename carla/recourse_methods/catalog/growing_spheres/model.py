@@ -1,7 +1,6 @@
 import pandas as pd
 
 from carla.models.api import MLModel
-from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.growing_spheres.library import (
     growing_spheres_search,
@@ -44,13 +43,7 @@ class GrowingSpheres(RecourseMethod):
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         # Normalize and encode data
-        df_enc_norm_fact = scale(
-            self._mlmodel.scaler, self._mlmodel.data.continous, factuals
-        )
-        df_enc_norm_fact = encode(
-            self._mlmodel.encoder, self._mlmodel.data.categoricals, df_enc_norm_fact
-        )
-        df_enc_norm_fact = df_enc_norm_fact[self._mlmodel.feature_input_order]
+        df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
 
         list_cfs = []
         for index, row in df_enc_norm_fact.iterrows():
