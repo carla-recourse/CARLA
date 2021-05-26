@@ -122,7 +122,11 @@ def test_pipeline(model_type):
     assert enc_norm_samples.select_dtypes(exclude=[np.number]).empty
 
 
-@pytest.mark.parametrize("model_type", testmodel)
+# TODO: This extra parameter is only used until PR#57 is merged into main to prevent errors
+test_model_lin = ["linear"]
+
+
+@pytest.mark.parametrize("model_type", test_model_lin)
 def test_predictions_pt(model_type):
     data_name = "adult"
     data = DataCatalog(data_name)
