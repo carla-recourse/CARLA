@@ -5,6 +5,7 @@ from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods.catalog.actionable_recourse import ActionableRecourse
+from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
 from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
@@ -104,3 +105,30 @@ def test_growing_spheres(model_type):
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
+
+
+def test_clue():
+    # Build data and mlmodel
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    model = MLModelCatalog(data, "ann", backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:20]
+
+    hyperparams = {
+        "data_name": "adult",
+        "train_vae": True,
+        "width": 10,
+        "depth": 3,
+        "latent_dim": 12,
+        "batch_size": 64,
+        "epochs": 1,  # Only for test purpose, else at least 10 epochs
+        "lr": 1e-3,
+        "early_stop": 10,
+    }
+    df_cfs = Clue(data, model, hyperparams).get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
