@@ -88,12 +88,13 @@ def test_face_get_counterfactuals(model_type):
     assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
 
-def test_growing_spheres():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_growing_spheres(model_type):
     # Build data and mlmodel
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model_tf = MLModelCatalog(data, "ann")
+    model_tf = MLModelCatalog(data, model_type)
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
     test_factual = factuals.iloc[:5]

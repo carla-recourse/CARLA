@@ -96,15 +96,12 @@ def growing_spheres_search(
     instance_label = np.argmax(model.predict_proba(instance.values.reshape(1, -1)))
 
     counterfactuals_found = False
-    while not counterfactuals_found:
+    candidate_counterfactual_star = np.empty(
+        instance_replicated.shape[1],
+    )
+    candidate_counterfactual_star[:] = np.nan
+    while not counterfactuals_found or count > max_iter:
         count = count + counter_step
-
-        if count > max_iter:
-            candidate_counterfactual_star = np.empty(
-                instance_replicated.shape[1],
-            )
-            candidate_counterfactual_star[:] = np.nan
-            break
 
         # STEP 1 -- SAMPLE POINTS on hyper sphere around instance
         candidate_counterfactuals_continuous, _ = hyper_sphere_coordindates(
