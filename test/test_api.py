@@ -1,11 +1,15 @@
 from abc import ABC
 
+import pytest
+
 from carla.data.api import Data
 from carla.data.catalog import DataCatalog
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.dice import Dice
+
+testmodel = ["ann", "linear"]
 
 
 def test_data():
@@ -17,11 +21,12 @@ def test_data():
     assert issubclass(Data, ABC)
 
 
-def test_mlmodel():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_mlmodel(model_type):
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model_catalog = MLModelCatalog(data, "ann")
+    model_catalog = MLModelCatalog(data, model_type)
 
     assert issubclass(MLModelCatalog, MLModel)
     assert isinstance(model_catalog, MLModel)

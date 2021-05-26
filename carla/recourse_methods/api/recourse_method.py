@@ -13,7 +13,9 @@ class RecourseMethod(ABC):
     def get_counterfactuals(self, factuals: pd.DataFrame):
         pass
 
-    def encode_normalize_order_factuals(self, factuals: pd.DataFrame):
+    def encode_normalize_order_factuals(
+        self, factuals: pd.DataFrame, with_target: bool = False
+    ):
         # Prepare factuals
         querry_instances = factuals.copy()
 
@@ -28,4 +30,6 @@ class RecourseMethod(ABC):
             self._mlmodel.encoder, self._mlmodel.data.categoricals, factuals_enc_norm
         )
 
-        return factuals_enc_norm[self._mlmodel.feature_input_order]
+        label = [self._mlmodel.data.target] if with_target else []
+
+        return factuals_enc_norm[self._mlmodel.feature_input_order + label]
