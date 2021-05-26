@@ -122,10 +122,11 @@ def test_pipeline(model_type):
     assert enc_norm_samples.select_dtypes(exclude=[np.number]).empty
 
 
-def test_predictions_pt():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_predictions_pt(model_type):
     data_name = "adult"
     data = DataCatalog(data_name)
-    model = MLModelCatalog(data, "ann", backend="pytorch")
+    model = MLModelCatalog(data, model_type, backend="pytorch")
     feature_input_order = model.feature_input_order
 
     # normalize and encode data
