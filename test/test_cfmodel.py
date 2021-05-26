@@ -7,6 +7,7 @@ from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods.catalog.actionable_recourse import ActionableRecourse
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
+from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
 
 testmodel = ["ann", "linear"]
 
@@ -82,6 +83,24 @@ def test_face_get_counterfactuals(model_type):
     # Test for epsilon mode
     face.mode = "epsilon"
     df_cfs = face.get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_growing_spheres(model_type):
+    # Build data and mlmodel
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    model_tf = MLModelCatalog(data, model_type)
+    # get factuals
+    factuals = predict_negative_instances(model_tf, data)
+    test_factual = factuals.iloc[:5]
+
+    gs = GrowingSpheres(model_tf)
+    df_cfs = gs.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
