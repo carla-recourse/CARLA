@@ -1,6 +1,6 @@
-from tensorflow import Graph, Session
 import numpy as np
 import pytest
+from tensorflow import Graph, Session
 
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
