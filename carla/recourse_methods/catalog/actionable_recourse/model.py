@@ -5,7 +5,6 @@ import pandas as pd
 import recourse as rs
 from lime.lime_tabular import LimeTabularExplainer
 
-from carla.models.pipelining import encode, scale
 from carla.recourse_methods.processing import encode_feature_names
 
 from ...api import RecourseMethod
@@ -52,11 +51,8 @@ class ActionableRecourse(RecourseMethod):
         self._data = mlmodel.data
 
         # normalize and encode data
-        self._norm_enc_data = scale(
-            mlmodel.scaler, self._data.continous, self._data.raw
-        )
-        self._norm_enc_data = encode(
-            mlmodel.encoder, self._data.categoricals, self._norm_enc_data
+        self._norm_enc_data = self.encode_normalize_order_factuals(
+            self._data.raw, with_target=True
         )
 
         # Get hyperparameter
@@ -146,6 +142,8 @@ class ActionableRecourse(RecourseMethod):
         intercepts = self._intercepts
         action_set = self._action_set
 
+        # to keep matching indexes for iterrows and coeffs
+        factuals = factuals.reset_index()
         factuals_enc_norm = self.encode_normalize_order_factuals(factuals)
 
         # Check if we need lime to build coefficients
@@ -153,6 +151,11 @@ class ActionableRecourse(RecourseMethod):
             print("Start generating LIME coefficients")
             coeffs, intercepts = self.get_lime_coefficients(factuals_enc_norm)
             print("Finished generating LIME coefficients")
+        else:
+            # Local explanations via LIME generate coeffs and intercepts per instance, while global explanations
+            # via input parameter need to be set into correct shape [num_of_instances, num_of_features]
+            coeffs = np.vstack([self._coeffs] * factuals.shape[0])
+            intercepts = np.vstack([self._intercepts] * factuals.shape[0]).squeeze()
 
         # generate counterfactuals
         for index, row in factuals_enc_norm.iterrows():

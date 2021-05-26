@@ -1,17 +1,16 @@
 import os
 
 import numpy as np
-import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
-from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.clue.library import (
     VAE_gauss_cat_net,
     training,
     vae_gradient_search,
 )
+from carla.recourse_methods.processing import check_counterfactuals
 
 
 class Clue(RecourseMethod):
@@ -59,11 +58,7 @@ class Clue(RecourseMethod):
         self._input_dimension = input_dims_continuous + input_dims_binary
 
         # normalize and encode data
-        self._df_norm_enc_data = scale(mlmodel.scaler, data.continous, data.raw)
-        self._df_norm_enc_data = encode(
-            mlmodel.encoder, data.categoricals, self._df_norm_enc_data
-        )
-        self._df_norm_enc_data = self._df_norm_enc_data[mlmodel.feature_input_order]
+        self._df_norm_enc_data = self.encode_normalize_order_factuals(data.raw)
 
         # load autoencoder
         self._vae = self.load_vae()
@@ -141,21 +136,13 @@ class Clue(RecourseMethod):
         list_cfs = []
 
         # normalize and encode data and instance
-        df_norm_enc_factual = scale(self._mlmodel.scaler, self._continous, factuals)
-        df_norm_enc_factual = encode(
-            self._mlmodel.encoder, self._categorical, df_norm_enc_factual
-        )
-        df_norm_enc_factual = df_norm_enc_factual[self._mlmodel.feature_input_order]
+        df_norm_enc_factual = self.encode_normalize_order_factuals(factuals)
 
         for index, row in df_norm_enc_factual.iterrows():
             counterfactual = vae_gradient_search(row.values, self._mlmodel, self._vae)
             list_cfs.append(counterfactual)
 
         # Convert output into correct format
-        cfs = np.array(list_cfs)
-        df_cfs = pd.DataFrame(cfs, columns=self._mlmodel.feature_input_order)
-        df_cfs[self._mlmodel.data.target] = np.argmax(
-            self._mlmodel.predict_proba(cfs), axis=1
-        )
+        df_cfs = check_counterfactuals(self._mlmodel, list_cfs)
 
         return df_cfs

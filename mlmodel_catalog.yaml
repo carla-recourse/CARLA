@@ -37,3 +37,20 @@ adult:
         - race_White
         - sex_Male
         - native-country_US
+
+  linear:
+    tensorflow:
+      feature_order:
+        - age
+        - fnlwgt
+        - education-num
+        - capital-gain
+        - capital-loss
+        - hours-per-week
+        - workclass_Private
+        - marital-status_Non-Married
+        - occupation_Other
+        - relationship_Non-Husband
+        - race_White
+        - sex_Male
+        - native-country_US
