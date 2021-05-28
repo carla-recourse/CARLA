@@ -112,7 +112,9 @@ def test_clue():
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model = MLModelCatalog(data, "ann", backend="pytorch")
+    # TODO: linear is only used until PR#57 is merged into main to prevent errors.
+    # TODO: After merge of PR#57 this can be parameterized to ann and linear
+    model = MLModelCatalog(data, "linear", backend="pytorch")
     # get factuals
     factuals = predict_negative_instances(model, data)
     test_factual = factuals.iloc[:20]
