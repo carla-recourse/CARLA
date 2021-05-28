@@ -11,7 +11,6 @@ from carla.evaluation.success_rate import success_rate
 from carla.evaluation.violations import constraint_violation
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
-from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
 
 
@@ -48,15 +47,9 @@ class Benchmark:
         self._factuals = factuals.copy()
 
         # Normalizing and encoding factual for later use
-        self._enc_norm_factuals = scale(
-            mlmodel.scaler, mlmodel.data.continous, factuals
+        self._enc_norm_factuals = recourse_method.encode_normalize_order_factuals(
+            factuals, with_target=True
         )
-        self._enc_norm_factuals = encode(
-            mlmodel.encoder, mlmodel.data.categoricals, self._enc_norm_factuals
-        )
-        self._enc_norm_factuals = self._enc_norm_factuals[
-            mlmodel.feature_input_order + [mlmodel.data.target]
-        ]
 
     def compute_ynn(self) -> pd.DataFrame:
         """

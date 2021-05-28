@@ -24,7 +24,7 @@ class MLModel(ABC):
 
         if encoding_method == "OneHot":
             fitted_encoder = preprocessing.OneHotEncoder(
-                handle_unknown="ignore", sparse=False
+                handle_unknown="error", sparse=False
             ).fit(data.raw[data.categoricals])
         elif encoding_method == "OneHot_drop_binary":
             fitted_encoder = preprocessing.OneHotEncoder(
