@@ -1,0 +1,28 @@
+recourse_methods:
+  ar:
+    hyperparams:
+      fs_size: 150
+  clue:
+    hyperparams:
+      train_vae: True
+      width: 10
+      depth: 3
+      latent_dim: 12
+      batch_size: 64
+      epochs: 1
+      lr: 0.001
+      early_stop: 10
+  dice:
+    hyperparams:
+      num: 1
+      desired_class: 1
+  face_knn:
+    hyperparams:
+      mode: "knn"
+      fraction: 0.25
+  face_epsilon:
+    hyperparams:
+      mode: "epsilon"
+      fraction: 0.25
+  gs:
+    hyperparams:
