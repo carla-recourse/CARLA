@@ -107,12 +107,13 @@ def test_growing_spheres(model_type):
     assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
 
-def test_clue():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_clue(model_type):
     # Build data and mlmodel
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model = MLModelCatalog(data, "ann", backend="pytorch")
+    model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
     factuals = predict_negative_instances(model, data)
     test_factual = factuals.iloc[:20]
