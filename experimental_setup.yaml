@@ -9,7 +9,7 @@ recourse_methods:
       depth: 3
       latent_dim: 12
       batch_size: 64
-      epochs: 3
+      epochs: 1
       lr: 0.001
       early_stop: 10
   dice:
@@ -24,3 +24,5 @@ recourse_methods:
     hyperparams:
       mode: "epsilon"
       fraction: 0.25
+  gs:
+    hyperparams:

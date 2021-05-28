@@ -1,4 +1,5 @@
 # flake8: noqa
+import os
 import warnings
 
 import pandas as pd
@@ -19,6 +20,18 @@ from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods import *
 from carla.recourse_methods.api import RecourseMethod
+
+
+def save_result(result: pd.DataFrame) -> None:
+    data_home = os.environ.get("CF_DATA", os.path.join("~", "carla", "results"))
+
+    data_home = os.path.expanduser(data_home)
+    if not os.path.exists(data_home):
+        os.makedirs(data_home)
+
+    path = os.path.join(data_home, "results.csv")
+
+    result.to_csv(path, index=False)
 
 
 def load_setup() -> Dict:
@@ -147,4 +160,4 @@ for rm in args.recourse_method:
             results = pd.concat([results, df_benchmark], axis=0)
             print("=====================================")
 
-print("test")
+save_result(results)

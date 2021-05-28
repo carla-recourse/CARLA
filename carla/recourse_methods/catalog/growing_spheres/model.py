@@ -12,7 +12,7 @@ from carla.recourse_methods.processing import (
 
 
 class GrowingSpheres(RecourseMethod):
-    def __init__(self, mlmodel: MLModel) -> None:
+    def __init__(self, mlmodel: MLModel, hyperparams=None) -> None:
         """
         Implementation follows the Random Point Picking over a sphere
         The algorithm's implementation follows: Pawelczyk, Broelemann & Kascneci (2020);
