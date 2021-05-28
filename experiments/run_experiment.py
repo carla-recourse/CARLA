@@ -23,7 +23,7 @@ from carla.recourse_methods.api import RecourseMethod
 
 
 def save_result(result: pd.DataFrame) -> None:
-    data_home = os.environ.get("CF_DATA", os.path.join("~", "carla", "results"))
+    data_home = os.environ.get("CF_DATA", os.path.join("~", "../carla", "results"))
 
     data_home = os.path.expanduser(data_home)
     if not os.path.exists(data_home):
@@ -35,7 +35,7 @@ def save_result(result: pd.DataFrame) -> None:
 
 
 def load_setup() -> Dict:
-    with open("experimental_setup.yaml", "r") as f:
+    with open("../experimental_setup.yaml", "r") as f:
         setup_catalog = yaml.safe_load(f)
 
     return setup_catalog["recourse_methods"]
