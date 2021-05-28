@@ -466,18 +466,11 @@ class CEM(RecourseMethod):
         target_name = self.data.target
         instances = factuals.copy()
 
-        continous_cols = self.data.continous
-        fitted_scaler = self.catalog_model.scaler
         categorical_cols = self.data.categoricals
         fitted_encoder = self.catalog_model.encoder
-        encoded_features = fitted_encoder.get_feature_names(categorical_cols)
 
         # normalize and one-hot-encoding
-        instances[continous_cols] = fitted_scaler.transform(instances[continous_cols])
-        instances[encoded_features] = fitted_encoder.transform(
-            instances[categorical_cols]
-        )
-        instances = instances[self.catalog_model.feature_input_order]
+        instances = self.encode_normalize_order_factuals(instances)
 
         counterfactuals = []
 
