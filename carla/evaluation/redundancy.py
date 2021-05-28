@@ -22,21 +22,19 @@ def redundancy(
     -------
     List with redundancy values per counterfactual sample
     """
-    redundancies = []
 
     df_enc_norm_fact = factuals.reset_index(drop=True)
     df_cfs = counterfactuals.reset_index(drop=True)
 
-    for idx, row in df_cfs.iterrows():
-        label_value = row[mlmodel.data.target]
-        row = row.drop(mlmodel.data.target)
-        red = compute_redundancy(
-            df_enc_norm_fact.iloc[idx].values, row.values, mlmodel, label_value
-        )
-
-        redundancies.append([red])
-
-    return redundancies
+    labels = df_cfs[mlmodel.data.target]
+    df_cfs = df_cfs.drop(mlmodel.data.target, axis=1)
+    df_cfs["redundancy"] = df_cfs.apply(
+        lambda x: compute_redundancy(
+            df_enc_norm_fact.iloc[x.name].values, x.values, mlmodel, labels.iloc[x.name]
+        ),
+        axis=1,
+    )
+    return df_cfs["redundancy"].values.reshape((-1, 1)).tolist()
 
 
 def compute_redundancy(

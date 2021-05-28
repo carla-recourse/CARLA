@@ -4,13 +4,13 @@ from typing import Union
 import pandas as pd
 
 from carla.evaluation.distances import get_distances
+from carla.evaluation.nearest_neighbours import yNN
 from carla.evaluation.process_nans import remove_nans
 from carla.evaluation.redundancy import redundancy
 from carla.evaluation.success_rate import success_rate
 from carla.evaluation.violations import constraint_violation
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
-from carla.models.pipelining import encode, scale
 from carla.recourse_methods.api import RecourseMethod
 
 
@@ -34,6 +34,7 @@ class Benchmark:
             Instances we want to find counterfactuals
         """
         self._mlmodel = mlmodel
+        self._recourse_method = recourse_method
         start = timeit.default_timer()
         self._counterfactuals = recourse_method.get_counterfactuals(factuals)
         stop = timeit.default_timer()
@@ -46,19 +47,31 @@ class Benchmark:
         self._factuals = factuals.copy()
 
         # Normalizing and encoding factual for later use
-        self._enc_norm_factuals = scale(
-            mlmodel.scaler, mlmodel.data.continous, factuals
+        self._enc_norm_factuals = recourse_method.encode_normalize_order_factuals(
+            factuals, with_target=True
         )
-        self._enc_norm_factuals = encode(
-            mlmodel.encoder, mlmodel.data.categoricals, self._enc_norm_factuals
+
+    def compute_ynn(self) -> pd.DataFrame:
+        """
+        Computes y-Nearest-Neighbours for generated counterfactuals
+
+        Returns
+        -------
+        pd.DataFrame
+        """
+        _, counterfactuals_without_nans = remove_nans(
+            self._factuals, self._counterfactuals
         )
-        self._enc_norm_factuals = self._enc_norm_factuals[
-            mlmodel.feature_input_order + [mlmodel.data.target]
-        ]
+
+        ynn = yNN(counterfactuals_without_nans, self._recourse_method, self._mlmodel, 5)
+
+        columns = ["y-Nearest-Neighbours"]
+
+        return pd.DataFrame([[ynn]], columns=columns)
 
     def compute_average_time(self) -> pd.DataFrame:
         """
-        Computes average time for generating counterfactual
+        Computes average time for generated counterfactual
 
         Returns
         -------
@@ -157,6 +170,7 @@ class Benchmark:
             self.compute_distances(),
             self.compute_constraint_violation(),
             self.compute_redundancy(),
+            self.compute_ynn(),
             self.compute_success_rate(),
             self.compute_average_time(),
         ]
