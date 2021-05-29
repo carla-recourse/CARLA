@@ -76,3 +76,55 @@ adult:
         - race_White
         - sex_Male
         - native-country_US
+
+give_me_some_credit:
+  ann:
+    tensorflow:
+      feature_order:
+        - RevolvingUtilizationOfUnsecuredLines
+        - age
+        - NumberOfTime30-59DaysPastDueNotWorse
+        - DebtRatio
+        - MonthlyIncome
+        - NumberOfOpenCreditLinesAndLoans
+        - NumberOfTimes90DaysLate
+        - NumberRealEstateLoansOrLines
+        - NumberOfTime60-89DaysPastDueNotWorse
+        - NumberOfDependents
+    pytorch:
+      feature_order:
+        - RevolvingUtilizationOfUnsecuredLines
+        - age
+        - NumberOfTime30-59DaysPastDueNotWorse
+        - DebtRatio
+        - MonthlyIncome
+        - NumberOfOpenCreditLinesAndLoans
+        - NumberOfTimes90DaysLate
+        - NumberRealEstateLoansOrLines
+        - NumberOfTime60-89DaysPastDueNotWorse
+        - NumberOfDependents
+  linear:
+    tensorflow:
+      feature_order:
+        - RevolvingUtilizationOfUnsecuredLines
+        - age
+        - NumberOfTime30-59DaysPastDueNotWorse
+        - DebtRatio
+        - MonthlyIncome
+        - NumberOfOpenCreditLinesAndLoans
+        - NumberOfTimes90DaysLate
+        - NumberRealEstateLoansOrLines
+        - NumberOfTime60-89DaysPastDueNotWorse
+        - NumberOfDependents
+    pytorch:
+      feature_order:
+        - RevolvingUtilizationOfUnsecuredLines
+        - age
+        - NumberOfTime30-59DaysPastDueNotWorse
+        - DebtRatio
+        - MonthlyIncome
+        - NumberOfOpenCreditLinesAndLoans
+        - NumberOfTimes90DaysLate
+        - NumberRealEstateLoansOrLines
+        - NumberOfTime60-89DaysPastDueNotWorse
+        - NumberOfDependents

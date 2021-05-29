@@ -1,7 +1,7 @@
 recourse_methods:
   ar:
     hyperparams:
-      fs_size: 150
+      fs_size: 200
   clue:
     hyperparams:
       train_vae: True

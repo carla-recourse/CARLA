@@ -21,6 +21,10 @@ class DataCatalog(Data):
         self.name = data_name
         self.catalog: Dict[str, Any] = load_catalog("data_catalog.yaml", data_name)
 
+        for key in ["continous", "categorical", "immutable"]:
+            if self.catalog[key] is None:
+                self.catalog[key] = []
+
         self._raw: pd.DataFrame = load_dataset(data_name)
 
     @property
