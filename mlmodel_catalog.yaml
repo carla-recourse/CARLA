@@ -8,8 +8,6 @@ adult:
         - capital-gain
         - capital-loss
         - hours-per-week
-        - sex_Female
-        - sex_Male
         - workclass_Non-Private
         - workclass_Private
         - marital-status_Married
@@ -20,6 +18,8 @@ adult:
         - relationship_Non-Husband
         - race_Non-White
         - race_White
+        - sex_Female
+        - sex_Male
         - native-country_Non-US
         - native-country_US
     tensorflow:
@@ -39,6 +39,28 @@ adult:
         - native-country_US
 
   linear:
+    pytorch:
+      feature_order:
+        - age
+        - fnlwgt
+        - education-num
+        - capital-gain
+        - capital-loss
+        - hours-per-week
+        - workclass_Non-Private
+        - workclass_Private
+        - marital-status_Married
+        - marital-status_Non-Married
+        - occupation_Managerial-Specialist
+        - occupation_Other
+        - relationship_Husband
+        - relationship_Non-Husband
+        - race_Non-White
+        - race_White
+        - sex_Female
+        - sex_Male
+        - native-country_Non-US
+        - native-country_US
     tensorflow:
       feature_order:
         - age

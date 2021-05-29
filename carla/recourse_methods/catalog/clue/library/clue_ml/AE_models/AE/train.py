@@ -34,10 +34,10 @@ def train_VAE(
             batch_size=batch_size,
             shuffle=True,
             pin_memory=True,
-            num_workers=3,
+            num_workers=0,
         )
         valloader = torch.utils.data.DataLoader(
-            valset, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=3
+            valset, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=0
         )
 
     else:
@@ -46,14 +46,14 @@ def train_VAE(
             batch_size=batch_size,
             shuffle=True,
             pin_memory=False,
-            num_workers=3,
+            num_workers=0,
         )
         valloader = torch.utils.data.DataLoader(
             valset,
             batch_size=batch_size,
             shuffle=False,
             pin_memory=False,
-            num_workers=3,
+            num_workers=0,
         )
 
     ## ---------------------------------------------------------------------------------------------------------------------
