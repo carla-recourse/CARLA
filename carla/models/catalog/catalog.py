@@ -48,17 +48,19 @@ class MLModelCatalog(MLModel):
         use_pipeline : bool, optional
             If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
         """
-        super().__init__(data)
         self._backend = backend
 
         if self._backend == "pytorch":
             ext = "pt"
+            encoding_method = "OneHot"
         elif self._backend == "tensorflow":
             ext = "h5"
+            encoding_method = "OneHot_drop_binary"
         else:
             raise ValueError(
                 "Backend not available, please choose between pytorch and tensorflow"
             )
+        super().__init__(data, encoding_method=encoding_method)
 
         # Load catalog
         catalog = load_catalog("mlmodel_catalog.yaml", data.name)
@@ -201,30 +203,10 @@ class MLModelCatalog(MLModel):
         input = self.perform_pipeline(x) if self._use_pipeline else x
 
         if self._backend == "pytorch":
-            # Pytorch model needs torch.Tensor as input
-            if torch.is_tensor(input):
-                device = "cuda" if input.is_cuda else "cpu"
-                self._model = self._model.to(
-                    device
-                )  # Keep model and input on the same device
-                return self._model(
-                    input
-                )  # If input is a tensor, the prediction will be a tensor too.
-            else:
-                # Convert ndArray input into torch tensor
-                if isinstance(input, pd.DataFrame):
-                    input = input.values
-                input = torch.Tensor(input)
-
-                self._model = self._model.to("cpu")
-                output = self._model(input)
-
-                # Convert output back to ndarray
-                return output.detach().cpu().numpy()
+            return self.predict_proba(input)[:, 1].reshape((-1, 1))
         elif self._backend == "tensorflow":
-            return self._model.predict(input)[:, 1].reshape(
-                (-1, 1)
-            )  # keep output in shape N x 1
+            # keep output in shape N x 1
+            return self._model.predict(input)[:, 1].reshape((-1, 1))
         else:
             raise ValueError(
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
@@ -255,13 +237,25 @@ class MLModelCatalog(MLModel):
         input = self.perform_pipeline(x) if self._use_pipeline else x
 
         if self._backend == "pytorch":
-            class_1: Any = 1 - self.predict(input)
-            class_2: Any = self.predict(input)
+            # Keep model and input on the same device
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            self._model = self._model.to(device)
 
-            if torch.is_tensor(class_1):
-                return torch.cat((class_1, class_2), dim=1)
+            if isinstance(input, pd.DataFrame):
+                input = input.values
+            input, tensor_output = (
+                (torch.Tensor(input), False)
+                if not torch.is_tensor(input)
+                else (input, True)
+            )
+            input = input.to(device)
+
+            output = self._model(input)
+
+            if tensor_output:
+                return output
             else:
-                return np.array(list(zip(class_1, class_2))).reshape((-1, 2))
+                return output.detach().cpu().numpy()
 
         elif self._backend == "tensorflow":
             return self._model.predict(input)

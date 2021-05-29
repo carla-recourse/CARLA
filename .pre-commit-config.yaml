@@ -1,3 +1,4 @@
+repos:
 - repo: git://github.com/pre-commit/pre-commit-hooks
   rev: v2.3.0
   hooks:
@@ -7,6 +8,7 @@
     - id: mixed-line-ending
     - id: end-of-file-fixer
     - id: flake8
+      exclude: ./library/
 - repo: https://github.com/psf/black
   rev: 20.8b1
   hooks:

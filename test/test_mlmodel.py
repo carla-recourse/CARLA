@@ -1,9 +1,12 @@
 import numpy as np
+import pytest
 import torch
 
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.pipelining import encode, scale
+
+testmodel = ["ann", "linear"]
 
 
 def test_properties():
@@ -33,11 +36,12 @@ def test_properties():
     assert model_tf_adult.feature_input_order == exp_feature_order_adult
 
 
-def test_predictions_tf():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_predictions_tf(model_type):
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model_tf_adult = MLModelCatalog(data, "ann")
+    model_tf_adult = MLModelCatalog(data, model_type)
 
     # normalize and encode data
     norm_enc_data = scale(model_tf_adult.scaler, data.continous, data.raw)
@@ -70,11 +74,12 @@ def test_predictions_tf():
     assert predictions_proba_tf.shape == expected_shape
 
 
-def test_predictions_with_pipeline():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_predictions_with_pipeline(model_type):
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model_tf_adult = MLModelCatalog(data, "ann")
+    model_tf_adult = MLModelCatalog(data, model_type)
     model_tf_adult.use_pipeline = True
 
     single_sample = data.raw.iloc[22].to_frame().T
@@ -99,11 +104,12 @@ def test_predictions_with_pipeline():
     assert predictions_proba_tf.shape == expected_shape
 
 
-def test_pipeline():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_pipeline(model_type):
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model = MLModelCatalog(data, "ann", use_pipeline=True)
+    model = MLModelCatalog(data, model_type, use_pipeline=True)
 
     samples = data.raw.iloc[0:22]
 
@@ -116,10 +122,15 @@ def test_pipeline():
     assert enc_norm_samples.select_dtypes(exclude=[np.number]).empty
 
 
-def test_predictions_pt():
+# TODO: This extra parameter is only used until PR#57 is merged into main to prevent errors
+test_model_lin = ["linear"]
+
+
+@pytest.mark.parametrize("model_type", test_model_lin)
+def test_predictions_pt(model_type):
     data_name = "adult"
     data = DataCatalog(data_name)
-    model = MLModelCatalog(data, "ann", backend="pytorch")
+    model = MLModelCatalog(data, model_type, backend="pytorch")
     feature_input_order = model.feature_input_order
 
     # normalize and encode data
