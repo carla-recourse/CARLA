@@ -69,7 +69,7 @@ class ActionableRecourse(RecourseMethod):
         )
 
         # Build ActionSet
-        self._action_set = rs.ActionSet(
+        self.action_set = rs.ActionSet(
             X=self._norm_enc_data[self._mlmodel.feature_input_order]
         )
 
@@ -83,6 +83,14 @@ class ActionableRecourse(RecourseMethod):
             self._action_set[feature].actionable = False
 
         self._coeffs, self._intercepts = coeffs, intercepts
+
+    @property
+    def action_set(self):
+        return self._action_set
+
+    @action_set.setter
+    def action_set(self, act_set):
+        self._action_set = act_set
 
     def get_lime_coefficients(
         self, factuals: pd.DataFrame
@@ -140,7 +148,7 @@ class ActionableRecourse(RecourseMethod):
         cfs = []
         coeffs = self._coeffs
         intercepts = self._intercepts
-        action_set = self._action_set
+        action_set = self.action_set
 
         # to keep matching indexes for iterrows and coeffs
         factuals = factuals.reset_index()

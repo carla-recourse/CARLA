@@ -23,7 +23,7 @@ from carla.recourse_methods.api import RecourseMethod
 
 
 def save_result(result: pd.DataFrame) -> None:
-    data_home = os.environ.get("CF_DATA", os.path.join("~", "../carla", "results"))
+    data_home = os.environ.get("CF_DATA", os.path.join("~", "carla", "results"))
 
     data_home = os.path.expanduser(data_home)
     if not os.path.exists(data_home):
@@ -35,7 +35,7 @@ def save_result(result: pd.DataFrame) -> None:
 
 
 def load_setup() -> Dict:
-    with open("../experimental_setup.yaml", "r") as f:
+    with open("experimental_setup.yaml", "r") as f:
         setup_catalog = yaml.safe_load(f)
 
     return setup_catalog["recourse_methods"]
@@ -60,7 +60,20 @@ def initialize_recourse_method(
             coeffs = mlmodel.raw_model.layers[0].get_weights()[0][:, 0]
             intercepts = np.array(mlmodel.raw_model.layers[0].get_weights()[1][0])
 
-        return ActionableRecourse(mlmodel, hyperparams, coeffs, intercepts)
+        ar = ActionableRecourse(mlmodel, hyperparams, coeffs, intercepts)
+
+        # some datasets need special configuration for possible actions
+        if data_name == "give_me_some_credit":
+            act_set = ar.action_set
+            act_set["NumberOfTimes90DaysLate"].mutable = False
+            act_set["NumberOfTimes90DaysLate"].actionable = False
+            act_set["NumberOfTime60-89DaysPastDueNotWorse"].mutable = False
+            act_set["NumberOfTime60-89DaysPastDueNotWorse"].actionable = False
+
+        ar.action_set = act_set
+
+        return ar
+
     elif method == "clue":
         hyperparams["data_name"] = data_name
         return Clue(data, mlmodel, hyperparams)
@@ -79,8 +92,8 @@ parser.add_argument(
     "-d",
     "--dataset",
     nargs="*",
-    default=["adult", "compas", "give-me-some-credit"],
-    choices=["adult", "compas", "give-me-some-credit"],
+    default=["adult", "compas", "give_me_some_credit"],
+    choices=["adult", "compas", "give_me_some_credit"],
     help="Datasets for experiment",
 )
 parser.add_argument(

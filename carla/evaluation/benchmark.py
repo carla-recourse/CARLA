@@ -1,6 +1,7 @@
 import timeit
 from typing import Union
 
+import numpy as np
 import pandas as pd
 
 from carla.evaluation.distances import get_distances
@@ -63,7 +64,12 @@ class Benchmark:
             self._factuals, self._counterfactuals
         )
 
-        ynn = yNN(counterfactuals_without_nans, self._recourse_method, self._mlmodel, 5)
+        if counterfactuals_without_nans.shape[0] == 0:
+            ynn = np.nan
+        else:
+            ynn = yNN(
+                counterfactuals_without_nans, self._recourse_method, self._mlmodel, 5
+            )
 
         columns = ["y-Nearest-Neighbours"]
 
@@ -117,9 +123,12 @@ class Benchmark:
             self._factuals, self._counterfactuals
         )
 
-        violations = constraint_violation(
-            self._mlmodel, counterfactuals_without_nans, factual_without_nans
-        )
+        if counterfactuals_without_nans.shape[0] == 0:
+            violations = []
+        else:
+            violations = constraint_violation(
+                self._mlmodel, counterfactuals_without_nans, factual_without_nans
+            )
         columns = ["Constraint_Violation"]
 
         return pd.DataFrame(violations, columns=columns)
@@ -136,9 +145,13 @@ class Benchmark:
             self._enc_norm_factuals, self._counterfactuals
         )
 
-        redundancies = redundancy(
-            factual_without_nans, counterfactuals_without_nans, self._mlmodel
-        )
+        if counterfactuals_without_nans.shape[0] == 0:
+            redundancies = []
+        else:
+            redundancies = redundancy(
+                factual_without_nans, counterfactuals_without_nans, self._mlmodel
+            )
+
         columns = ["Redundancy"]
 
         return pd.DataFrame(redundancies, columns=columns)
@@ -165,7 +178,6 @@ class Benchmark:
         -------
         pd.DataFrame
         """
-        # TODO: Extend with implementation of further measurements
         pipeline = [
             self.compute_distances(),
             self.compute_constraint_violation(),

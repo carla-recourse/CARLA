@@ -73,7 +73,7 @@ def load_model(
         )
         model = model.eval()
     elif ext == "h5":
-        model = tf.keras.models.load_model(full_path)
+        model = tf.keras.models.load_model(full_path, compile=False)
     else:
         raise NotImplementedError("Extension not supported:", ext)
 

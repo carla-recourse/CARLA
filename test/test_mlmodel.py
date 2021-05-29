@@ -7,6 +7,7 @@ from carla.models.catalog import MLModelCatalog
 from carla.models.pipelining import encode, scale
 
 testmodel = ["ann", "linear"]
+test_data = ["adult", "give_me_some_credit"]
 
 
 def test_properties():
@@ -37,8 +38,8 @@ def test_properties():
 
 
 @pytest.mark.parametrize("model_type", testmodel)
-def test_predictions_tf(model_type):
-    data_name = "adult"
+@pytest.mark.parametrize("data_name", test_data)
+def test_predictions_tf(model_type, data_name):
     data = DataCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, model_type)
@@ -75,8 +76,8 @@ def test_predictions_tf(model_type):
 
 
 @pytest.mark.parametrize("model_type", testmodel)
-def test_predictions_with_pipeline(model_type):
-    data_name = "adult"
+@pytest.mark.parametrize("data_name", test_data)
+def test_predictions_with_pipeline(model_type, data_name):
     data = DataCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, model_type)
@@ -105,8 +106,8 @@ def test_predictions_with_pipeline(model_type):
 
 
 @pytest.mark.parametrize("model_type", testmodel)
-def test_pipeline(model_type):
-    data_name = "adult"
+@pytest.mark.parametrize("data_name", test_data)
+def test_pipeline(model_type, data_name):
     data = DataCatalog(data_name)
 
     model = MLModelCatalog(data, model_type, use_pipeline=True)
@@ -122,13 +123,9 @@ def test_pipeline(model_type):
     assert enc_norm_samples.select_dtypes(exclude=[np.number]).empty
 
 
-# TODO: This extra parameter is only used until PR#57 is merged into main to prevent errors
-test_model_lin = ["linear"]
-
-
-@pytest.mark.parametrize("model_type", test_model_lin)
-def test_predictions_pt(model_type):
-    data_name = "adult"
+@pytest.mark.parametrize("model_type", testmodel)
+@pytest.mark.parametrize("data_name", test_data)
+def test_predictions_pt(model_type, data_name):
     data = DataCatalog(data_name)
     model = MLModelCatalog(data, model_type, backend="pytorch")
     feature_input_order = model.feature_input_order

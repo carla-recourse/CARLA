@@ -18,7 +18,7 @@ adult:
   immutable:
     - age
     - sex
-give-me-some-credit:
+give_me_some_credit:
   target: SeriousDlqin2yrs
   continous:
     - RevolvingUtilizationOfUnsecuredLines
