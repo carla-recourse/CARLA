@@ -119,6 +119,7 @@ setup = load_setup()
 
 results = pd.DataFrame()
 
+session_models = ["cem"]
 for rm in args.recourse_method:
     backend = "tensorflow"
     if rm == "clue":
@@ -131,7 +132,7 @@ for rm in args.recourse_method:
             print("Dataset: {}".format(data_name))
             print("Model type: {}".format(model_type))
 
-            if "cem" in rm:
+            if rm in session_models:
                 graph = Graph()
                 with graph.as_default():
                     ann_sess = Session()
