@@ -61,10 +61,10 @@ def initialize_recourse_method(
             intercepts = np.array(mlmodel.raw_model.layers[0].get_weights()[1][0])
 
         ar = ActionableRecourse(mlmodel, hyperparams, coeffs, intercepts)
+        act_set = ar.action_set
 
         # some datasets need special configuration for possible actions
         if data_name == "give_me_some_credit":
-            act_set = ar.action_set
             act_set["NumberOfTimes90DaysLate"].mutable = False
             act_set["NumberOfTimes90DaysLate"].actionable = False
             act_set["NumberOfTime60-89DaysPastDueNotWorse"].mutable = False
