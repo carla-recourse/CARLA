@@ -163,7 +163,9 @@ class ActionableRecourse(RecourseMethod):
             # Local explanations via LIME generate coeffs and intercepts per instance, while global explanations
             # via input parameter need to be set into correct shape [num_of_instances, num_of_features]
             coeffs = np.vstack([self._coeffs] * factuals.shape[0])
-            intercepts = np.vstack([self._intercepts] * factuals.shape[0]).squeeze()
+            intercepts = np.vstack([self._intercepts] * factuals.shape[0]).squeeze(
+                axis=1
+            )
 
         # generate counterfactuals
         for index, row in factuals_enc_norm.iterrows():
@@ -190,7 +192,7 @@ class ActionableRecourse(RecourseMethod):
             actions = fs_pop.actions
 
             # Default counterfactual value if no action flips the prediction
-            target_shape = (1, factual_enc_norm.shape[0])
+            target_shape = factual_enc_norm.shape[0]
             empty = np.empty(target_shape)
             empty[:] = np.nan
             counterfactual = empty
@@ -205,13 +207,13 @@ class ActionableRecourse(RecourseMethod):
                     self._mlmodel.predict_proba(factual_enc_norm.reshape((1, -1)))
                 )
                 if pred_cf != pred_f:
-                    counterfactual = candidate_cf
+                    counterfactual = candidate_cf.squeeze()
                     break
 
             cfs.append(counterfactual)
 
         # Convert output into correct format
-        cfs = np.array(cfs).squeeze()
+        cfs = np.array(cfs)
         df_cfs = pd.DataFrame(cfs, columns=self._mlmodel.feature_input_order)
         df_cfs[self._mlmodel.data.target] = np.argmax(
             self._mlmodel.predict_proba(cfs), axis=1
