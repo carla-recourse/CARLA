@@ -81,6 +81,12 @@ def decode(
     """
     output = df.copy()
     encoded_features = fitted_encoder.get_feature_names(features)
+
+    # Prevent errors for datasets without categorical data
+    # inverse_transform cannot handle these cases
+    if len(encoded_features) == 0:
+        return output
+
     output[features] = fitted_encoder.inverse_transform(output[encoded_features])
     output = output.drop(encoded_features, axis=1)
 
