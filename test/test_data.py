@@ -1,12 +1,15 @@
 import numpy as np
+import pytest
 
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.pipelining import encode
 
+testdata = ["adult", "give_me_some_credit", "compas"]
 
-def test_adult_col():
-    data_name = "adult"
+
+@pytest.mark.parametrize("data_name", testdata)
+def test_adult_col(data_name):
     data_catalog = DataCatalog(data_name)
 
     actual_col = (
@@ -19,8 +22,8 @@ def test_adult_col():
     assert actual_col == expected_col
 
 
-def test_adult_norm():
-    data_name = "adult"
+@pytest.mark.parametrize("data_name", testdata)
+def test_adult_norm(data_name):
     data = DataCatalog(data_name)
 
     mlmodel = MLModelCatalog(data, "ann")
@@ -35,8 +38,8 @@ def test_adult_norm():
     assert ((raw != norm).all()).any()
 
 
-def test_adult_enc():
-    data_name = "adult"
+@pytest.mark.parametrize("data_name", testdata)
+def test_adult_enc(data_name):
     data = DataCatalog(data_name)
 
     mlmodel = MLModelCatalog(data, "ann")

@@ -63,7 +63,9 @@ class MLModelCatalog(MLModel):
         super().__init__(data, encoding_method=encoding_method)
 
         # Load catalog
-        catalog = load_catalog("mlmodel_catalog.yaml", data.name)
+        catalog_content = ["ann", "linear"]
+        catalog = load_catalog("mlmodel_catalog.yaml", data.name, catalog_content)
+
         if model_type not in catalog:
             raise ValueError("Model type not in model catalog")
         self._catalog = catalog[model_type][self._backend]

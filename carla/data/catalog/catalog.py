@@ -19,7 +19,15 @@ class DataCatalog(Data):
             Used to get the correct dataset from online repository
         """
         self.name = data_name
-        self.catalog: Dict[str, Any] = load_catalog("data_catalog.yaml", data_name)
+
+        catalog_content = ["continous", "categorical", "immutable", "target"]
+        self.catalog: Dict[str, Any] = load_catalog(
+            "data_catalog.yaml", data_name, catalog_content
+        )
+
+        for key in ["continous", "categorical", "immutable"]:
+            if self.catalog[key] is None:
+                self.catalog[key] = []
 
         self._raw: pd.DataFrame = load_dataset(data_name)
 

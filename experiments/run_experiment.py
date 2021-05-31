@@ -5,13 +5,14 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import warnings
 
+import pandas as pd
+
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 import argparse
 from typing import Dict
 
 import numpy as np
-import pandas as pd
 import yaml
 from tensorflow import Graph, Session
 
@@ -64,7 +65,19 @@ def initialize_recourse_method(
             coeffs = mlmodel.raw_model.layers[0].get_weights()[0][:, 0]
             intercepts = np.array(mlmodel.raw_model.layers[0].get_weights()[1][0])
 
-        return ActionableRecourse(mlmodel, hyperparams, coeffs, intercepts)
+        ar = ActionableRecourse(mlmodel, hyperparams, coeffs, intercepts)
+        act_set = ar.action_set
+
+        # some datasets need special configuration for possible actions
+        if data_name == "give_me_some_credit":
+            act_set["NumberOfTimes90DaysLate"].mutable = False
+            act_set["NumberOfTimes90DaysLate"].actionable = False
+            act_set["NumberOfTime60-89DaysPastDueNotWorse"].mutable = False
+            act_set["NumberOfTime60-89DaysPastDueNotWorse"].actionable = False
+
+        ar.action_set = act_set
+
+        return ar
     elif "cem" in method:
         hyperparams["data_name"] = data_name
 
@@ -87,8 +100,8 @@ parser.add_argument(
     "-d",
     "--dataset",
     nargs="*",
-    default=["adult", "compas", "give-me-some-credit"],
-    choices=["adult", "compas", "give-me-some-credit"],
+    default=["adult", "compas", "give_me_some_credit"],
+    choices=["adult", "compas", "give_me_some_credit"],
     help="Datasets for experiment",
 )
 parser.add_argument(
@@ -175,6 +188,7 @@ for rm in args.recourse_method:
                 df_benchmark = Benchmark(
                     mlmodel, recourse_method, factuals
                 ).run_benchmark()
+
             df_benchmark["Recourse_Method"] = rm
             df_benchmark["Dataset"] = data_name
             df_benchmark["ML_Model"] = model_type
