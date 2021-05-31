@@ -6,7 +6,7 @@ from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods.catalog.actionable_recourse import ActionableRecourse
-from carla.recourse_methods.catalog.cem.cem import CEM
+from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
