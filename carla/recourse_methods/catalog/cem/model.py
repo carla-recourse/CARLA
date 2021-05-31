@@ -26,7 +26,7 @@ import pandas as pd
 import tensorflow as tf
 
 from carla.models.api import MLModel
-from carla.recourse_methods.autoencoder import Autoencoder
+from carla.recourse_methods.autoencoder import Autoencoder, train_autoencoder
 
 from ...api import RecourseMethod
 from ...processing import check_counterfactuals
@@ -61,7 +61,23 @@ class CEM(RecourseMethod):
                 ae_params["d"],
             ],
         )
-        self.AE = ae.load(input_shape=len(catalog_model.feature_input_order))
+        if ae_params["train_ae"]:
+            self.AE = train_autoencoder(
+                ae,
+                self._mlmodel.data,
+                self._mlmodel.scaler,
+                self._mlmodel.encoder,
+                self._mlmodel.feature_input_order,
+                epochs=ae_params["epochs"],
+                save=True,
+            )
+        else:
+            try:
+                self.AE = ae.load(input_shape=len(catalog_model.feature_input_order))
+            except FileNotFoundError as exc:
+                raise FileNotFoundError(
+                    "Loading of Autoencoder failed. {}".format(str(exc))
+                )
 
         # these are variables to be more efficient in sending data to tf
         self.orig_img = tf.Variable(np.zeros(shape), dtype=tf.float32)
