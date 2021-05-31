@@ -34,3 +34,18 @@ give_me_some_credit:
   categorical:
   immutable:
     - age
+compas:
+  target: score
+  continous:
+    - age
+    - two_year_recid
+    - priors_count
+    - length_of_stay
+  categorical:
+    - c_charge_degree
+    - race
+    - sex
+  immutable:
+    - age
+    - race
+    - sex

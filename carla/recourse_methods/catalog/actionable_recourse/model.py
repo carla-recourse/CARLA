@@ -163,9 +163,9 @@ class ActionableRecourse(RecourseMethod):
             # Local explanations via LIME generate coeffs and intercepts per instance, while global explanations
             # via input parameter need to be set into correct shape [num_of_instances, num_of_features]
             coeffs = np.vstack([self._coeffs] * factuals.shape[0])
-            intercepts = intercepts = np.vstack(
-                [self._intercepts] * factuals.shape[0]
-            ).squeeze(axis=1)
+            intercepts = np.vstack([self._intercepts] * factuals.shape[0]).squeeze(
+                axis=1
+            )
 
         # generate counterfactuals
         for index, row in factuals_enc_norm.iterrows():
