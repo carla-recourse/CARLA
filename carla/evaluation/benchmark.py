@@ -104,20 +104,20 @@ class Benchmark:
         )
 
         if counterfactuals_without_nans.empty:
-            distances = np.nan
-        else:
-            if self._mlmodel.encoder.drop is None:
-                # To prevent double count of encoded features without drop if_binary
-                binary_columns_to_drop = get_drop_columns_binary(
-                    self._mlmodel.data.categoricals,
-                    counterfactuals_without_nans.columns.tolist(),
-                )
-                counterfactuals_without_nans = counterfactuals_without_nans.drop(
-                    binary_columns_to_drop, axis=1
-                )
-                factual_without_nans = factual_without_nans.drop(
-                    binary_columns_to_drop, axis=1
-                )
+            return pd.DataFrame(np.nan, columns=columns)
+            
+        if self._mlmodel.encoder.drop is None:
+            # To prevent double count of encoded features without drop if_binary
+            binary_columns_to_drop = get_drop_columns_binary(
+                self._mlmodel.data.categoricals,
+                counterfactuals_without_nans.columns.tolist(),
+            )
+            counterfactuals_without_nans = counterfactuals_without_nans.drop(
+                binary_columns_to_drop, axis=1
+            )
+            factual_without_nans = factual_without_nans.drop(
+                binary_columns_to_drop, axis=1
+            )
 
             arr_f = factual_without_nans.to_numpy()
             arr_cf = counterfactuals_without_nans.to_numpy()
