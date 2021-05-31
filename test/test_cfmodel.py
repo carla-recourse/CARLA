@@ -123,7 +123,7 @@ def test_cem_vae(model_type):
         "mode": "PN",
         "num_classes": 2,
         "data_name": data_name,
-        "ae_params": {"h1": 20, "h2": 10, "d": 7},
+        "ae_params": {"h1": 20, "h2": 10, "d": 7, "train_ae": True, "epochs": 5},
     }
 
     graph = Graph()

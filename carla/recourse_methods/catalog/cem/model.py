@@ -74,8 +74,10 @@ class CEM(RecourseMethod):
         else:
             try:
                 self.AE = ae.load(input_shape=len(catalog_model.feature_input_order))
-            except Exception as exc:
-                raise ValueError("Loading of Autoencoder failed. {}".format(str(exc)))
+            except FileNotFoundError as exc:
+                raise FileNotFoundError(
+                    "Loading of Autoencoder failed. {}".format(str(exc))
+                )
 
         # these are variables to be more efficient in sending data to tf
         self.orig_img = tf.Variable(np.zeros(shape), dtype=tf.float32)
