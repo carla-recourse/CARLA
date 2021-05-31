@@ -13,6 +13,7 @@ from carla.evaluation.violations import constraint_violation
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.api import RecourseMethod
+from carla.recourse_methods.processing import get_drop_columns_binary
 
 
 class Benchmark:
@@ -101,11 +102,29 @@ class Benchmark:
         factual_without_nans, counterfactuals_without_nans = remove_nans(
             self._enc_norm_factuals, self._counterfactuals
         )
+
+        columns = ["Distance_1", "Distance_2", "Distance_3", "Distance_4"]
+
+        if counterfactuals_without_nans.empty:
+            return pd.DataFrame(np.nan, columns=columns)
+
+        if self._mlmodel.encoder.drop is None:
+            # To prevent double count of encoded features without drop if_binary
+            binary_columns_to_drop = get_drop_columns_binary(
+                self._mlmodel.data.categoricals,
+                counterfactuals_without_nans.columns.tolist(),
+            )
+            counterfactuals_without_nans = counterfactuals_without_nans.drop(
+                binary_columns_to_drop, axis=1
+            )
+            factual_without_nans = factual_without_nans.drop(
+                binary_columns_to_drop, axis=1
+            )
+
         arr_f = factual_without_nans.to_numpy()
         arr_cf = counterfactuals_without_nans.to_numpy()
 
         distances = get_distances(arr_f, arr_cf)
-        columns = ["Distance_1", "Distance_2", "Distance_3", "Distance_4"]
 
         output = pd.DataFrame(distances, columns=columns)
 

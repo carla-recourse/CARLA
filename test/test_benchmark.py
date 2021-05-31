@@ -6,6 +6,7 @@ from carla.evaluation import Benchmark, remove_nans
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods.catalog.dice import Dice
+from carla.recourse_methods.processing import get_drop_columns_binary
 
 
 def test_benchmarks():
@@ -102,6 +103,47 @@ def test_distances():
     expected = (5, 4)
     actual = df_distances.shape
     assert expected == actual
+
+
+def test_drop_binary():
+    test_columns = [
+        "workclass_Non-Private",
+        "workclass_Private",
+        "marital-status_Married",
+        "marital-status_Non-Married",
+        "occupation_Managerial-Specialist",
+        "occupation_Other",
+        "relationship_Husband",
+        "relationship_Non-Husband",
+        "race_Non-White",
+        "race_White",
+        "sex_Female",
+        "sex_Male",
+        "native-country_Non-US",
+        "native-country_US",
+    ]
+    test_categoricals = [
+        "workclass",
+        "marital-status",
+        "occupation",
+        "relationship",
+        "race",
+        "sex",
+        "native-country",
+    ]
+    expected = [
+        "workclass_Non-Private",
+        "marital-status_Married",
+        "occupation_Managerial-Specialist",
+        "relationship_Husband",
+        "race_Non-White",
+        "sex_Female",
+        "native-country_Non-US",
+    ]
+
+    actual = get_drop_columns_binary(test_categoricals, test_columns)
+
+    assert actual == expected
 
 
 def test_success_rate():

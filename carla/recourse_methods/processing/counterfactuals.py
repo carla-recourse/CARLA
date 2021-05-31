@@ -32,3 +32,24 @@ def check_counterfactuals(
     df_cfs.loc[df_cfs[mlmodel.data.target] == negative_label, :] = np.nan
 
     return df_cfs
+
+
+def get_drop_columns_binary(categoricals: List[str], columns: List[str]) -> List[str]:
+    """
+    Selects the columns which can be dropped for one-hot-encoded dfs without drop_first.
+
+    Is mainly needed to transform into drop_first encoding
+
+    Parameters
+    ----------
+    categoricals: non encoded categorical feature names
+    columns: one-hot-encoded features without drop_first
+
+    Returns
+    -------
+    List of features to drop
+    """
+    list_drop = [
+        c for c in columns if c.split("_")[0] in [c.split("_")[0] for c in categoricals]
+    ]
+    return list_drop[::2]
