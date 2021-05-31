@@ -28,8 +28,8 @@ import tensorflow as tf
 from carla.models.api import MLModel
 from carla.recourse_methods.autoencoder import Autoencoder
 
-from ....models.pipelining.steps import decode
 from ...api import RecourseMethod
+from ...processing import check_counterfactuals
 
 
 class CEM(RecourseMethod):
@@ -463,11 +463,8 @@ class CEM(RecourseMethod):
 
         """
         # drop targets
-        target_name = self.data.target
         instances = factuals.copy()
-
-        categorical_cols = self.data.categoricals
-        fitted_encoder = self.catalog_model.encoder
+        instances = instances.reset_index(drop=True)
 
         # normalize and one-hot-encoding
         instances = self.encode_normalize_order_factuals(instances)
@@ -478,39 +475,7 @@ class CEM(RecourseMethod):
             _, counterfactual = self.counterfactual_search(instances.values[i, :])
             counterfactuals.append(counterfactual)
 
-        counterfactuals_df = pd.DataFrame(np.array(counterfactuals))
-        counterfactuals_df.columns = instances.columns
-
-        # Success rate & drop not successful counterfactuals & process remainder
-        counterfactuals_indices = np.where(
-            np.logical_not(np.any(np.isnan(counterfactuals_df.values), axis=1))
-        )[0]
-        counterfactuals_df = counterfactuals_df.iloc[counterfactuals_indices]
-        instances = instances.iloc[counterfactuals_indices]
-
-        # Obtain labels
-        instance_label = np.argmax(
-            self.catalog_model.predict_proba(instances.values), axis=1
-        )
-        counterfactual_label = np.argmax(
-            self.catalog_model.predict_proba(counterfactuals_df.values), axis=1
-        )
-
-        # Order counterfactuals and instances in original data order
-        counterfactuals_df = counterfactuals_df[self.catalog_model.feature_input_order]
-        instances = instances[self.catalog_model.feature_input_order]
-
-        if len(categorical_cols) > 0:
-            # Convert binary cols of counterfactuals and instances into strings: Required for >>Measurement<< in script
-            # Convert binary cols back to original string encoding
-            counterfactuals_df = decode(
-                fitted_encoder, categorical_cols, counterfactuals_df
-            )
-            instances = decode(fitted_encoder, categorical_cols, instances)
-
-        # Add labels
-        counterfactuals_df[target_name] = counterfactual_label
-        instances[target_name] = instance_label
+        counterfactuals_df = check_counterfactuals(self._mlmodel, counterfactuals)
 
         return counterfactuals_df
 

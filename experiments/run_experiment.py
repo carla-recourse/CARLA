@@ -1,5 +1,8 @@
 # flake8: noqa
 import os
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 import warnings
 
 import pandas as pd
@@ -11,6 +14,7 @@ from typing import Dict
 
 import numpy as np
 import yaml
+from tensorflow import Graph, Session
 
 from carla.data.api import Data
 from carla.data.catalog import DataCatalog
@@ -48,6 +52,7 @@ def initialize_recourse_method(
     data_name: str,
     model_type: str,
     setup: Dict,
+    sess: Session = None,
 ) -> RecourseMethod:
     if method not in setup.keys():
         raise KeyError("Method not in experimental setup")
@@ -73,7 +78,10 @@ def initialize_recourse_method(
         ar.action_set = act_set
 
         return ar
+    elif "cem" in method:
+        hyperparams["data_name"] = data_name
 
+        return CEM(sess, mlmodel, hyperparams)
     elif method == "clue":
         hyperparams["data_name"] = data_name
         return Clue(data, mlmodel, hyperparams)
@@ -108,8 +116,8 @@ parser.add_argument(
     "-r",
     "--recourse_method",
     nargs="*",
-    default=["dice", "ar", "clue", "face_knn", "face_epsilon", "gs"],
-    choices=["dice", "ar", "clue", "face_knn", "face_epsilon", "gs"],
+    default=["dice", "ar", "cem", "cem-vae", "clue", "face_knn", "face_epsilon", "gs"],
+    choices=["dice", "ar", "cem", "cem-vae", "clue", "face_knn", "face_epsilon", "gs"],
     help="Recourse methods for experiment",
 )
 parser.add_argument(
@@ -124,6 +132,7 @@ setup = load_setup()
 
 results = pd.DataFrame()
 
+session_models = ["cem"]
 for rm in args.recourse_method:
     backend = "tensorflow"
     if rm == "clue":
@@ -136,20 +145,50 @@ for rm in args.recourse_method:
             print("Dataset: {}".format(data_name))
             print("Model type: {}".format(model_type))
 
-            mlmodel = MLModelCatalog(dataset, model_type, backend)
+            if rm in session_models:
+                graph = Graph()
+                with graph.as_default():
+                    ann_sess = Session()
+                    with ann_sess.as_default():
+                        mlmodel_sess = MLModelCatalog(dataset, model_type, backend)
 
-            factuals = predict_negative_instances(mlmodel, dataset)
-            factuals = factuals.iloc[: args.number_of_samples]
-            factuals = factuals.reset_index(drop=True)
+                        factuals_sess = predict_negative_instances(
+                            mlmodel_sess, dataset
+                        )
+                        factuals_sess = factuals_sess.iloc[: args.number_of_samples]
+                        factuals_sess = factuals_sess.reset_index(drop=True)
 
-            if rm == "dice":
-                mlmodel.use_pipeline = True
+                        recourse_method_sess = initialize_recourse_method(
+                            rm,
+                            mlmodel_sess,
+                            dataset,
+                            data_name,
+                            model_type,
+                            setup,
+                            sess=ann_sess,
+                        )
 
-            recourse_method = initialize_recourse_method(
-                rm, mlmodel, dataset, data_name, model_type, setup
-            )
+                        df_benchmark = Benchmark(
+                            mlmodel_sess, recourse_method_sess, factuals_sess
+                        ).run_benchmark()
+            else:
+                mlmodel = MLModelCatalog(dataset, model_type, backend)
 
-            df_benchmark = Benchmark(mlmodel, recourse_method, factuals).run_benchmark()
+                factuals = predict_negative_instances(mlmodel, dataset)
+                factuals = factuals.iloc[: args.number_of_samples]
+                factuals = factuals.reset_index(drop=True)
+
+                if rm == "dice":
+                    mlmodel.use_pipeline = True
+
+                recourse_method = initialize_recourse_method(
+                    rm, mlmodel, dataset, data_name, model_type, setup
+                )
+
+                df_benchmark = Benchmark(
+                    mlmodel, recourse_method, factuals
+                ).run_benchmark()
+
             df_benchmark["Recourse_Method"] = rm
             df_benchmark["Dataset"] = data_name
             df_benchmark["ML_Model"] = model_type
