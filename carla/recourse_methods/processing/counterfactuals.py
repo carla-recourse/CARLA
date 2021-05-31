@@ -49,13 +49,7 @@ def get_drop_columns_binary(categoricals: List[str], columns: List[str]) -> List
     -------
     List of features to drop
     """
-    list_drop = []
-
-    for cat in categoricals:
-        add_to_drop = True
-        for feature in columns:
-            if cat in feature and add_to_drop:
-                list_drop.append(feature)
-                add_to_drop = False
-
-    return list_drop
+    list_drop = [
+        c for c in columns if c.split("_")[0] in [c.split("_")[0] for c in categoricals]
+    ]
+    return list_drop[::2]
