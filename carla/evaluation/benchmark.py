@@ -64,7 +64,7 @@ class Benchmark:
             self._factuals, self._counterfactuals
         )
 
-        if counterfactuals_without_nans.shape[0] == 0:
+        if counterfactuals_without_nans.empty:
             ynn = np.nan
         else:
             ynn = yNN(
@@ -123,7 +123,7 @@ class Benchmark:
             self._factuals, self._counterfactuals
         )
 
-        if counterfactuals_without_nans.shape[0] == 0:
+        if counterfactuals_without_nans.empty:
             violations = []
         else:
             violations = constraint_violation(
@@ -145,7 +145,7 @@ class Benchmark:
             self._enc_norm_factuals, self._counterfactuals
         )
 
-        if counterfactuals_without_nans.shape[0] == 0:
+        if counterfactuals_without_nans.empty:
             redundancies = []
         else:
             redundancies = redundancy(
