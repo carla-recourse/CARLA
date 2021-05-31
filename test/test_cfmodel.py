@@ -6,7 +6,7 @@ from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods.catalog.actionable_recourse import ActionableRecourse
-from carla.recourse_methods.catalog.cem.cem import CEM
+from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
@@ -64,7 +64,8 @@ def test_ar_get_counterfactual(model_type):
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
 
-def test_cem_get_counterfactuals():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_cem_get_counterfactuals(model_type):
     data_name = "adult"
     data = DataCatalog(data_name=data_name)
 
@@ -88,7 +89,7 @@ def test_cem_get_counterfactuals():
         ann_sess = Session()
         with ann_sess.as_default():
             model_ann = MLModelCatalog(
-                data=data, model_type="ann", encoding_method="Binary"
+                data=data, model_type=model_type, encoding_method="Binary"
             )
 
             factuals = predict_negative_instances(model_ann, data)
@@ -102,7 +103,49 @@ def test_cem_get_counterfactuals():
 
             counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
 
-            assert counterfactuals_df.shape == test_factuals.shape
+    assert counterfactuals_df.shape == test_factuals.shape
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_cem_vae(model_type):
+    data_name = "adult"
+    data = DataCatalog(data_name=data_name)
+
+    hyperparams_cem = {
+        "batch_size": 1,
+        "kappa": 0.1,
+        "init_learning_rate": 1e-2,
+        "binary_search_steps": 9,
+        "max_iterations": 100,
+        "initial_const": 10,
+        "beta": 0.0,
+        "gamma": 6.0,
+        "mode": "PN",
+        "num_classes": 2,
+        "data_name": data_name,
+        "ae_params": {"h1": 20, "h2": 10, "d": 7},
+    }
+
+    graph = Graph()
+    with graph.as_default():
+        ann_sess = Session()
+        with ann_sess.as_default():
+            model_ann = MLModelCatalog(
+                data=data, model_type=model_type, encoding_method="Binary"
+            )
+
+            factuals = predict_negative_instances(model_ann, data)
+            test_factuals = factuals.iloc[:5]
+
+            recourse = CEM(
+                sess=ann_sess,
+                catalog_model=model_ann,
+                hyperparams=hyperparams_cem,
+            )
+
+            counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
+
+    assert counterfactuals_df.shape == test_factuals.shape
 
 
 @pytest.mark.parametrize("model_type", testmodel)

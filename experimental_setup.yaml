@@ -1,7 +1,39 @@
 recourse_methods:
   ar:
     hyperparams:
-      fs_size: 200
+      fs_size: 150
+  cem:
+    hyperparams:
+      batch_size: 1
+      kappa: 0.1
+      init_learning_rate: 0.01
+      binary_search_steps: 9
+      max_iterations: 100
+      initial_const: 10
+      beta: 0.9
+      gamma: 0.0
+      mode: "PN"
+      num_classes: 2
+      ae_params:
+        h1: 20
+        h2: 10
+        d: 7
+  cem-vae:
+    hyperparams:
+      batch_size: 1
+      kappa: 0.1
+      init_learning_rate: 0.01
+      binary_search_steps: 9
+      max_iterations: 100
+      initial_const: 10
+      beta: 0.0
+      gamma: 6.0
+      mode: "PN"
+      num_classes: 2
+      ae_params:
+        h1: 20
+        h2: 10
+        d: 7
   clue:
     hyperparams:
       train_vae: True
