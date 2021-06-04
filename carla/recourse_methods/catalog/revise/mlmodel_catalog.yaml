@@ -1,0 +1,176 @@
+adult:
+  ann:
+    pytorch:
+      feature_order:
+        - age
+        - fnlwgt
+        - education-num
+        - capital-gain
+        - capital-loss
+        - hours-per-week
+        - workclass_Non-Private
+        - workclass_Private
+        - marital-status_Married
+        - marital-status_Non-Married
+        - occupation_Managerial-Specialist
+        - occupation_Other
+        - relationship_Husband
+        - relationship_Non-Husband
+        - race_Non-White
+        - race_White
+        - sex_Female
+        - sex_Male
+        - native-country_Non-US
+        - native-country_US
+    tensorflow:
+      feature_order:
+        - age
+        - fnlwgt
+        - education-num
+        - capital-gain
+        - capital-loss
+        - hours-per-week
+        - workclass_Private
+        - marital-status_Non-Married
+        - occupation_Other
+        - relationship_Non-Husband
+        - race_White
+        - sex_Male
+        - native-country_US
+
+  linear:
+    pytorch:
+      feature_order:
+        - age
+        - fnlwgt
+        - education-num
+        - capital-gain
+        - capital-loss
+        - hours-per-week
+        - workclass_Non-Private
+        - workclass_Private
+        - marital-status_Married
+        - marital-status_Non-Married
+        - occupation_Managerial-Specialist
+        - occupation_Other
+        - relationship_Husband
+        - relationship_Non-Husband
+        - race_Non-White
+        - race_White
+        - sex_Female
+        - sex_Male
+        - native-country_Non-US
+        - native-country_US
+    tensorflow:
+      feature_order:
+        - age
+        - fnlwgt
+        - education-num
+        - capital-gain
+        - capital-loss
+        - hours-per-week
+        - workclass_Private
+        - marital-status_Non-Married
+        - occupation_Other
+        - relationship_Non-Husband
+        - race_White
+        - sex_Male
+        - native-country_US
+
+give_me_some_credit:
+  ann:
+    tensorflow:
+      feature_order:
+        - RevolvingUtilizationOfUnsecuredLines
+        - age
+        - NumberOfTime30-59DaysPastDueNotWorse
+        - DebtRatio
+        - MonthlyIncome
+        - NumberOfOpenCreditLinesAndLoans
+        - NumberOfTimes90DaysLate
+        - NumberRealEstateLoansOrLines
+        - NumberOfTime60-89DaysPastDueNotWorse
+        - NumberOfDependents
+    pytorch:
+      feature_order:
+        - RevolvingUtilizationOfUnsecuredLines
+        - age
+        - NumberOfTime30-59DaysPastDueNotWorse
+        - DebtRatio
+        - MonthlyIncome
+        - NumberOfOpenCreditLinesAndLoans
+        - NumberOfTimes90DaysLate
+        - NumberRealEstateLoansOrLines
+        - NumberOfTime60-89DaysPastDueNotWorse
+        - NumberOfDependents
+  linear:
+    tensorflow:
+      feature_order:
+        - RevolvingUtilizationOfUnsecuredLines
+        - age
+        - NumberOfTime30-59DaysPastDueNotWorse
+        - DebtRatio
+        - MonthlyIncome
+        - NumberOfOpenCreditLinesAndLoans
+        - NumberOfTimes90DaysLate
+        - NumberRealEstateLoansOrLines
+        - NumberOfTime60-89DaysPastDueNotWorse
+        - NumberOfDependents
+    pytorch:
+      feature_order:
+        - RevolvingUtilizationOfUnsecuredLines
+        - age
+        - NumberOfTime30-59DaysPastDueNotWorse
+        - DebtRatio
+        - MonthlyIncome
+        - NumberOfOpenCreditLinesAndLoans
+        - NumberOfTimes90DaysLate
+        - NumberRealEstateLoansOrLines
+        - NumberOfTime60-89DaysPastDueNotWorse
+        - NumberOfDependents
+
+compas:
+  ann:
+    tensorflow:
+      feature_order:
+        - age
+        - two_year_recid
+        - priors_count
+        - length_of_stay
+        - c_charge_degree_M
+        - race_Other
+        - sex_Male
+    pytorch:
+      feature_order:
+        - age
+        - two_year_recid
+        - priors_count
+        - length_of_stay
+        - c_charge_degree_F
+        - c_charge_degree_M
+        - race_African-American
+        - race_Other
+        - sex_Female
+        - sex_Male
+  linear:
+    tensorflow:
+      feature_order:
+        - age
+        - two_year_recid
+        - priors_count
+        - length_of_stay
+        - c_charge_degree_M
+        - race_Other
+        - sex_Male
+    pytorch:
+      feature_order:
+        - age
+        - two_year_recid
+        - priors_count
+        - length_of_stay
+        - c_charge_degree_F
+        - c_charge_degree_M
+        - race_African-American
+        - race_Other
+        - sex_Female
+        - sex_Male
