@@ -42,9 +42,9 @@ class REVISE(RecourseMethod):
             vae_params["activFun"],
         )
         # try:
-        # self.model_vae.load("foo.pt")
+        self.model_vae.load("foo.pt")
         # except:
-        train(self.model_vae, self.data, hyperparams["vae_training"])
+        # train(self.model_vae, self.data, hyperparams["vae_training"])
 
     def get_counterfactuals(
         self,
@@ -63,7 +63,7 @@ class REVISE(RecourseMethod):
         instances = factuals.copy()
         targets = 1 - instances[self.target_column]
         instances = self.encode_normalize_order_factuals(instances)
-        instances["target"] = targets
+        instances[self.target_column] = targets
 
         # counterfactual targets
         # targets = 1 - torch.max(self.model_classification.predict(factuals))
@@ -73,8 +73,6 @@ class REVISE(RecourseMethod):
         )
 
         self.model_vae.eval()
-
-        print(len(test_loader))
 
         cfs = pd.DataFrame()
 
@@ -90,7 +88,7 @@ class REVISE(RecourseMethod):
 
             self._lambda = self.params["lambda"]
 
-            target = torch.FloatTensor([[1]])
+            target = torch.FloatTensor([0, 1])
             target_prediction = 1
 
             # if target_digit == 1:
@@ -129,10 +127,11 @@ class REVISE(RecourseMethod):
 
             for i in range(self.params["max_iter"]):
                 cf = self.model_vae.decode(z)
-                output = self.model_classification.predict(cf[0])
+                output = self.model_classification.predict_proba(cf[0])[0]
                 # print(output, "predicted probability")
                 # print(output)
                 _, predicted = torch.max(output, 0)
+                # print(predicted)
                 if predicted == target_prediction:
                     # print(predicted, target_prediction)
                     counterfactuals.append(cf[0])
@@ -187,6 +186,7 @@ class REVISE(RecourseMethod):
         print(cfs)
 
         result = pd.concat(cfs)
+        # TODO right now this also appends the correct cf-label 1 to the nan rows
         result[self.target_column] = targets
         result.columns = instances.columns
         return result
@@ -195,9 +195,10 @@ class REVISE(RecourseMethod):
 
         loss_function = nn.BCELoss()
         # loss_function = nn.CrossEntropyLoss()
-        output = self.model_classification.predict(cf_initialize)
+        output = self.model_classification.predict_proba(cf_initialize)[0]
         loss1 = loss_function(output, target)  # classification loss
-        loss2 = torch.sum((cf_initialize - query_instance) ** 2)  # distance loss
+        # loss2 = torch.sum((cf_initialize - query_instance) ** 2)  # distance loss
+        loss2 = torch.norm((cf_initialize - query_instance), 1)
         # print("loss for", i)
         # print(loss1, "\t", loss2)
         total_loss = loss1 + self._lambda * loss2
@@ -212,7 +213,7 @@ def revise():
     model = MLModelCatalog(data, "ann", backend="pytorch", encoding_method="Binary")
     # get factuals
     factuals = predict_negative_instances(model, data)
-    test_factual = factuals.iloc[:5]
+    test_factual = factuals.iloc[:20]
 
     vae_params = {
         "d": 8,  # latent space
@@ -225,7 +226,7 @@ def revise():
     vae_training = {"lambda_reg": 1e-6, "epochs": 5, "lr": 1e-3, "batch_size": 32}
 
     hyperparams = {
-        "lambda": 0.1,
+        "lambda": 1,
         "optimizer": "adam",
         "lr": 0.05,
         "max_iter": 500,
