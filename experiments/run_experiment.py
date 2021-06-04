@@ -10,7 +10,7 @@ import pandas as pd
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 import argparse
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 import yaml
@@ -26,14 +26,14 @@ from carla.recourse_methods import *
 from carla.recourse_methods.api import RecourseMethod
 
 
-def save_result(result: pd.DataFrame) -> None:
+def save_result(result: pd.DataFrame, alt_path: Optional[str]) -> None:
     data_home = os.environ.get("CF_DATA", os.path.join("~", "carla", "results"))
 
     data_home = os.path.expanduser(data_home)
     if not os.path.exists(data_home):
         os.makedirs(data_home)
 
-    path = os.path.join(data_home, "results.csv")
+    path = os.path.join(data_home, "results.csv") if alt_path is None else alt_path
 
     result.to_csv(path, index=False)
 
@@ -127,10 +127,19 @@ parser.add_argument(
     default=100,
     help="Number of instances per dataset",
 )
+parser.add_argument(
+    "-p",
+    "--path",
+    type=str,
+    default=None,
+    help="Save path for the output csv. If None, the output is written to the cache.",
+)
 args = parser.parse_args()
 setup = load_setup()
 
 results = pd.DataFrame()
+
+path = args.path
 
 session_models = ["cem"]
 for rm in args.recourse_method:
@@ -212,4 +221,4 @@ for rm in args.recourse_method:
             results = pd.concat([results, df_benchmark], axis=0)
             print("=====================================")
 
-save_result(results)
+save_result(results, path)
