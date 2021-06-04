@@ -18,6 +18,8 @@ recourse_methods:
         h1: 20
         h2: 10
         d: 7
+        train_ae: True
+        epochs: 5
   cem-vae:
     hyperparams:
       batch_size: 1
@@ -34,6 +36,8 @@ recourse_methods:
         h1: 20
         h2: 10
         d: 7
+        train_ae: True
+        epochs: 5
   clue:
     hyperparams:
       train_vae: True
@@ -51,10 +55,10 @@ recourse_methods:
   face_knn:
     hyperparams:
       mode: "knn"
-      fraction: 0.25
+      fraction: 0.15
   face_epsilon:
     hyperparams:
       mode: "epsilon"
-      fraction: 0.25
+      fraction: 0.15
   gs:
     hyperparams:

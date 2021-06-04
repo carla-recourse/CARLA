@@ -106,7 +106,7 @@ class Benchmark:
         columns = ["Distance_1", "Distance_2", "Distance_3", "Distance_4"]
 
         if counterfactuals_without_nans.empty:
-            return pd.DataFrame(np.nan, columns=columns)
+            return pd.DataFrame(columns=columns)
 
         if self._mlmodel.encoder.drop is None:
             # To prevent double count of encoded features without drop if_binary
