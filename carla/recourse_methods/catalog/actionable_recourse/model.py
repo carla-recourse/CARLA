@@ -176,6 +176,12 @@ class ActionableRecourse(RecourseMethod):
             coeff = coeffs[index]
             intercept = intercepts[index]
 
+            # Default counterfactual value if no action flips the prediction
+            target_shape = factual_enc_norm.shape[0]
+            empty = np.empty(target_shape)
+            empty[:] = np.nan
+            counterfactual = empty
+
             # Align action set to coefficients
             action_set.set_alignment(coefficients=coeff)
 
@@ -186,16 +192,20 @@ class ActionableRecourse(RecourseMethod):
                 coefficients=coeff,
                 intercept=intercept,
             )
-            fs_pop = fs.populate(total_items=self._fs_size)
+            try:
+                fs_pop = fs.populate(total_items=self._fs_size)
+            except (ValueError, KeyError):
+                print(
+                    "Actionable Recours is not able to produce a counterfactual explanation for instance {}".format(
+                        index
+                    )
+                )
+                print(row.values)
+                cfs.append(counterfactual)
+                continue
 
             # Get actions to flip predictions
             actions = fs_pop.actions
-
-            # Default counterfactual value if no action flips the prediction
-            target_shape = factual_enc_norm.shape[0]
-            empty = np.empty(target_shape)
-            empty[:] = np.nan
-            counterfactual = empty
 
             for action in actions:
                 candidate_cf = (factual_enc_norm + action).reshape(
