@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+import torch
 
 from carla.models.api import MLModel
 
@@ -53,3 +54,37 @@ def get_drop_columns_binary(categoricals: List[str], columns: List[str]) -> List
         c for c in columns if c.split("_")[0] in [c.split("_")[0] for c in categoricals]
     ]
     return list_drop[::2]
+
+
+def reconstruct_encoding_constraints(
+    x: torch.Tensor, feature_pos: List[int], binary_cat: bool
+) -> torch.Tensor:
+    """
+    Reconstructing one-hot-encoded data, such that its values are either 0 or 1,
+    and features do not contradict (e.g., sex_female = 1, sex_male = 1)
+
+    Parameters
+    ----------
+    x: instance where we want to reconstrucht categorical constraints
+    feature_pos: list with positions of categorical features in x
+    binary_cat: If true, categorical datas are encoded with drop_if_binary
+
+    Returns
+    -------
+    Tensor with reconstructed constraints
+    """
+    x_enc = x.clone()
+
+    if binary_cat:
+        for pos in feature_pos:
+            x_enc[:, pos] = torch.round(x_enc[:, pos])
+    else:
+        binary_pairs = list(zip(feature_pos[:-1], feature_pos[1:]))[0::2]
+        for pair in binary_pairs:
+            argmax = torch.argmax(x_enc[:, pair[0] : pair[1] + 1])
+            argmin = 1 - argmax
+
+            x_enc[:, pair[0] + argmax] = 1
+            x_enc[:, pair[0] + argmin] = 0
+
+    return x_enc

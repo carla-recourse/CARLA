@@ -38,7 +38,6 @@ def test_variational_autoencoder():
         test_input.shape[1],
         vae_params["H1"],
         vae_params["H2"],
-        vae_params["activFun"],
     )
 
     fitted_vae = train_variational_autoencoder(
@@ -56,7 +55,6 @@ def test_variational_autoencoder():
         test_input.shape[1],
         vae_params["H1"],
         vae_params["H2"],
-        vae_params["activFun"],
     )
 
     new_vae.load(test_input.shape[1])

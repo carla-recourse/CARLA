@@ -1,23 +1,84 @@
+from typing import Dict
+
 import numpy as np
 import pandas as pd
 import torch
 from torch import nn
 
+from carla.data.api import Data
+from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.autoencoder import (
     Dataloader,
     VariationalAutoencoder,
     train_variational_autoencoder,
 )
-from carla.recourse_methods.processing.counterfactuals import check_counterfactuals
+from carla.recourse_methods.processing.counterfactuals import (
+    check_counterfactuals,
+    reconstruct_encoding_constraints,
+)
 
 
 class Revise(RecourseMethod):
-    def __init__(self, model_classification, data, hyperparams) -> None:
-        super().__init__(model_classification)
+    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
+        """
+        Initialisation of the REVISE recourse method.
+
+        Restrictions
+        ------------
+        - Works currently only on Pytorch models
+        - Only binary categorical features with and without one-hot-encoding
+
+        Parameters
+        ----------
+        mlmodel: Black-box-model we want to explore
+        data: Dataset to perform on
+        hyperparams: Parameter for Revise method, with following possibilites
+            {
+                "data_name": str  name of the dataset,
+                "lambda": float default: 0.5    Decides how similar the counterfactual is to the factual,
+                "optimizer": str defaul: "adam" Optimizer for generation of counterfactuals,
+                            only adam and rmsprop possible
+                "lr": float default: 0.1    learning rate for Revise,
+                "max_iter": int default 1000, number of iterations for Revise optimization,
+                "target_class": List default: [0, 1]  List of one-hot-encoded target class,
+                "binary_cat_features": bool default: True If true, the encoding of x is done by drop_if_binary
+                "vae_params": Dict with parameter for VAE,
+                    {
+                        "d": 8,  # latent space
+                        "D": test_factual.shape[1],  # input size
+                        "H1": 512,
+                        "H2": 256,
+                        "train": False,
+                        "lambda_reg": 1e-6,
+                        "epochs": 5,
+                        "lr": 1e-3,
+                        "batch_size": 32,
+                    }
+            }
+        """
+        super().__init__(mlmodel)
         self.params = hyperparams
 
         self._target_column = data.target
+        self._lambda = self.params["lambda"] if "lambda" in hyperparams.keys() else 0.5
+        self._optimizer = (
+            self.params["optimizer"] if "optimizer" in hyperparams.keys() else "adam"
+        )
+        self._lr = self.params["lr"] if "lr" in hyperparams.keys() else 0.1
+        self._max_iter = (
+            self.params["max_iter"] if "max_iter" in hyperparams.keys() else 1000
+        )
+        self._target_class = (
+            hyperparams["target_class"]
+            if "target_class" in hyperparams.keys()
+            else [0, 1]
+        )
+        self._binary_cat_features = (
+            hyperparams["binary_cat_features"]
+            if "binary_cat_features" in hyperparams.keys()
+            else True
+        )
 
         df_enc_norm_data = self.encode_normalize_order_factuals(
             data.raw, with_target=True
@@ -30,7 +91,6 @@ class Revise(RecourseMethod):
             df_enc_norm_data.shape[1] - 1,  # num features - target
             vae_params["H1"],
             vae_params["H2"],
-            vae_params["activFun"],
         )
 
         if vae_params["train"]:
@@ -55,89 +115,85 @@ class Revise(RecourseMethod):
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        df_enc_norm_fact = factuals.copy()
-        # targets = 1 - df_enc_norm_fact[self._target_column]
-        df_enc_norm_fact = self.encode_normalize_order_factuals(
-            df_enc_norm_fact, with_target=True
-        )
-        # df_enc_norm_fact[self._target_column] = targets
-        df_enc_norm_fact[self._target_column] = 1
 
+        df_enc_norm_fact = self.encode_normalize_order_factuals(
+            factuals, with_target=True
+        )
+
+        # prepare data for optimization steps
         test_loader = torch.utils.data.DataLoader(
             Dataloader(df_enc_norm_fact.values), batch_size=1, shuffle=False
         )
 
-        cfs = []
-        for i, (query_instance, y) in enumerate(test_loader):
+        # pay attention to categorical features
+        encoded_feature_names = self._mlmodel.encoder.get_feature_names(
+            self._mlmodel.data.categoricals
+        )
+        cat_features_indices = [
+            df_enc_norm_fact.columns.get_loc(feature)
+            for feature in encoded_feature_names
+        ]
 
-            self._lambda = self.params["lambda"]
+        list_cfs = []
+        for query_instance, _ in test_loader:
 
-            target = torch.FloatTensor([0, 1]).to(device)
-            target_prediction = 1
+            target = torch.FloatTensor(self._target_class).to(device)
+            target_prediction = np.argmax(np.array(self._target_class))
 
             z = self.vae.encode(query_instance)[0].clone().detach().requires_grad_(True)
 
-            if self.params["optimizer"] == "adam":
-                optim = torch.optim.Adam([z], self.params["lr"])
+            if self._optimizer == "adam":
+                optim = torch.optim.Adam([z], self._lr)
                 # z.requires_grad = True
             else:
-                optim = torch.optim.RMSprop([z], self.params["lr"])
+                optim = torch.optim.RMSprop([z], self._lr)
 
-            counterfactuals = []  # all possible counterfactuals
+            candidate_counterfactuals = []  # all possible counterfactuals
             # distance of the possible counterfactuals from the intial value -
             # considering distance as the loss function (can even change it just the distance)
-            distances = []
+            candidate_distances = []
             all_loss = []
 
-            for i in range(self.params["max_iter"]):
-                cf = self.vae.decode(z)
-                output = self._mlmodel.predict_proba(cf[0])[0]
+            for idx in range(self._max_iter):
+                cf = self.vae.decode(z)[0]
+                cf = reconstruct_encoding_constraints(
+                    cf, cat_features_indices, self.params["binary_cat_features"]
+                )
+                output = self._mlmodel.predict_proba(cf)[0]
                 _, predicted = torch.max(output, 0)
 
-                if predicted == target_prediction:
-                    counterfactuals.append(cf[0])
-
                 z.requires_grad = True
-                loss = self.compute_loss(cf[0], query_instance, target, i)
+                loss = self.compute_loss(cf, query_instance, target)
                 all_loss.append(loss)
+
                 if predicted == target_prediction:
-                    distances.append(loss)
+                    candidate_counterfactuals.append(
+                        cf.cpu().detach().numpy().squeeze(axis=0)
+                    )
+                    candidate_distances.append(loss.cpu().detach().numpy())
+
                 loss.backward()
                 optim.step()
                 optim.zero_grad()
-                cf[0].detach_()
+                cf.detach_()
 
             # Choose the nearest counterfactual
-            if len(counterfactuals):
-                print("succes")
-                torch_counterfactuals = torch.stack(counterfactuals)
-                torch_distances = torch.stack(distances)
+            if len(candidate_counterfactuals):
+                print("Counterfactual found!")
+                array_counterfactuals = np.array(candidate_counterfactuals)
+                array_distances = np.array(candidate_distances)
 
-                torch_counterfactuals = torch_counterfactuals.detach().numpy()
-                torch_distances = torch_distances.detach().numpy()
-
-                index = np.argmin(torch_distances)
-                counterfactuals = torch_counterfactuals[index]
+                index = np.argmin(array_distances)
+                list_cfs.append(array_counterfactuals[index])
             else:
-                print("fail")
-                counterfactuals = cf[0].detach().numpy()
+                print("No counterfactual found")
+                list_cfs.append(query_instance.cpu().detach().numpy().squeeze(axis=0))
 
-            cf_df = check_counterfactuals(self._mlmodel, counterfactuals)
+        cf_df = check_counterfactuals(self._mlmodel, list_cfs)
 
-            # cfs.append(counterfactuals[index][0])
-            cfs.append(cf_df)
+        return cf_df
 
-        print("done")
-        print(cfs)
-
-        result = pd.concat(cfs)
-        # TODO right now this also appends the correct cf-label 1 to the nan rows
-        targets = "Lösch mich"
-        result[self._target_column] = targets
-        result.columns = df_enc_norm_fact.columns
-        return result
-
-    def compute_loss(self, cf_initialize, query_instance, target, i):
+    def compute_loss(self, cf_initialize, query_instance, target):
 
         loss_function = nn.BCELoss()
         output = self._mlmodel.predict_proba(cf_initialize)[0]

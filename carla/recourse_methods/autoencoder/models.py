@@ -169,7 +169,7 @@ class Autoencoder:
 
 
 class VariationalAutoencoder(nn.Module):
-    def __init__(self, data_name, latent_dim, input_dim, H1, H2, activFun):
+    def __init__(self, data_name, latent_dim, input_dim, H1, H2):
         super(VariationalAutoencoder, self).__init__()
 
         self._data_name = data_name
@@ -179,10 +179,10 @@ class VariationalAutoencoder(nn.Module):
         encoder = nn.Sequential(
             nn.Linear(input_dim, H1),
             nn.BatchNorm1d(H1),
-            activFun,
+            nn.ReLU(),
             nn.Linear(H1, H2),
             nn.BatchNorm1d(H2),
-            activFun,
+            nn.ReLU(),
         )
 
         self._mu_enc = nn.Sequential(encoder, nn.Linear(H2, latent_dim))
@@ -192,10 +192,10 @@ class VariationalAutoencoder(nn.Module):
         decoder = nn.Sequential(
             nn.Linear(latent_dim, H2),
             nn.BatchNorm1d(H2),
-            activFun,
+            nn.ReLU(),
             nn.Linear(H2, H1),
             nn.BatchNorm1d(H1),
-            activFun,
+            nn.ReLU(),
         )
 
         self.mu_dec = nn.Sequential(

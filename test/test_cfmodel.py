@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 from tensorflow import Graph, Session
-from torch import nn
 
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
@@ -242,36 +241,36 @@ def test_wachter(model_type):
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
 
 
-# @pytest.mark.parametrize("model_type", testmodel)
-def test_revise():
+@pytest.mark.parametrize("model_type", testmodel)
+def test_revise(model_type):
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model = MLModelCatalog(data, "ann", backend="pytorch")
+    model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
     factuals = predict_negative_instances(model, data)
-    test_factual = factuals.iloc[:20]
+    test_factual = factuals.iloc[:5]
 
     vae_params = {
         "d": 8,  # latent space
-        "D": test_factual.shape[1],  # input size
         "H1": 512,
         "H2": 256,
-        "activFun": nn.ReLU(),
-        "train": False,
+        "train": True,
         "lambda_reg": 1e-6,
-        "epochs": 5,
+        "epochs": 1,
         "lr": 1e-3,
         "batch_size": 32,
     }
 
     hyperparams = {
         "data_name": data_name,
-        "lambda": 1,
+        "lambda": 0.5,
         "optimizer": "adam",
-        "lr": 0.05,
-        "max_iter": 500,
+        "lr": 0.1,
+        "max_iter": 1500,
+        "target_class": [0, 1],
         "vae_params": vae_params,
+        "binary_cat_features": False,
     }
 
     revise = Revise(model, data, hyperparams)
