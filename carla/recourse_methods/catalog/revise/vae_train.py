@@ -121,15 +121,3 @@ def test(model, test_dataset, train_params):
         test_loss += loss(
             data,
         )
-
-
-# if __name__ == "__main__":
-#     # The model and the optimizer for the VAE
-#     model = model.VAE_model(vae_params["d"], vae_params["D"], vae_params["H1"], vae_params["H2"],
-#                             vae_params["activFun"])
-#
-#     train_dataset = csvDataset("../../data/SCM/train_data.csv")
-#     # test_dataset = csvDataset("../../data/SCM/test_data.csv")
-#     # test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=training_params["batch_size"], shuffle=True)
-#
-#     train(model, train_dataset, train_params)

@@ -64,49 +64,6 @@ class VAE_model(nn.Module):
         mu_x, log_var_x = self.decode(z)
         return mu_x
 
-    # Computes the objective function of the VAE
-    # def VAE_loss(self, x, mu_x, log_var_x, mu_z, log_var_z, r=1.0):
-    #     D = mu_x.shape[1]
-    #     d = mu_z.shape[1]
-    #
-    #     if log_var_x.shape[1] == 1:
-    #         P_X_Z = (
-    #             +0.5
-    #             * (
-    #                 D * log_var_x
-    #                 + (((x - mu_x) ** 2) / log_var_x.exp()).sum(dim=1, keepdim=True)
-    #             ).mean()
-    #         )
-    #     else:
-    #         P_X_Z = (
-    #             +0.5
-    #             * (
-    #                 log_var_x.sum(dim=1, keepdim=True)
-    #                 + (((x - mu_x) ** 2) / log_var_x.exp()).sum(dim=1, keepdim=True)
-    #             ).mean()
-    #         )
-    #
-    #     if log_var_z.shape[1] == 1:
-    #         Q_Z_X = -0.5 * (d * log_var_z).mean()
-    #     else:
-    #         Q_Z_X = -0.5 * log_var_z.sum(dim=1, keepdim=True).mean()
-    #
-    #     if log_var_z.shape[1] == 1:
-    #         P_Z = (
-    #             +0.5
-    #             * ((mu_z ** 2).sum(dim=1, keepdim=True) + d * log_var_z.exp()).mean()
-    #         )
-    #     else:
-    #         P_Z = (
-    #             +0.5
-    #             * (
-    #                 (mu_z ** 2).sum(dim=1, keepdim=True)
-    #                 + log_var_z.exp().sum(dim=1, keepdim=True)
-    #             ).mean()
-    #         )
-    #
-    #     return P_X_Z + r * Q_Z_X + r * P_Z
-
     def VAE_loss(self, mse_loss, mu, logvar):
         MSE = mse_loss
         KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())

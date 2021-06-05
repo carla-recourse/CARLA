@@ -1,4 +1,3 @@
-# flake8: noqa
 import pandas as pd
 import torch
 from sklearn.preprocessing import StandardScaler
@@ -11,7 +10,7 @@ class dfDataset(Dataset):
     The features are normalized by sklearn StandardScaler
     """
 
-    def __init__(self, df):
+    def __init__(self, df: pd.DataFrame):
         self.columns = df.columns
         # all columns except last
         x = df.iloc[:, :-1].values
@@ -65,13 +64,3 @@ class dfDataset(Dataset):
         y = df.iloc[:, -1:].values
         x = self.scaler.transform(x)
         return self.get_df(x, y, df.columns)
-
-
-class csvDataset(dfDataset):
-    """
-    dfDataset that reads the dataframe from file.csv
-    """
-
-    def __init__(self, file_name):
-        df = pd.read_csv(file_name)
-        super().__init__(df)
