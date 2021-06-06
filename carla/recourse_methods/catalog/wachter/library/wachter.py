@@ -21,7 +21,7 @@ def wachter_recourse(
     y_target: List[int] = [0, 1],
     n_iter: int = 1000,
     t_max_min: float = 0.5,
-    norm: int = 2,
+    norm: int = 1,
     clamp: bool = True,
     loss_type: str = "MSE",
 ) -> np.ndarray:
