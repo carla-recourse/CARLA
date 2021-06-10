@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class Data(ABC):
     """
-    Abstract architecture to allow arbitrary datasets, which are provided by the user.
+    Abstract class to implement arbitrary datasets, which are provided by the user.
     """
 
     @property
@@ -17,7 +17,7 @@ class Data(ABC):
 
         Returns
         -------
-        list : List of Strings
+        list of Strings
             List of all categorical columns
         """
         pass
@@ -32,7 +32,7 @@ class Data(ABC):
 
         Returns
         -------
-        list : List of Strings
+        list of Strings
             List of all continuous columns
         """
         pass
@@ -47,7 +47,7 @@ class Data(ABC):
 
         Returns
         -------
-        list : List of Strings
+        list of Strings
             List of all immutable columns
         """
         pass
@@ -60,7 +60,7 @@ class Data(ABC):
 
         Returns
         -------
-        String : String
+        str
             Target label name
         """
         pass
@@ -73,7 +73,7 @@ class Data(ABC):
 
         Returns
         -------
-        df : :class:`pandas.DataFrame`
+        pd.DataFrame
             Tabular data with raw information
         """
         pass

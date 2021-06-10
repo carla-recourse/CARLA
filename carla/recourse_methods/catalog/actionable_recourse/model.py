@@ -11,6 +11,50 @@ from ...api import RecourseMethod
 
 
 class ActionableRecourse(RecourseMethod):
+    """
+    Implementation of Actionable Recourse from Ustun et.al. [1]_
+
+    Parameters
+    ----------
+    data : carla.data.Data
+        Dataset
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See Notes below to see its content.
+    coeffs : np.ndArray, optional
+        Coefficients. Will be approximated by LIME if None
+    intercepts: np.ndArray, optional
+        Intercepts. Will be approximated by LIME if None
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "fs_size": int, default: 100
+            size of generated flipset
+    - Restrictions
+        *   Actionable Recourse (AR) supports only binary categorical features.
+            See implementation at https://github.com/ustunb/actionable-recourse/blob/master/examples/ex_01_quickstart.ipynb
+        *   AR is only defined on linear models. To make it work for arbitrary non-linear networks
+            we need to find Actionab coefficients for every instance, for example with lime.
+    - Warning
+        *   AR does not always find a counterfactual example. The probability of finding one raises for a high size
+            of flip set.
+
+    .. [1] Berk Ustun, Alexander Spangher, and Y. Liu. 2019. Actionable Recourse in Linear Classification.
+        InProceedings of the Conference on Fairness, Accountability, and Transparency (FAT*)
+    """
+
     def __init__(
         self,
         mlmodel,
@@ -18,35 +62,6 @@ class ActionableRecourse(RecourseMethod):
         coeffs: Optional[np.ndarray] = None,
         intercepts: Optional[np.ndarray] = None,
     ) -> None:
-        """
-        Initializing Actionable Recourse
-
-        Restrictions
-        ------------
-        -   Actionable Recourse (AR) supports only binary categorical features.
-            See implementation at https://github.com/ustunb/actionable-recourse/blob/master/examples/ex_01_quickstart.ipynb
-        -   AR is only defined on linear models. To make it work for arbitrary non-linear networks
-            we need to find coefficients for every instance, for example with lime.
-
-        Warning
-        -------
-        - AR does not always find a counterfactual example. The probability of finding one raises for a high size
-          of flip set.
-
-        Parameters
-        ----------
-        data : carla.data.Data()
-            Dataset
-        mlmodel : carla.model.MLModel()
-            ML model
-        hyperparams : dict
-            Dictionary containing hyperparameters.
-            {"fs_size": int (size of generated flipset, default 100)}
-        coeffs : np.ndArray
-            Coefficients
-        intercepts: np.ndArray
-            Intercepts
-        """
         super().__init__(mlmodel)
         self._data = mlmodel.data
 
@@ -86,13 +101,20 @@ class ActionableRecourse(RecourseMethod):
 
     @property
     def action_set(self):
+        """
+        Contains dictionary with possible actions for every input feature.
+
+        Returns
+        -------
+        dict
+        """
         return self._action_set
 
     @action_set.setter
     def action_set(self, act_set):
         self._action_set = act_set
 
-    def get_lime_coefficients(
+    def __get_lime_coefficients(
         self, factuals: pd.DataFrame
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -157,7 +179,7 @@ class ActionableRecourse(RecourseMethod):
         # Check if we need lime to build coefficients
         if (coeffs is None) and (intercepts is None):
             print("Start generating LIME coefficients")
-            coeffs, intercepts = self.get_lime_coefficients(factuals_enc_norm)
+            coeffs, intercepts = self.__get_lime_coefficients(factuals_enc_norm)
             print("Finished generating LIME coefficients")
         else:
             # Local explanations via LIME generate coeffs and intercepts per instance, while global explanations

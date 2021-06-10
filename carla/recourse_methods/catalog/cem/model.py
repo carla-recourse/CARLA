@@ -33,6 +33,70 @@ from ...processing import check_counterfactuals
 
 
 class CEM(RecourseMethod):
+    """
+    Implementation of CEM from Dhurandhar et.al. [1]_.
+    CEM needs an variational autoencoder to generate counterfactual examples.
+    By setting the train_ae key to True in hyperparams, a tensorflow VAE will be trained.
+
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "kappa": float
+            Hyperparameter for CEM
+        * "init_learning_rate": float
+            Learning rate for CEM optimization
+        * "binary_search_steps": int
+            Hyperparameter for CEM
+        * "max_iterations": int
+            Number of maximum iterations to find a counterfactual example.
+        * "initial_const": int
+            Hyperparameter for CEM
+        * "beta": float
+            Hyperparameter for CEM
+        * "gamma": float
+            Hyperparameter for CEM
+        * "mode": {"PN", "PP"}
+            Mode for CEM
+        * "num_classes": int.
+            Currently only binary classifier are supported
+        * "data_name": str
+            Identificates the loaded or saved autoencoder model
+        * "ae_params:" dict
+            Initialisation and training parameter for the autoencoder model
+
+            + "h1": int
+                Number of neurons in first hidden layer
+            + "h2": int
+                Number of neurons in second hidden layer
+            + "d": int
+                Hyperparameter for autoencoder
+            + "train_ae": bool
+                If True, an autoencoder will be trained and saved
+            + "epochs": int
+                Number of training epochs for autoencoder
+
+    .. [1] Amit Dhurandhar, Pin-Yu Chen, Ronny Luss, Chun-Chen Tu, Paishun Ting, Karthikeyan Shanmugam,and Payel Das.
+            2018. Explanations based on the Missing: Towards Contrastive Explanations with Pertinent Negatives.
+            In Advances in Neural Information Processing Systems344(NeurIPS).
+    """
+
     def __init__(self, sess, catalog_model: MLModel, hyperparams):
         self.sess = sess
         self.hyperparams = hyperparams
@@ -94,7 +158,7 @@ class CEM(RecourseMethod):
         self.assign_adv_img = tf.placeholder(tf.float32, shape)
         self.assign_adv_img_s = tf.placeholder(tf.float32, shape)
         self.assign_target_lab = tf.placeholder(tf.float32, (batch_size, num_classes))
-        self.assign_const = tf.placeholder(tf.float32, [batch_size])
+        self.__assign_const = tf.placeholder(tf.float32, [batch_size])
 
         """Fast Iterative Soft Thresholding"""
         """--------------------------------"""
@@ -193,7 +257,7 @@ class CEM(RecourseMethod):
         self.setup = []
         self.setup.append(self.orig_img.assign(self.assign_orig_img))
         self.setup.append(self.target_lab.assign(self.assign_target_lab))
-        self.setup.append(self.const.assign(self.assign_const))
+        self.setup.append(self.const.assign(self.__assign_const))
         self.setup.append(self.adv_img.assign(self.assign_adv_img))
         self.setup.append(self.adv_img_s.assign(self.assign_adv_img_s))
 
@@ -277,7 +341,7 @@ class CEM(RecourseMethod):
 
         return cond_greater, cond_less_equal, cond_less
 
-    def attack(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+    def __attack(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
         def compare(x, y) -> bool:
             """
             Compare predictions with target labels and return whether PP or PN conditions hold.
@@ -331,7 +395,7 @@ class CEM(RecourseMethod):
                 {
                     self.assign_orig_img: img_batch,
                     self.assign_target_lab: label_batch,
-                    self.assign_const: CONST,
+                    self.__assign_const: CONST,
                     self.assign_adv_img: img_batch,
                     self.assign_adv_img_s: img_batch,
                 },
@@ -419,24 +483,24 @@ class CEM(RecourseMethod):
         )
         return overall_best_attack
 
-    def counterfactual_search(
+    def __counterfactual_search(
         self, instance: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
 
-        orig_prob, orig_class, orig_prob_str = self.model_prediction(
+        orig_prob, orig_class, orig_prob_str = self.__model_prediction(
             self.catalog_model.raw_model, np.expand_dims(instance, axis=0)
         )
 
         target_label = orig_class
-        orig_sample, target = self.generate_data(instance, target_label)
+        orig_sample, target = self.__generate_data(instance, target_label)
 
         # start the search
-        counterfactual = self.attack(orig_sample, target)
+        counterfactual = self.__attack(orig_sample, target)
 
-        adv_prob, adv_class, adv_prob_str = self.model_prediction(
+        adv_prob, adv_class, adv_prob_str = self.__model_prediction(
             self.catalog_model.raw_model, counterfactual
         )
-        delta_prob, delta_class, delta_prob_str = self.model_prediction(
+        delta_prob, delta_class, delta_prob_str = self.__model_prediction(
             self.catalog_model.raw_model, orig_sample - counterfactual
         )
 
@@ -464,20 +528,6 @@ class CEM(RecourseMethod):
         return instance, counterfactual.reshape(-1)
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
-        """
-        Compute a certain number of counterfactuals per factual example.
-
-
-        Parameters
-        ----------
-        factuals : pd.DataFrame
-            DataFrame containing all samples for which we want to generate counterfactual examples.
-            All instances should belong to the same class.
-
-        Returns
-        -------
-
-        """
         # drop targets
         instances = factuals.copy()
         instances = instances.reset_index(drop=True)
@@ -488,7 +538,7 @@ class CEM(RecourseMethod):
         counterfactuals = []
 
         for i, row in instances.iterrows():
-            _, counterfactual = self.counterfactual_search(instances.values[i, :])
+            _, counterfactual = self.__counterfactual_search(instances.values[i, :])
             counterfactuals.append(counterfactual)
 
         counterfactuals_df = check_counterfactuals(self._mlmodel, counterfactuals)
@@ -496,7 +546,7 @@ class CEM(RecourseMethod):
         return counterfactuals_df
 
     @staticmethod
-    def generate_data(
+    def __generate_data(
         instance: np.ndarray, target_label: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         inputs = []
@@ -513,7 +563,7 @@ class CEM(RecourseMethod):
         return inputs, target_vec
 
     @staticmethod
-    def model_prediction(model, inputs: np.ndarray) -> Tuple[np.ndarray, int, str]:
+    def __model_prediction(model, inputs: np.ndarray) -> Tuple[np.ndarray, int, str]:
         prob = model.predict(inputs)
         predicted_class = np.argmax(prob)
         prob_str = np.array2string(prob).replace("\n", "")

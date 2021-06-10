@@ -20,43 +20,73 @@ from carla.recourse_methods.processing.counterfactuals import (
 
 
 class Revise(RecourseMethod):
+    """
+    Implementation of Revise from Joshi et.al. [1]_.
+
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    data: carla.data.Data
+        Dataset to perform on
+    hyperparams : dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "data_name": str
+            name of the dataset
+        * "lambda": float, default: 0.5
+            Decides how similar the counterfactual is to the factual
+        * "optimizer": {"adam", "rmsprop"}
+            Optimizer for generation of counterfactuals.
+        * "lr": float, default: 0.1
+            Learning rate for Revise.
+        * "max_iter": int, default: 1000
+            Number of iterations for Revise optimization.
+        * "target_class": List, default: [0, 1]
+            List of one-hot-encoded target class.
+        * "binary_cat_features": bool, default: True
+            If true, the encoding of x is done by drop_if_binary.
+        * "vae_params": Dict
+            With parameter for VAE.
+
+            + "d": int
+                Latent space.
+            + "D": int
+                Input size:
+            + "H1": int
+                Number of neurons in hidden layer 1
+            + "H2": int
+                Number of neurons in hidden layer 2
+            + "train": bool
+                Decides if a new Autoencoder will be learned.
+            + "lambda_reg": flot
+                Hyperparameter for variational autoencoder.
+            + "epochs": int
+                Number of epcchs to train VAE
+            + "lr": float
+                Learning rate for VAE training
+            + "batch_size": int
+                Batch-size for VAE training
+
+    .. [1] Shalmali Joshi, Oluwasanmi Koyejo, Warut Vijitbenjaronk, Been Kim, and Joydeep Ghosh.2019.
+            Towards Realistic  Individual Recourse  and Actionable Explanations  in Black-BoxDecision Making Systems.
+            arXiv preprint arXiv:1907.09615(2019).
+    """
+
     def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
-        """
-        Initialisation of the REVISE recourse method.
-
-        Restrictions
-        ------------
-        - Works currently only on Pytorch models
-        - Only binary categorical features with and without one-hot-encoding
-
-        Parameters
-        ----------
-        mlmodel: Black-box-model we want to explore
-        data: Dataset to perform on
-        hyperparams: Parameter for Revise method, with following possibilites
-            {
-                "data_name": str  name of the dataset,
-                "lambda": float default: 0.5    Decides how similar the counterfactual is to the factual,
-                "optimizer": str defaul: "adam" Optimizer for generation of counterfactuals,
-                            only adam and rmsprop possible
-                "lr": float default: 0.1    learning rate for Revise,
-                "max_iter": int default 1000, number of iterations for Revise optimization,
-                "target_class": List default: [0, 1]  List of one-hot-encoded target class,
-                "binary_cat_features": bool default: True If true, the encoding of x is done by drop_if_binary
-                "vae_params": Dict with parameter for VAE,
-                    {
-                        "d": 8,  # latent space
-                        "D": test_factual.shape[1],  # input size
-                        "H1": 512,
-                        "H2": 256,
-                        "train": False,
-                        "lambda_reg": 1e-6,
-                        "epochs": 5,
-                        "lr": 1e-3,
-                        "batch_size": 32,
-                    }
-            }
-        """
         super().__init__(mlmodel)
         self.params = hyperparams
 
@@ -163,7 +193,7 @@ class Revise(RecourseMethod):
                 _, predicted = torch.max(output, 0)
 
                 z.requires_grad = True
-                loss = self.compute_loss(cf, query_instance, target)
+                loss = self.__compute_loss(cf, query_instance, target)
                 all_loss.append(loss)
 
                 if predicted == target_prediction:
@@ -193,7 +223,7 @@ class Revise(RecourseMethod):
 
         return cf_df
 
-    def compute_loss(self, cf_initialize, query_instance, target):
+    def __compute_loss(self, cf_initialize, query_instance, target):
 
         loss_function = nn.BCELoss()
         output = self._mlmodel.predict_proba(cf_initialize)[0]

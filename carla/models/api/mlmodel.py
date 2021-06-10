@@ -10,6 +10,31 @@ from carla.data.api import Data
 
 
 class MLModel(ABC):
+    """
+    Abstract class to implement custom black-box-model for a given dataset with encoding and scaling processing.
+
+    Parameters
+    ----------
+    data: Data
+        Dataset inherited from Data-wrapper
+    scaling_method: str, default: MinMax
+        Type of used sklearn scaler. Can be set with property setter to any sklearn scaler.
+    encoding_method: str, default: OneHot
+        Type of OneHotEncoding [OneHot, OneHot_drop_binary]. Additional drop binary decides if one column
+        is dropped for binary features. Can be set with property setter to any sklearn encoder.
+
+    Methods
+    -------
+    predict:
+        One-dimensional prediction of ml model for an output interval of [0, 1].
+    predict_proba:
+        Two-dimensional probability prediction of ml model
+
+    Returns
+    -------
+    None
+    """
+
     def __init__(
         self,
         data: Data,
@@ -37,14 +62,28 @@ class MLModel(ABC):
 
     @property
     def data(self) -> Data:
+        """
+        Contains the data.api.Data dataset.
+
+        Returns
+        -------
+        carla.data.Data
+        """
         return self._data
 
     @data.setter
-    def data(self, data: Data):
+    def data(self, data: Data) -> None:
         self._data = data
 
     @property
     def scaler(self) -> BaseEstimator:
+        """
+        Contains a fitted sklearn scaler.
+
+        Returns
+        -------
+        sklearn.preprocessing.BaseEstimator
+        """
         return self._scaler
 
     @scaler.setter
@@ -59,12 +98,19 @@ class MLModel(ABC):
 
         Returns
         -------
-
+        sklearn.preprocessing.BaseEstimator
         """
         self._scaler = scaler
 
     @property
     def encoder(self) -> BaseEstimator:
+        """
+        Contains a fitted sklearn encoder:
+
+        Returns
+        -------
+        sklearn.preprocessing.BaseEstimator
+        """
         return self._encoder
 
     @encoder.setter
@@ -74,12 +120,8 @@ class MLModel(ABC):
 
         Parameters
         ----------
-        encoder : sklearn.preprocessing.Encoder
+        encoder: sklearn.preprocessing.Encoder
             Fitted encoder for ML model.
-
-        Returns
-        -------
-
         """
         self._encoder = encoder
 
@@ -93,8 +135,7 @@ class MLModel(ABC):
 
         Returns
         -------
-        ordered_features : List of String
-            Correct order of input features for ml model
+        list of str
         """
         pass
 
@@ -102,14 +143,13 @@ class MLModel(ABC):
     @abstractmethod
     def backend(self):
         """
-        Describes the type of backend which is used for the ml model.
+        Describes the type of backend which is used for the classifier.
 
         E.g., tensorflow, pytorch, sklearn, ...
 
         Returns
         -------
-        backend : String
-            Used framework
+        str
         """
         pass
 
@@ -117,12 +157,12 @@ class MLModel(ABC):
     @abstractmethod
     def raw_model(self):
         """
-        Returns the raw ml model built on its framework
+        Contains the raw ml model built on its framework
 
         Returns
         -------
-        ml_model : tensorflow, pytorch, sklearn model type
-            Loaded model
+        object
+            Classifier, depending on used framework
         """
         pass
 
@@ -140,7 +180,7 @@ class MLModel(ABC):
 
         Returns
         -------
-        output : np.Array
+        iterable object
             Ml model prediction for interval [0, 1] with shape N x 1
         """
         pass
@@ -159,7 +199,7 @@ class MLModel(ABC):
 
         Returns
         -------
-        output : float
+        iterable object
             Ml model prediction with shape N x 2
         """
         pass

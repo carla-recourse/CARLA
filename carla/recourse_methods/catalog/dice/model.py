@@ -9,25 +9,43 @@ from ...api import RecourseMethod
 
 
 class Dice(RecourseMethod):
-    def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
-        """
-        Constructor for Dice model
-        Implementation can be seen at https://github.com/interpretml/DiCE
+    """
+    Implementation of CLUE from Mothilal et.al. [1]_.
 
-        Restrictions:
-        ------------
-        -   Only the model agnostic approach (backend: sklearn) is used in our implementation.
-        -   ML model needs to have a transformation pipeline for normalization, encoding and feature order.
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "num": int,
+            Number of counterfactuals per factual to generate
+        * "desired_class": int
+            Given a binary class label, the desired class a counterfactual should have (e.g., 0 or 1)
+    - Restrictions:
+        *   Only the model agnostic approach (backend: sklearn) is used in our implementation.
+        *   ML model needs to have a transformation pipeline for normalization, encoding and feature order.
             See pipelining at carla/models/catalog/catalog.py for an example ML model class implementation
 
-        Parameters
-        ----------
-        mlmodel : models.api.MLModel
-            ML model to build counterfactuals for.
-        hyperparams : dict
-            Hyperparameter which are needed for DICE to generate counterfactuals.
-            Structure: {"num": int, "desired_class": int}
-        """
+    .. [1] R. K. Mothilal, Amit Sharma, and Chenhao Tan. 2020. Explaining machine learning classifiers
+            through diverse counterfactual explanations
+    """
+
+    def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
         super().__init__(mlmodel)
         self._continous = mlmodel.data.continous
         self._categoricals = mlmodel.data.categoricals
@@ -50,28 +68,7 @@ class Dice(RecourseMethod):
         self._encoder = mlmodel.encoder
         self._feature_order = mlmodel.feature_input_order
 
-    @property
-    def dice_model(self):
-        return self._dice
-
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
-        """
-        Compute a certain number of counterfactuals per factual example.
-
-
-        Parameters
-        ----------
-        factuals : pd.DataFrame
-            DataFrame containing all samples for which we want to generate counterfactual examples.
-            All instances should belong to the same class.
-
-        Returns
-        -------
-        df_cfs : pd.DataFrame
-            Encoded and normalized counterfactuals
-
-        """
-
         # Prepare factuals
         querry_instances = factuals.copy()
 

@@ -12,20 +12,34 @@ from carla.recourse_methods.processing import (
 
 
 class GrowingSpheres(RecourseMethod):
+    """
+    Implementation of Growing Spheres from Laugel et.al. [1]_.
+
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Growing Spheeres needs no hyperparams.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Restrictions
+        Growing Spheres works at the moment only for data with dropped first column of binary categorical features.
+
+    .. [1] Thibault Laugel, Marie-Jeanne Lesot, Christophe Marsala, Xavier Renard, and Marcin Detyniecki. 2017.
+            Inverse Classification for Comparison-based Interpretability in Machine Learning.
+            arXiv preprint arXiv:1712.08443(2017).
+    """
+
     def __init__(self, mlmodel: MLModel, hyperparams=None) -> None:
-        """
-        Implementation follows the Random Point Picking over a sphere
-        The algorithm's implementation follows: Pawelczyk, Broelemann & Kascneci (2020);
-
-        Restrictions
-        ------------
-        - Growing Spheres works at the moment only for data with dropped first column of binary categorical features.
-
-        Parameters
-        ----------
-        mlmodel: Black-box-model we want to discover
-
-        """
         super().__init__(mlmodel)
 
         self._immutables = encode_feature_names(
