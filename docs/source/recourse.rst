@@ -4,7 +4,12 @@
 
 Recourse Methods
 ================
-Thi
+The recourse method module contains
+
+- a :ref:`recourse_catalog` with pre-implemented and ready-to-use recourse methods for arbitrary datasets and black-box-models or
+- an :ref:`recourse_api` to implement new recourse methods for benchmarking and comparison.
+
+Example implementations for both use-cases can be found in our section :doc:`examples`.
 
 .. _recourse_api:
 
@@ -18,6 +23,9 @@ Interface
 
 Catalog
 -------
+The following catalog lists all currently implemented recourse methods.
+Important hyperparameters that are needed for each method are specified in the notes of each section,
+and have to be passed in the constructor as dictionary.
 
 .. _ar:
 

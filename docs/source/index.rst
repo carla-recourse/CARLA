@@ -41,6 +41,7 @@ Provided Machine Learning Models
    data
    mlmodel
    recourse
+   benchmarking
    license
 
 
