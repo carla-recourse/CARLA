@@ -77,12 +77,8 @@ class CEM(RecourseMethod):
         L1_dist, L2_dist = self.__compute_l_norm(delta_img)
         _, L2_dist_s = self.__compute_l_norm(delta_img_s)
 
-        self.ImgToEnforceLabel_Score = self.__get_label_score(
-            delta_img, self.adv_img, mlmodel
-        )
-        ImgToEnforceLabel_Score_s = self.__get_label_score(
-            delta_img_s, self.adv_img_s, mlmodel
-        )
+        self.ImgToEnforceLabel_Score = self.__get_label_score(delta_img, self.adv_img)
+        ImgToEnforceLabel_Score_s = self.__get_label_score(delta_img_s, self.adv_img_s)
 
         # composite distance loss
         self.EN_dist = L2_dist + tf.multiply(L1_dist, beta)
@@ -108,26 +104,19 @@ class CEM(RecourseMethod):
 
         # sum up the losses
         self.Loss_L1Dist = tf.reduce_sum(L1_dist)
-
-        self.Loss_L2Dist = tf.reduce_sum(L2_dist)
-        Loss_L2Dist_s = tf.reduce_sum(L2_dist_s)
-
-        self.Loss_Attack = tf.reduce_sum(self.const * Loss_Attack)
-        Loss_Attack_s = tf.reduce_sum(self.const * Loss_Attack_s)
-
-        delta_input_ae = delta_img if self.mode == "PP" else self.adv_img
-        delta_input_ae_s = delta_img_s if self.mode == "PP" else self.adv_img_s
-
-        self.Loss_AE_Dist = self.__compute_AE_lost(delta_input_ae)
-        Loss_AE_Dist_s = self.__compute_AE_lost(delta_input_ae_s)
-
-        Loss_ToOptimize = Loss_Attack_s + Loss_L2Dist_s + Loss_AE_Dist_s
-        self.Loss_Overall = (
-            self.Loss_Attack
-            + self.Loss_L2Dist
-            + self.Loss_AE_Dist
-            + tf.multiply(beta, self.Loss_L1Dist)
-        )
+        (
+            self.Loss_L2Dist,
+            self.Loss_Attack,
+            self.Loss_AE_Dist,
+            Loss_ToOptimize,
+        ) = self.__compute_losses(delta_img, self.adv_img, L2_dist, Loss_Attack)
+        (
+            Loss_L2Dist_s,
+            Loss_Attack_s,
+            Loss_AE_Dist_s,
+            Loss_ToOptimize_s,
+        ) = self.__compute_losses(delta_img_s, self.adv_img_s, L2_dist_s, Loss_Attack_s)
+        self.Loss_Overall = Loss_ToOptimize + tf.multiply(beta, self.Loss_L1Dist)
 
         learning_rate = tf.train.polynomial_decay(
             hyperparams["init_learning_rate"],
@@ -139,7 +128,7 @@ class CEM(RecourseMethod):
         optimizer = tf.train.GradientDescentOptimizer(learning_rate)
         start_vars = set(x.name for x in tf.global_variables())
         self.train = optimizer.minimize(
-            Loss_ToOptimize,
+            Loss_ToOptimize_s,
             var_list=[self.adv_img_s],
             global_step=self.global_step,
         )
@@ -147,20 +136,37 @@ class CEM(RecourseMethod):
         new_vars = [x for x in end_vars if x.name not in start_vars]
 
         # these are the variables to initialize when we run
-        self.setup = []
-        self.setup.append(self.orig_img.assign(self.assign_orig_img))
-        self.setup.append(self.target_lab.assign(self.assign_target_lab))
-        self.setup.append(self.const.assign(self.assign_const))
-        self.setup.append(self.adv_img.assign(self.assign_adv_img))
-        self.setup.append(self.adv_img_s.assign(self.assign_adv_img_s))
+        self.setup = self.__set_setup()
 
         self.init = tf.variables_initializer(
             var_list=[self.global_step] + [self.adv_img_s] + [self.adv_img] + new_vars
         )
 
-    def __get_label_score(self, delta, adv, mlmodel):
+    def __compute_losses(self, delta, adv, l2_dist, loss_Attack):
+        loss_L2Dist = tf.reduce_sum(l2_dist)
+        loss_Attack = tf.reduce_sum(self.const * loss_Attack)
+        loss_AE_Dist = self.__compute_AE_dist(delta, adv)
+        loss_ToOptimize = loss_Attack + loss_L2Dist + loss_AE_Dist
+
+        return loss_L2Dist, loss_Attack, loss_AE_Dist, loss_ToOptimize
+
+    def __compute_AE_dist(self, delta, adv):
+        delta_input_ae = delta if self.mode == "PP" else adv
+        return self.__compute_AE_lost(delta_input_ae)
+
+    def __set_setup(self):
+        setup = []
+        setup.append(self.orig_img.assign(self.assign_orig_img))
+        setup.append(self.target_lab.assign(self.assign_target_lab))
+        setup.append(self.const.assign(self.assign_const))
+        setup.append(self.adv_img.assign(self.assign_adv_img))
+        setup.append(self.adv_img_s.assign(self.assign_adv_img_s))
+
+        return setup
+
+    def __get_label_score(self, delta, adv):
         enforce_input = delta if self.mode == "PP" else adv
-        return mlmodel.raw_model(enforce_input)
+        return self._mlmodel.raw_model(enforce_input)
 
     def __compute_l_norm(self, delta):
         return tf.reduce_sum(tf.abs(delta), [1]), tf.reduce_sum(tf.square(delta), [1])
