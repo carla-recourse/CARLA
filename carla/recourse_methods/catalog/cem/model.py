@@ -36,7 +36,6 @@ class CEM(RecourseMethod):
     def __init__(self, sess, mlmodel: MLModel, hyperparams):
         self.sess = sess
         self.hyperparams = hyperparams
-        self.catalog_model = mlmodel
 
         self.data = mlmodel.data
         self.kappa = hyperparams["kappa"]
@@ -75,14 +74,15 @@ class CEM(RecourseMethod):
         delta_img_s = self.orig_img - self.adv_img_s
 
         # distance to the input data
-        L2_dist = tf.reduce_sum(tf.square(delta_img), [1])
-        L2_dist_s = tf.reduce_sum(tf.square(delta_img_s), [1])
-        L1_dist = tf.reduce_sum(tf.abs(delta_img), [1])
+        L1_dist, L2_dist = self.__compute_l_norm(delta_img)
+        _, L2_dist_s = self.__compute_l_norm(delta_img_s)
 
-        enforce_input = delta_img if self.mode == "PP" else self.adv_img
-        enforce_input_s = delta_img_s if self.mode == "PP" else self.adv_img_s
-        self.ImgToEnforceLabel_Score = mlmodel.raw_model(enforce_input)
-        ImgToEnforceLabel_Score_s = mlmodel.raw_model(enforce_input_s)
+        self.ImgToEnforceLabel_Score = self.__get_label_score(
+            delta_img, self.adv_img, mlmodel
+        )
+        ImgToEnforceLabel_Score_s = self.__get_label_score(
+            delta_img_s, self.adv_img_s, mlmodel
+        )
 
         # composite distance loss
         self.EN_dist = L2_dist + tf.multiply(L1_dist, beta)
@@ -157,6 +157,13 @@ class CEM(RecourseMethod):
         self.init = tf.variables_initializer(
             var_list=[self.global_step] + [self.adv_img_s] + [self.adv_img] + new_vars
         )
+
+    def __get_label_score(self, delta, adv, mlmodel):
+        enforce_input = delta if self.mode == "PP" else adv
+        return mlmodel.raw_model(enforce_input)
+
+    def __compute_l_norm(self, delta):
+        return tf.reduce_sum(tf.abs(delta), [1]), tf.reduce_sum(tf.square(delta), [1])
 
     def __load_ae(self, hyperparams, mlmodel):
         ae_params = hyperparams["ae_params"]
@@ -422,7 +429,7 @@ class CEM(RecourseMethod):
     ) -> Tuple[np.ndarray, np.ndarray]:
 
         orig_prob, orig_class, orig_prob_str = self.model_prediction(
-            self.catalog_model.raw_model, np.expand_dims(instance, axis=0)
+            self._mlmodel.raw_model, np.expand_dims(instance, axis=0)
         )
 
         target_label = orig_class
@@ -432,10 +439,10 @@ class CEM(RecourseMethod):
         counterfactual = self.attack(orig_sample, target)
 
         adv_prob, adv_class, adv_prob_str = self.model_prediction(
-            self.catalog_model.raw_model, counterfactual
+            self._mlmodel.raw_model, counterfactual
         )
         delta_prob, delta_class, delta_prob_str = self.model_prediction(
-            self.catalog_model.raw_model, orig_sample - counterfactual
+            self._mlmodel.raw_model, orig_sample - counterfactual
         )
 
         INFO = "[kappa:{}, Orig class:{}, Adv class:{}, Delta class: {}, Orig prob:{}, Adv prob:{}, Delta prob:{}".format(
@@ -450,10 +457,8 @@ class CEM(RecourseMethod):
         print(INFO)
 
         if np.argmax(
-            self.catalog_model.raw_model.predict(instance.reshape(1, -1))
-        ) != np.argmax(
-            self.catalog_model.raw_model.predict(counterfactual.reshape(1, -1))
-        ):
+            self._mlmodel.raw_model.predict(instance.reshape(1, -1))
+        ) != np.argmax(self._mlmodel.raw_model.predict(counterfactual.reshape(1, -1))):
             counterfactual = counterfactual
         else:
             counterfactual = counterfactual
