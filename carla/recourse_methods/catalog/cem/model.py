@@ -72,22 +72,7 @@ class CEM(RecourseMethod):
                     "Loading of Autoencoder failed. {}".format(str(exc))
                 )
 
-        # these are variables to be more efficient in sending data to tf
-        self.orig_img = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
-        self.adv_img = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
-        self.adv_img_s = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
-        self.target_lab = tf.Variable(
-            np.zeros((batch_size, num_classes)), dtype=tf.float32
-        )
-        self.const = tf.Variable(np.zeros(batch_size), dtype=tf.float32)
-        self.global_step = tf.Variable(0.0, trainable=False)
-
-        # and here's what we use to assign them
-        self.assign_orig_img = tf.placeholder(tf.float32, shape_batch)
-        self.assign_adv_img = tf.placeholder(tf.float32, shape_batch)
-        self.assign_adv_img_s = tf.placeholder(tf.float32, shape_batch)
-        self.assign_target_lab = tf.placeholder(tf.float32, (batch_size, num_classes))
-        self.assign_const = tf.placeholder(tf.float32, [batch_size])
+        self.__initialize_tf_variables(batch_size, num_classes, shape_batch)
 
         """Fast Iterative Soft Thresholding"""
         """--------------------------------"""
@@ -193,6 +178,23 @@ class CEM(RecourseMethod):
         self.init = tf.variables_initializer(
             var_list=[self.global_step] + [self.adv_img_s] + [self.adv_img] + new_vars
         )
+
+    def __initialize_tf_variables(self, batch_size, num_classes, shape_batch):
+        # these are variables to be more efficient in sending data to tf
+        self.orig_img = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
+        self.adv_img = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
+        self.adv_img_s = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
+        self.target_lab = tf.Variable(
+            np.zeros((batch_size, num_classes)), dtype=tf.float32
+        )
+        self.const = tf.Variable(np.zeros(batch_size), dtype=tf.float32)
+        self.global_step = tf.Variable(0.0, trainable=False)
+        # and here's what we use to assign them
+        self.assign_orig_img = tf.placeholder(tf.float32, shape_batch)
+        self.assign_adv_img = tf.placeholder(tf.float32, shape_batch)
+        self.assign_adv_img_s = tf.placeholder(tf.float32, shape_batch)
+        self.assign_target_lab = tf.placeholder(tf.float32, (batch_size, num_classes))
+        self.assign_const = tf.placeholder(tf.float32, [batch_size])
 
     def __compute_target_lab_score(self, label_score: tf.Tensor) -> tf.Tensor:
         return tf.reduce_sum(self.target_lab * label_score, 1)
