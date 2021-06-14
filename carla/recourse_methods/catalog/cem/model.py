@@ -49,28 +49,7 @@ class CEM(RecourseMethod):
         super().__init__(mlmodel)
         shape_batch = (batch_size, len(mlmodel.feature_input_order))
 
-        ae_params = hyperparams["ae_params"]
-        ae = Autoencoder(
-            data_name=hyperparams["data_name"],
-            layers=[len(mlmodel.feature_input_order)] + ae_params["hidden_layer"],
-        )
-        if ae_params["train_ae"]:
-            self.AE = train_autoencoder(
-                ae,
-                self._mlmodel.data,
-                self._mlmodel.scaler,
-                self._mlmodel.encoder,
-                self._mlmodel.feature_input_order,
-                epochs=ae_params["epochs"],
-                save=True,
-            )
-        else:
-            try:
-                self.AE = ae.load(input_shape=len(mlmodel.feature_input_order))
-            except FileNotFoundError as exc:
-                raise FileNotFoundError(
-                    "Loading of Autoencoder failed. {}".format(str(exc))
-                )
+        self.AE = self.__load_ae(hyperparams, mlmodel)
 
         self.__initialize_tf_variables(batch_size, num_classes, shape_batch)
 
@@ -178,6 +157,30 @@ class CEM(RecourseMethod):
         self.init = tf.variables_initializer(
             var_list=[self.global_step] + [self.adv_img_s] + [self.adv_img] + new_vars
         )
+
+    def __load_ae(self, hyperparams, mlmodel):
+        ae_params = hyperparams["ae_params"]
+        ae = Autoencoder(
+            data_name=hyperparams["data_name"],
+            layers=[len(mlmodel.feature_input_order)] + ae_params["hidden_layer"],
+        )
+        if ae_params["train_ae"]:
+            return train_autoencoder(
+                ae,
+                self._mlmodel.data,
+                self._mlmodel.scaler,
+                self._mlmodel.encoder,
+                self._mlmodel.feature_input_order,
+                epochs=ae_params["epochs"],
+                save=True,
+            )
+        else:
+            try:
+                return ae.load(input_shape=len(mlmodel.feature_input_order))
+            except FileNotFoundError as exc:
+                raise FileNotFoundError(
+                    "Loading of Autoencoder failed. {}".format(str(exc))
+                )
 
     def __initialize_tf_variables(self, batch_size, num_classes, shape_batch):
         # these are variables to be more efficient in sending data to tf
