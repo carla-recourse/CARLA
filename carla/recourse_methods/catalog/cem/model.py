@@ -57,8 +57,6 @@ class CEM(RecourseMethod):
         # Commented by us:
         # BEGIN: conditions to compute the ell1 regularization
         # this should be the function S_beta(z) in the paper
-
-        # TODO check model.predict gets correct input
         if self.mode not in ["PP", "PN"]:
             raise ValueError("Mode not known, please use either PP or PN")
 
@@ -95,13 +93,6 @@ class CEM(RecourseMethod):
             ImgToEnforceLabel_Score_s
         )
 
-        Loss_Attack = self.__compute_attack_loss(
-            self.max_nontarget_lab_score, self.target_lab_score, self.mode
-        )
-        Loss_Attack_s = self.__compute_attack_loss(
-            max_nontarget_lab_score_s, target_lab_score_s, self.mode
-        )
-
         # sum up the losses
         self.Loss_L1Dist = tf.reduce_sum(L1_dist)
         (
@@ -109,13 +100,20 @@ class CEM(RecourseMethod):
             self.Loss_Attack,
             self.Loss_AE_Dist,
             Loss_ToOptimize,
-        ) = self.__compute_losses(delta_img, self.adv_img, L2_dist, Loss_Attack)
-        (
-            Loss_L2Dist_s,
-            Loss_Attack_s,
-            Loss_AE_Dist_s,
-            Loss_ToOptimize_s,
-        ) = self.__compute_losses(delta_img_s, self.adv_img_s, L2_dist_s, Loss_Attack_s)
+        ) = self.__compute_losses(
+            delta_img,
+            self.adv_img,
+            L2_dist,
+            self.max_nontarget_lab_score,
+            self.target_lab_score,
+        )
+        (_, _, _, Loss_ToOptimize_s,) = self.__compute_losses(
+            delta_img_s,
+            self.adv_img_s,
+            L2_dist_s,
+            max_nontarget_lab_score_s,
+            target_lab_score_s,
+        )
         self.Loss_Overall = Loss_ToOptimize + tf.multiply(beta, self.Loss_L1Dist)
 
         learning_rate = tf.train.polynomial_decay(
@@ -125,15 +123,10 @@ class CEM(RecourseMethod):
             0,
             power=0.5,
         )
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+
+        self.train = self.__optimization(Loss_ToOptimize_s, learning_rate)
         start_vars = set(x.name for x in tf.global_variables())
-        self.train = optimizer.minimize(
-            Loss_ToOptimize_s,
-            var_list=[self.adv_img_s],
-            global_step=self.global_step,
-        )
-        end_vars = tf.global_variables()
-        new_vars = [x for x in end_vars if x.name not in start_vars]
+        new_vars = [x for x in tf.global_variables() if x.name not in start_vars]
 
         # these are the variables to initialize when we run
         self.setup = self.__set_setup()
@@ -142,9 +135,22 @@ class CEM(RecourseMethod):
             var_list=[self.global_step] + [self.adv_img_s] + [self.adv_img] + new_vars
         )
 
-    def __compute_losses(self, delta, adv, l2_dist, loss_Attack):
+    def __optimization(self, Loss_ToOptimize_s, learning_rate):
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+        return optimizer.minimize(
+            Loss_ToOptimize_s,
+            var_list=[self.adv_img_s],
+            global_step=self.global_step,
+        )
+
+    def __compute_losses(
+        self, delta, adv, l2_dist, max_nontarget_lab_score, target_lab_score
+    ):
+        Loss_Attack = self.__compute_attack_loss(
+            max_nontarget_lab_score, target_lab_score, self.mode
+        )
         loss_L2Dist = tf.reduce_sum(l2_dist)
-        loss_Attack = tf.reduce_sum(self.const * loss_Attack)
+        loss_Attack = tf.reduce_sum(self.const * Loss_Attack)
         loss_AE_Dist = self.__compute_AE_dist(delta, adv)
         loss_ToOptimize = loss_Attack + loss_L2Dist + loss_AE_Dist
 
