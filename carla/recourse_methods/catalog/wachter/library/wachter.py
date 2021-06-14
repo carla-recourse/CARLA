@@ -120,7 +120,7 @@ def reconstruct_encoding_constraints(
 
     Parameters
     ----------
-    x: instance where we want to reconstrucht categorical constraints
+    x: instance where we want to reconstruct categorical constraints
     feature_pos: list with positions of categorical features in x
     binary_cat: If true, categorical datas are encoded with drop_if_binary
 
