@@ -367,27 +367,6 @@ class CEM(RecourseMethod):
                         self.adv_img,
                     ]
                 )
-                Loss_Attack, Loss_L2Dist, Loss_L1Dist, Loss_AE_Dist = self.sess.run(
-                    [
-                        self.Loss_Attack,
-                        self.Loss_L2Dist,
-                        self.Loss_L1Dist,
-                        self.Loss_AE_Dist,
-                    ]
-                )
-                target_lab_score, max_nontarget_lab_score_s = self.sess.run(
-                    [self.target_lab_score, self.max_nontarget_lab_score]
-                )
-
-                """
-                if iteration%(self.MAX_ITERATIONS//10) == 0:
-                    print("iter:{} const:{}". format(iteration, CONST))
-                    print("Loss_Overall:{:.4f}, Loss_Attack:{:.4f}". format(Loss_Overall, Loss_Attack))
-                    print("Loss_L2Dist:{:.4f}, Loss_L1Dist:{:.4f}, AE_loss:{}". format(Loss_L2Dist, Loss_L1Dist, Loss_AE_Dist))
-                    print("target_lab_score:{:.4f}, max_nontarget_lab_score:{:.4f}". format(target_lab_score[0], max_nontarget_lab_score_s[0]))
-                    print("")
-                    sys.stdout.flush()
-                """
 
                 for batch_idx, (the_dist, the_score, the_adv_img) in enumerate(
                     zip(Loss_EN, OutputScore, adv_img)
