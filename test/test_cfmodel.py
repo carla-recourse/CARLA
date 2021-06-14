@@ -81,7 +81,7 @@ def test_cem_get_counterfactuals(model_type):
         "mode": "PN",
         "num_classes": 2,
         "data_name": data_name,
-        "ae_params": {"h1": 20, "h2": 10, "d": 7, "train_ae": True, "epochs": 5},
+        "ae_params": {"hidden_layer": [20, 10, 7], "train_ae": True, "epochs": 5},
     }
 
     graph = Graph()
@@ -97,7 +97,7 @@ def test_cem_get_counterfactuals(model_type):
 
             recourse = CEM(
                 sess=ann_sess,
-                catalog_model=model_ann,
+                mlmodel=model_ann,
                 hyperparams=hyperparams_cem,
             )
 
@@ -123,7 +123,7 @@ def test_cem_vae(model_type):
         "mode": "PN",
         "num_classes": 2,
         "data_name": data_name,
-        "ae_params": {"h1": 20, "h2": 10, "d": 7, "train_ae": True, "epochs": 5},
+        "ae_params": {"hidden_layer": [20, 10, 7], "train_ae": True, "epochs": 5},
     }
 
     graph = Graph()
@@ -139,7 +139,7 @@ def test_cem_vae(model_type):
 
             recourse = CEM(
                 sess=ann_sess,
-                catalog_model=model_ann,
+                mlmodel=model_ann,
                 hyperparams=hyperparams_cem,
             )
 

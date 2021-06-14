@@ -33,12 +33,12 @@ from ...processing import check_counterfactuals
 
 
 class CEM(RecourseMethod):
-    def __init__(self, sess, catalog_model: MLModel, hyperparams):
+    def __init__(self, sess, mlmodel: MLModel, hyperparams):
         self.sess = sess
         self.hyperparams = hyperparams
-        self.catalog_model = catalog_model
+        self.catalog_model = mlmodel
 
-        self.data = catalog_model.data
+        self.data = mlmodel.data
         self.kappa = hyperparams["kappa"]
         self.mode = hyperparams["mode"]
 
@@ -46,20 +46,13 @@ class CEM(RecourseMethod):
         num_classes = hyperparams["num_classes"]
         beta = hyperparams["beta"]
 
-        # TODO refactor names from img to more general
-        super().__init__(catalog_model)
-        dimension = len(catalog_model.feature_input_order)
-        shape = (batch_size, dimension)
+        super().__init__(mlmodel)
+        shape_batch = (batch_size, len(mlmodel.feature_input_order))
 
         ae_params = hyperparams["ae_params"]
         ae = Autoencoder(
             data_name=hyperparams["data_name"],
-            layers=[
-                len(catalog_model.feature_input_order),
-                ae_params["h1"],
-                ae_params["h2"],
-                ae_params["d"],
-            ],
+            layers=[len(mlmodel.feature_input_order)] + ae_params["hidden_layer"],
         )
         if ae_params["train_ae"]:
             self.AE = train_autoencoder(
@@ -73,16 +66,16 @@ class CEM(RecourseMethod):
             )
         else:
             try:
-                self.AE = ae.load(input_shape=len(catalog_model.feature_input_order))
+                self.AE = ae.load(input_shape=len(mlmodel.feature_input_order))
             except FileNotFoundError as exc:
                 raise FileNotFoundError(
                     "Loading of Autoencoder failed. {}".format(str(exc))
                 )
 
         # these are variables to be more efficient in sending data to tf
-        self.orig_img = tf.Variable(np.zeros(shape), dtype=tf.float32)
-        self.adv_img = tf.Variable(np.zeros(shape), dtype=tf.float32)
-        self.adv_img_s = tf.Variable(np.zeros(shape), dtype=tf.float32)
+        self.orig_img = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
+        self.adv_img = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
+        self.adv_img_s = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
         self.target_lab = tf.Variable(
             np.zeros((batch_size, num_classes)), dtype=tf.float32
         )
@@ -90,9 +83,9 @@ class CEM(RecourseMethod):
         self.global_step = tf.Variable(0.0, trainable=False)
 
         # and here's what we use to assign them
-        self.assign_orig_img = tf.placeholder(tf.float32, shape)
-        self.assign_adv_img = tf.placeholder(tf.float32, shape)
-        self.assign_adv_img_s = tf.placeholder(tf.float32, shape)
+        self.assign_orig_img = tf.placeholder(tf.float32, shape_batch)
+        self.assign_adv_img = tf.placeholder(tf.float32, shape_batch)
+        self.assign_adv_img_s = tf.placeholder(tf.float32, shape_batch)
         self.assign_target_lab = tf.placeholder(tf.float32, (batch_size, num_classes))
         self.assign_const = tf.placeholder(tf.float32, [batch_size])
 
@@ -124,8 +117,8 @@ class CEM(RecourseMethod):
 
         enforce_input = delta_img if self.mode == "PP" else self.adv_img
         enforce_input_s = delta_img_s if self.mode == "PP" else self.adv_img_s
-        self.ImgToEnforceLabel_Score = catalog_model.raw_model(enforce_input)
-        ImgToEnforceLabel_Score_s = catalog_model.raw_model(enforce_input_s)
+        self.ImgToEnforceLabel_Score = mlmodel.raw_model(enforce_input)
+        ImgToEnforceLabel_Score_s = mlmodel.raw_model(enforce_input_s)
 
         # composite distance loss
         self.EN_dist = L2_dist + tf.multiply(L1_dist, beta)
