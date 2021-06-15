@@ -91,6 +91,8 @@ def initialize_recourse_method(
         return Face(mlmodel, hyperparams)
     elif method == "gs":
         return GrowingSpheres(mlmodel)
+    elif "wachter" in method:
+        return Wachter(mlmodel, hyperparams)
     else:
         raise ValueError("Recourse method not known")
 
@@ -116,8 +118,28 @@ parser.add_argument(
     "-r",
     "--recourse_method",
     nargs="*",
-    default=["dice", "ar", "cem", "cem-vae", "clue", "face_knn", "face_epsilon", "gs"],
-    choices=["dice", "ar", "cem", "cem-vae", "clue", "face_knn", "face_epsilon", "gs"],
+    default=[
+        "dice",
+        "ar",
+        "cem",
+        "cem-vae",
+        "clue",
+        "face_knn",
+        "face_epsilon",
+        "gs",
+        "wachter",
+    ],
+    choices=[
+        "dice",
+        "ar",
+        "cem",
+        "cem-vae",
+        "clue",
+        "face_knn",
+        "face_epsilon",
+        "gs",
+        "wachter",
+    ],
     help="Recourse methods for experiment",
 )
 parser.add_argument(
@@ -141,10 +163,11 @@ results = pd.DataFrame()
 
 path = args.path
 
-session_models = ["cem"]
+session_models = ["cem", "cem-vae"]
+torch_methods = ["clue", "wachter"]
 for rm in args.recourse_method:
     backend = "tensorflow"
-    if rm == "clue":
+    if rm in torch_methods:
         backend = "pytorch"
     for data_name in args.dataset:
         dataset = DataCatalog(data_name)
