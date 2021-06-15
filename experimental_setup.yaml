@@ -62,3 +62,7 @@ recourse_methods:
       fraction: 0.15
   gs:
     hyperparams:
+  wachter:
+    hyperparams:
+      loss_type: "BCE"
+      binary_cat_features: False

@@ -11,6 +11,7 @@ from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
 from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
+from carla.recourse_methods.catalog.wachter import Wachter
 
 testmodel = ["ann", "linear"]
 
@@ -216,6 +217,24 @@ def test_clue(model_type):
         "early_stop": 10,
     }
     df_cfs = Clue(data, model, hyperparams).get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_wachter(model_type):
+    # Build data and mlmodel
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    model = MLModelCatalog(data, model_type, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:10]
+
+    hyperparams = {"loss_type": "BCE", "binary_cat_features": False}
+    df_cfs = Wachter(model, hyperparams).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
