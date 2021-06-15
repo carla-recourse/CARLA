@@ -110,7 +110,7 @@ def wachter_recourse(
             break
         elif f_x_new >= 0.5:
             print("Counterfactual Explanation Found")
-    return x_new_enc.cpu().detach().numpy()
+    return x_new_enc.cpu().detach().numpy().squeeze(axis=0)
 
 
 def reconstruct_encoding_constraints(
