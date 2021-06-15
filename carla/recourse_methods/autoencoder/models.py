@@ -8,7 +8,7 @@ import torch.nn as nn
 from keras.layers import Dense, Input
 from keras.models import Model, Sequential, model_from_json
 
-from carla.recourse_methods.autoencoder.dataloader import Dataloader
+from carla.recourse_methods.autoencoder.dataloader import VAEDataset
 from carla.recourse_methods.autoencoder.losses import binary_crossentropy
 from carla.recourse_methods.autoencoder.save_load import get_home
 
@@ -215,15 +215,14 @@ class VariationalAutoencoder(nn.Module):
     def decode(self, z):
         return self.mu_dec(z), self.log_var_dec(z)
 
-    @staticmethod
-    def reparametrization_trick(mu, log_var):
+    def __reparametrization_trick(self, mu, log_var):
         std = torch.exp(0.5 * log_var)
         epsilon = torch.randn_like(std)  # the Gaussian random noise
         return mu + std * epsilon
 
     def forward(self, x):
         mu_z, log_var_z = self.encode(x)
-        z_rep = self.reparametrization_trick(mu_z, log_var_z)
+        z_rep = self.__reparametrization_trick(mu_z, log_var_z)
         mu_x, log_var_x = self.decode(z_rep)
 
         return mu_x, log_var_x, z_rep, mu_z, log_var_z
@@ -244,7 +243,7 @@ class VariationalAutoencoder(nn.Module):
     def fit(
         self, xtrain: np.ndarray, lambda_reg=1e-6, epochs=5, lr=1e-3, batch_size=32
     ):
-        train_set = Dataloader(xtrain)
+        train_set = VAEDataset(xtrain)
 
         train_loader = torch.utils.data.DataLoader(
             train_set, batch_size=batch_size, shuffle=True

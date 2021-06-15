@@ -9,7 +9,7 @@ from carla.data.api import Data
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.autoencoder import (
-    Dataloader,
+    VAEDataset,
     VariationalAutoencoder,
     train_variational_autoencoder,
 )
@@ -122,7 +122,7 @@ class Revise(RecourseMethod):
 
         # prepare data for optimization steps
         test_loader = torch.utils.data.DataLoader(
-            Dataloader(df_enc_norm_fact.values), batch_size=1, shuffle=False
+            VAEDataset(df_enc_norm_fact.values), batch_size=1, shuffle=False
         )
 
         # pay attention to categorical features
