@@ -415,47 +415,19 @@ class CEM(RecourseMethod):
         )
         return overall_best_attack
 
-    def counterfactual_search(
-        self, instance: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def __counterfactual_search(self, instance: np.ndarray) -> np.ndarray:
 
-        orig_prob, orig_class, orig_prob_str = self.model_prediction(
+        orig_prob, orig_class, orig_prob_str = self.__model_prediction(
             self._mlmodel.raw_model, np.expand_dims(instance, axis=0)
         )
 
         target_label = orig_class
-        orig_sample, target = self.generate_data(instance, target_label)
+        orig_sample, target = self.__generate_data(instance, target_label)
 
         # start the search
         counterfactual = self.attack(orig_sample, target)
 
-        adv_prob, adv_class, adv_prob_str = self.model_prediction(
-            self._mlmodel.raw_model, counterfactual
-        )
-        delta_prob, delta_class, delta_prob_str = self.model_prediction(
-            self._mlmodel.raw_model, orig_sample - counterfactual
-        )
-
-        INFO = "[kappa:{}, Orig class:{}, Adv class:{}, Delta class: {}, Orig prob:{}, Adv prob:{}, Delta prob:{}".format(
-            self.kappa,
-            orig_class,
-            adv_class,
-            delta_class,
-            orig_prob_str,
-            adv_prob_str,
-            delta_prob_str,
-        )
-        print(INFO)
-
-        if np.argmax(
-            self._mlmodel.raw_model.predict(instance.reshape(1, -1))
-        ) != np.argmax(self._mlmodel.raw_model.predict(counterfactual.reshape(1, -1))):
-            counterfactual = counterfactual
-        else:
-            counterfactual = counterfactual
-            counterfactual[:] = np.nan
-
-        return instance, counterfactual.reshape(-1)
+        return counterfactual.reshape(-1)
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         """
@@ -472,26 +444,20 @@ class CEM(RecourseMethod):
         -------
 
         """
-        # drop targets
-        instances = factuals.copy()
-        instances = instances.reset_index(drop=True)
-
         # normalize and one-hot-encoding
-        instances = self.encode_normalize_order_factuals(instances)
+        df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
+        df_enc_norm_fact = df_enc_norm_fact.reset_index(drop=True)
 
-        counterfactuals = []
+        df_cfs = df_enc_norm_fact.apply(
+            lambda x: self.__counterfactual_search(x), axis=1, raw=True
+        )
 
-        for i, row in instances.iterrows():
-            _, counterfactual = self.counterfactual_search(instances.values[i, :])
-            counterfactuals.append(counterfactual)
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
 
-        counterfactuals_df = check_counterfactuals(self._mlmodel, counterfactuals)
+        return df_cfs
 
-        return counterfactuals_df
-
-    @staticmethod
-    def generate_data(
-        instance: np.ndarray, target_label: int
+    def __generate_data(
+        self, instance: np.ndarray, target_label: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         inputs = []
         target_vec = []
@@ -506,8 +472,9 @@ class CEM(RecourseMethod):
 
         return inputs, target_vec
 
-    @staticmethod
-    def model_prediction(model, inputs: np.ndarray) -> Tuple[np.ndarray, int, str]:
+    def __model_prediction(
+        self, model, inputs: np.ndarray
+    ) -> Tuple[np.ndarray, int, str]:
         prob = model.predict(inputs)
         predicted_class = np.argmax(prob)
         prob_str = np.array2string(prob).replace("\n", "")
