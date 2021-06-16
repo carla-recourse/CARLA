@@ -9,6 +9,8 @@ from torch.autograd import Variable
 
 from carla.recourse_methods.processing import reconstruct_encoding_constraints
 
+DECISION_THRESHOLD = 0.5
+
 
 def wachter_recourse(
     torch_model,
@@ -79,7 +81,7 @@ def wachter_recourse(
     t0 = datetime.datetime.now()
     t_max = datetime.timedelta(minutes=t_max_min)
 
-    while f_x_new <= 0.5:
+    while f_x_new <= DECISION_THRESHOLD:
         it = 0
         while f_x_new <= 0.5 and it < n_iter:
             optimizer.zero_grad()
@@ -110,4 +112,4 @@ def wachter_recourse(
             break
         elif f_x_new >= 0.5:
             print("Counterfactual Explanation Found")
-    return x_new_enc.cpu().detach().numpy()
+    return x_new_enc.cpu().detach().numpy().squeeze(axis=0)

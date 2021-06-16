@@ -94,7 +94,6 @@ class Wachter(RecourseMethod):
         # Normalize and encode data
         df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
 
-        list_cfs = []
         encoded_feature_names = self._mlmodel.encoder.get_feature_names(
             self._mlmodel.data.categoricals
         )
@@ -102,10 +101,11 @@ class Wachter(RecourseMethod):
             df_enc_norm_fact.columns.get_loc(feature)
             for feature in encoded_feature_names
         ]
-        for idx, row in df_enc_norm_fact.iterrows():
-            counterfactual = wachter_recourse(
+
+        df_cfs = df_enc_norm_fact.apply(
+            lambda x: wachter_recourse(
                 self._mlmodel.raw_model,
-                row.values.reshape((1, -1)),
+                x.reshape((1, -1)),
                 cat_features_indices,
                 binary_cat_features=self._binary_cat_features,
                 feature_costs=self._feature_costs,
@@ -116,9 +116,11 @@ class Wachter(RecourseMethod):
                 norm=self._norm,
                 clamp=self._clamp,
                 loss_type=self._loss_type,
-            )
-            list_cfs.append(counterfactual.squeeze(axis=0))
+            ),
+            raw=True,
+            axis=1,
+        )
 
-        df_cfs = check_counterfactuals(self._mlmodel, list_cfs)
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
 
         return df_cfs
