@@ -117,11 +117,6 @@ class Revise(RecourseMethod):
             factuals, with_target=True
         )
 
-        # prepare data for optimization steps
-        test_loader = torch.utils.data.DataLoader(
-            VAEDataset(df_enc_norm_fact.values), batch_size=1, shuffle=False
-        )
-
         # pay attention to categorical features
         encoded_feature_names = self._mlmodel.encoder.get_feature_names(
             self._mlmodel.data.categoricals
@@ -130,6 +125,20 @@ class Revise(RecourseMethod):
             df_enc_norm_fact.columns.get_loc(feature)
             for feature in encoded_feature_names
         ]
+
+        list_cfs = self.__counterfactual_optimization(
+            cat_features_indices, device, df_enc_norm_fact
+        )
+
+        cf_df = check_counterfactuals(self._mlmodel, list_cfs)
+
+        return cf_df
+
+    def __counterfactual_optimization(self, cat_features_indices, device, df_fact):
+        # prepare data for optimization steps
+        test_loader = torch.utils.data.DataLoader(
+            VAEDataset(df_fact.values), batch_size=1, shuffle=False
+        )
 
         list_cfs = []
         for query_instance, _ in test_loader:
@@ -160,7 +169,7 @@ class Revise(RecourseMethod):
                 _, predicted = torch.max(output, 0)
 
                 z.requires_grad = True
-                loss = self.compute_loss(cf, query_instance, target)
+                loss = self.__compute_loss(cf, query_instance, target)
                 all_loss.append(loss)
 
                 if predicted == target_prediction:
@@ -185,12 +194,9 @@ class Revise(RecourseMethod):
             else:
                 print("No counterfactual found")
                 list_cfs.append(query_instance.cpu().detach().numpy().squeeze(axis=0))
+        return list_cfs
 
-        cf_df = check_counterfactuals(self._mlmodel, list_cfs)
-
-        return cf_df
-
-    def compute_loss(self, cf_initialize, query_instance, target):
+    def __compute_loss(self, cf_initialize, query_instance, target):
 
         loss_function = nn.BCELoss()
         output = self._mlmodel.predict_proba(cf_initialize)[0]
