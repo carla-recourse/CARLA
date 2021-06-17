@@ -41,7 +41,7 @@ extensions = [
 
 numpydoc_show_class_members = True
 
-autodoc_mock_imports = ["cplex"]
+autodoc_mock_imports = ["recourse"]
 
 # generate autosummary even if no references
 autosummary_generate = True

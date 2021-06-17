@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset
 
 
-class Dataloader(Dataset):
+class VAEDataset(Dataset):
     """
     Reads dataframe where last column is the label and the other columns are the features.
     The features are normalized by sklearn StandardScaler
