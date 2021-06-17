@@ -19,4 +19,6 @@ python:
   install:
     - method: setuptools
       path: docs/source
+    - method: pip
+      path: .
     - requirements: requirements-dev.txt
