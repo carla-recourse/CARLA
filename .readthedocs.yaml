@@ -18,5 +18,5 @@ python:
   version: 3.7
   install:
     - method: setuptools
-      path: .
+      path: docs/source
     - requirements: requirements-dev.txt
