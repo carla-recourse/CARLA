@@ -31,7 +31,7 @@ and have to be passed in the constructor as dictionary.
 
 Actionable Recourse
 ^^^^^^^^^^^^^^^^^^^
-.. automodule:: carla.recourse_methods.catalog.actionable_recourse.model
+.. automodule:: recourse_methods.catalog.actionable_recourse.model
    :members:
    :undoc-members:
 
@@ -39,7 +39,7 @@ Actionable Recourse
 
 CEM
 ^^^
-.. automodule:: carla.recourse_methods.catalog.cem.model
+.. automodule:: recourse_methods.catalog.cem.model
    :members:
    :undoc-members:
 
@@ -47,7 +47,7 @@ CEM
 
 CLUE
 ^^^^
-.. automodule:: carla.recourse_methods.catalog.clue.model
+.. automodule:: recourse_methods.catalog.clue.model
    :members:
    :undoc-members:
 
@@ -55,7 +55,7 @@ CLUE
 
 Dice
 ^^^^
-.. automodule:: carla.recourse_methods.catalog.dice.model
+.. automodule:: recourse_methods.catalog.dice.model
    :members:
    :undoc-members:
 
@@ -63,7 +63,7 @@ Dice
 
 FACE
 ^^^^
-.. automodule:: carla.recourse_methods.catalog.face.model
+.. automodule:: recourse_methods.catalog.face.model
    :members:
    :undoc-members:
 
@@ -71,7 +71,7 @@ FACE
 
 Growing Spheres
 ^^^^^^^^^^^^^^^
-.. automodule:: carla.recourse_methods.catalog.growing_spheres.model
+.. automodule:: recourse_methods.catalog.growing_spheres.model
    :members:
    :undoc-members:
 
@@ -79,7 +79,7 @@ Growing Spheres
 
 REVISE
 ^^^^^^
-.. automodule:: carla.recourse_methods.catalog.revise.model
+.. automodule:: recourse_methods.catalog.revise.model
    :members:
    :undoc-members:
 
@@ -87,6 +87,6 @@ REVISE
 
 Wachter
 ^^^^^^^
-.. automodule:: carla.recourse_methods.catalog.wachter.model
+.. automodule:: recourse_methods.catalog.wachter.model
    :members:
    :undoc-members:

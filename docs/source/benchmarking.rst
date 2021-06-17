@@ -7,6 +7,6 @@ Benchmarking
 
 .. _benchmark_api:
 
-.. automodule:: carla.evaluation.benchmark
+.. automodule:: evaluation.benchmark
    :members:
    :undoc-members:
