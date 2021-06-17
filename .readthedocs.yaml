@@ -18,7 +18,5 @@ python:
   version: 3.7
   install:
     - method: setuptools
-      path: .
-      extra_requirements:
-        - wheel
+      path: wheel
     - requirements: requirements-dev.txt
