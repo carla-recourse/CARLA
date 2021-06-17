@@ -6,8 +6,6 @@ It comes out-of-the box with commonly used datasets and various machine learning
 Designed with extensibility in mind: Easily include your own counterfactual methods,
 new machine learning models or other datasets.
 
-*Disclaimer*: We are currently in the process of open-sourcing, not all functionality is available yet.
-
 Available Datasets
 ------------------
 
