@@ -15,7 +15,7 @@ Example implementations for both use-cases can be found in our section :doc:`exa
 
 Interface
 ------------------
-.. automodule:: data.api.data
+.. automodule:: carla.data.api.data
    :members:
    :undoc-members:
 
@@ -23,6 +23,6 @@ Interface
 
 Catalog
 ------------------
-.. automodule:: data.catalog.catalog
+.. automodule:: carla.data.catalog.catalog
    :members:
    :undoc-members:
