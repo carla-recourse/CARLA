@@ -252,9 +252,7 @@ def test_revise(model_type):
     test_factual = factuals.iloc[:5]
 
     vae_params = {
-        "d": 8,  # latent space
-        "H1": 512,
-        "H2": 256,
+        "layers": [len(model.feature_input_order), 512, 256, 8],
         "train": True,
         "lambda_reg": 1e-6,
         "epochs": 1,

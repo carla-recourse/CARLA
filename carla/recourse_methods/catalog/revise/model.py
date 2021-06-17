@@ -87,10 +87,7 @@ class Revise(RecourseMethod):
         vae_params = hyperparams["vae_params"]
         self.vae = VariationalAutoencoder(
             self.params["data_name"],
-            vae_params["d"],
-            df_enc_norm_data.shape[1] - 1,  # num features - target
-            vae_params["H1"],
-            vae_params["H2"],
+            vae_params["layers"],
         )
 
         if vae_params["train"]:
