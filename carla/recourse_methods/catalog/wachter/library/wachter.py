@@ -7,6 +7,8 @@ import torch.optim as optim
 from torch import nn
 from torch.autograd import Variable
 
+from carla.recourse_methods.processing import reconstruct_encoding_constraints
+
 DECISION_THRESHOLD = 0.5
 
 
@@ -21,7 +23,7 @@ def wachter_recourse(
     y_target: List[int] = [0, 1],
     n_iter: int = 1000,
     t_max_min: float = 0.5,
-    norm: int = 2,
+    norm: int = 1,
     clamp: bool = True,
     loss_type: str = "MSE",
 ) -> np.ndarray:
@@ -111,37 +113,3 @@ def wachter_recourse(
         elif f_x_new >= 0.5:
             print("Counterfactual Explanation Found")
     return x_new_enc.cpu().detach().numpy().squeeze(axis=0)
-
-
-def reconstruct_encoding_constraints(
-    x: torch.Tensor, feature_pos: List[int], binary_cat: bool
-) -> torch.Tensor:
-    """
-    Reconstructing one-hot-encoded data, such that its values are either 0 or 1,
-    and features do not contradict (e.g., sex_female = 1, sex_male = 1)
-
-    Parameters
-    ----------
-    x: instance where we want to reconstruct categorical constraints
-    feature_pos: list with positions of categorical features in x
-    binary_cat: If true, categorical datas are encoded with drop_if_binary
-
-    Returns
-    -------
-    Tensor with reconstructed constraints
-    """
-    x_enc = x.clone()
-
-    if binary_cat:
-        for pos in feature_pos:
-            x_enc[:, pos] = torch.round(x_enc[:, pos])
-    else:
-        binary_pairs = list(zip(feature_pos[:-1], feature_pos[1:]))[0::2]
-        for pair in binary_pairs:
-            argmax = torch.argmax(x_enc[:, pair[0] : pair[1] + 1])
-            argmin = 1 - argmax
-
-            x_enc[:, pair[0] + argmax] = 1
-            x_enc[:, pair[0] + argmin] = 0
-
-    return x_enc
