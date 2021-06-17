@@ -11,19 +11,19 @@ new machine learning models or other datasets.
 Available Datasets
 ------------------
 
-- Adult Data Set: `Source <https://archive.ics.uci.edu/ml/datasets/adult>`_
-- COMPAS: `Source <https://www.kaggle.com/danofer/compass>`_
-- Give Me Some Credit (GMC): `Source <https://www.kaggle.com/c/GiveMeSomeCredit/data>`_
+- Adult Data Set: `Adult <https://archive.ics.uci.edu/ml/datasets/adult>`_
+- COMPAS: `Compas <https://www.kaggle.com/danofer/compass>`_
+- Give Me Some Credit (GMC): `GMC <https://www.kaggle.com/c/GiveMeSomeCredit/data>`_
 
 Implemented Counterfactual Methods
 ----------------------------------
 
-- Actionable Recourse (AR): `Paper <https://arxiv.org/pdf/1809.06514.pdf>`_
-- Contrastive Explanations Method (CEM): `Paper <https://arxiv.org/pdf/1802.07623.pdf>`_
-- Counterfactual Latent Uncertainty Explanations (CLUE): `Paper <https://arxiv.org/pdf/2006.06848.pdf>`_
-- Diverse Counterfactual Explanations (DiCE): `Paper <https://arxiv.org/pdf/1905.07697.pdf>`_
-- Feasible and Actionable Counterfactual Explanations (FACE): `Paper <https://arxiv.org/pdf/1909.09369.pdf>`_
-- Growing Sphere (GS): `Paper <https://arxiv.org/pdf/1910.09398.pdf>`_
+- Actionable Recourse (AR): `AR <https://arxiv.org/pdf/1809.06514.pdf>`_
+- Contrastive Explanations Method (CEM): `CEM <https://arxiv.org/pdf/1802.07623.pdf>`_
+- Counterfactual Latent Uncertainty Explanations (CLUE): `CLUE <https://arxiv.org/pdf/2006.06848.pdf>`_
+- Diverse Counterfactual Explanations (DiCE): `DiCE <https://arxiv.org/pdf/1905.07697.pdf>`_
+- Feasible and Actionable Counterfactual Explanations (FACE): `FACE <https://arxiv.org/pdf/1909.09369.pdf>`_
+- Growing Sphere (GS): `GS <https://arxiv.org/pdf/1910.09398.pdf>`_
 
 Provided Machine Learning Models
 --------------------------------
