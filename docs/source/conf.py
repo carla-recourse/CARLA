@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../../carla"))
 
 import mock
 
-MOCK_MODULES = ["recourse"]
+MOCK_MODULES = ["recourse", "cplex"]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
@@ -49,7 +49,7 @@ extensions = [
 
 numpydoc_show_class_members = True
 
-autodoc_mock_imports = ["recourse"]
+autodoc_mock_imports = ["recourse", "cplex"]
 
 # generate autosummary even if no references
 autosummary_generate = True
