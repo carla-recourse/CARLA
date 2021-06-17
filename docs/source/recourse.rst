@@ -15,7 +15,7 @@ Example implementations for both use-cases can be found in our section :doc:`exa
 
 Interface
 ---------
-.. automodule:: carla.recourse_methods.api.recourse_method
+.. automodule:: recourse_methods.api.recourse_method
    :members:
    :undoc-members:
 
