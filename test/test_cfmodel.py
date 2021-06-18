@@ -27,7 +27,11 @@ def test_dice_get_counterfactuals(model_type):
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
 
-    hyperparams = {"num": 1, "desired_class": 1}
+    hyperparams = {
+        "num": 1,
+        "desired_class": 1,
+        "posthoc_sparsity_param": 0.1,
+    }
     # Pipeline needed for dice, but not for predicting negative instances
     model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]

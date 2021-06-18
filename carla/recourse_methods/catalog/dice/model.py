@@ -26,7 +26,12 @@ class Dice(RecourseMethod):
             ML model to build counterfactuals for.
         hyperparams : dict
             Hyperparameter which are needed for DICE to generate counterfactuals.
-            Structure: {"num": int, "desired_class": int}
+            Structure: {
+                "num": int,
+                "desired_class": int,
+                "posthoc_sparsity_param": float, default: 0.1
+                    Parameter for the post-hoc operation on continuous features to enhance sparsity.
+            }
         """
         super().__init__(mlmodel)
         self._continous = mlmodel.data.continous
@@ -44,6 +49,7 @@ class Dice(RecourseMethod):
         self._dice = dice_ml.Dice(self._dice_data, self._dice_model, method="random")
         self._num = hyperparams["num"]
         self._desired_class = hyperparams["desired_class"]
+        self._post_hoc_sparsity_param = hyperparams["posthoc_sparsity_param"]
 
         # Need scaler and encoder for get_counterfactual output
         self._scaler = mlmodel.scaler
@@ -81,7 +87,10 @@ class Dice(RecourseMethod):
 
         # Generate counterfactuals
         dice_exp = self._dice.generate_counterfactuals(
-            querry_instances, total_CFs=self._num, desired_class=self._desired_class
+            querry_instances,
+            total_CFs=self._num,
+            desired_class=self._desired_class,
+            posthoc_sparsity_param=self._post_hoc_sparsity_param,
         )
 
         list_cfs = dice_exp.cf_examples_list
