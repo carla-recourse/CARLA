@@ -2,10 +2,23 @@ import pandas as pd
 
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.wachter.library import wachter_recourse
-from carla.recourse_methods.processing import check_counterfactuals
+from carla.recourse_methods.processing import check_counterfactuals, check_hyperparams
 
 
 class Wachter(RecourseMethod):
+    __DEFAULT_HYPERPARAMS = {
+        "feature_cost": "_optional_",
+        "lr": 0.01,
+        "lambda_": 0.01,
+        "n_iter": 1000,
+        "t_max_min": 0.5,
+        "norm": 1,
+        "clamp": True,
+        "loss_type": "MSE",
+        "y_target": [0, 1],
+        "binary_cat_features": True,
+    }
+
     def __init__(self, mlmodel, hyperparams):
         """
         Initialisation of the Wachter recourse method.
@@ -34,36 +47,17 @@ class Wachter(RecourseMethod):
         """
         super().__init__(mlmodel)
 
-        self._feature_costs = (
-            None
-            if "feature_cost" not in hyperparams.keys()
-            else hyperparams["feature_cost"]
-        )
-        self._lr = 0.01 if "lr" not in hyperparams.keys() else hyperparams["lr"]
-        self._lambda = (
-            0.01 if "lambda_" not in hyperparams.keys() else hyperparams["lambda_"]
-        )
-        self._n_iter = (
-            1000 if "n_iter" not in hyperparams.keys() else hyperparams["n_iter"]
-        )
-        self._t_max_min = (
-            0.5 if "t_max_min" not in hyperparams.keys() else hyperparams["t_max_min"]
-        )
-        self._norm = 2 if "norm" not in hyperparams.keys() else hyperparams["norm"]
-        self._clamp = (
-            True if "clamp" not in hyperparams.keys() else hyperparams["clamp"]
-        )
-        self._loss_type = (
-            "MSE" if "loss_type" not in hyperparams.keys() else hyperparams["loss_type"]
-        )
-        self._y_target = (
-            [0, 1] if "y_target" not in hyperparams.keys() else hyperparams["y_target"]
-        )
-        self._binary_cat_features = (
-            True
-            if "binary_cat_features" not in hyperparams.keys()
-            else hyperparams["binary_cat_features"]
-        )
+        checked_hyperparams = check_hyperparams(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        self._feature_costs = checked_hyperparams["feature_cost"]
+        self._lr = checked_hyperparams["lr"]
+        self._lambda = checked_hyperparams["lambda_"]
+        self._n_iter = checked_hyperparams["n_iter"]
+        self._t_max_min = checked_hyperparams["t_max_min"]
+        self._norm = checked_hyperparams["norm"]
+        self._clamp = checked_hyperparams["clamp"]
+        self._loss_type = checked_hyperparams["loss_type"]
+        self._y_target = checked_hyperparams["y_target"]
+        self._binary_cat_features = checked_hyperparams["binary_cat_features"]
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         # Normalize and encode data
