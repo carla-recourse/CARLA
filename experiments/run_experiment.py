@@ -80,7 +80,6 @@ def initialize_recourse_method(
         return ar
     elif "cem" in method:
         hyperparams["data_name"] = data_name
-
         return CEM(sess, mlmodel, hyperparams)
     elif method == "clue":
         hyperparams["data_name"] = data_name
@@ -91,6 +90,9 @@ def initialize_recourse_method(
         return Face(mlmodel, hyperparams)
     elif method == "gs":
         return GrowingSpheres(mlmodel)
+    elif method == "revise":
+        hyperparams["data_name"] = data_name
+        return Revise(mlmodel, data, hyperparams)
     elif "wachter" in method:
         return Wachter(mlmodel, hyperparams)
     else:
@@ -127,6 +129,7 @@ parser.add_argument(
         "face_knn",
         "face_epsilon",
         "gs",
+        "revise",
         "wachter",
     ],
     choices=[
@@ -138,6 +141,7 @@ parser.add_argument(
         "face_knn",
         "face_epsilon",
         "gs",
+        "revise",
         "wachter",
     ],
     help="Recourse methods for experiment",
@@ -164,7 +168,7 @@ results = pd.DataFrame()
 path = args.path
 
 session_models = ["cem", "cem-vae"]
-torch_methods = ["clue", "wachter"]
+torch_methods = ["clue", "wachter", "revise"]
 for rm in args.recourse_method:
     backend = "tensorflow"
     if rm in torch_methods:

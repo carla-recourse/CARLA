@@ -5,6 +5,7 @@ from tensorflow import Graph, Session
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
+from carla.recourse_methods import Revise
 from carla.recourse_methods.catalog.actionable_recourse import ActionableRecourse
 from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
@@ -161,7 +162,7 @@ def test_face_get_counterfactuals(model_type):
     test_factual = factuals.iloc[:2]
 
     # Test for knn mode
-    hyperparams = {"mode": "knn", "fraction": 0.25}
+    hyperparams = {"mode": "knn", "fraction": 0.15}
     face = Face(model_tf, hyperparams)
     df_cfs = face.get_counterfactuals(test_factual)
 
@@ -235,6 +236,45 @@ def test_wachter(model_type):
 
     hyperparams = {"loss_type": "BCE", "binary_cat_features": False}
     df_cfs = Wachter(model, hyperparams).get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_revise(model_type):
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    model = MLModelCatalog(data, model_type, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:5]
+
+    vae_params = {
+        "d": 8,  # latent space
+        "H1": 512,
+        "H2": 256,
+        "train": True,
+        "lambda_reg": 1e-6,
+        "epochs": 1,
+        "lr": 1e-3,
+        "batch_size": 32,
+    }
+
+    hyperparams = {
+        "data_name": data_name,
+        "lambda": 0.5,
+        "optimizer": "adam",
+        "lr": 0.1,
+        "max_iter": 1500,
+        "target_class": [0, 1],
+        "vae_params": vae_params,
+        "binary_cat_features": False,
+    }
+
+    revise = Revise(model, data, hyperparams)
+    df_cfs = revise.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
