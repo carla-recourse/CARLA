@@ -30,9 +30,7 @@ class Revise(RecourseMethod):
         "target_class": [0, 1],
         "binary_cat_features": True,
         "vae_params": {
-            "d": 8,
-            "H1": 512,
-            "H2": 256,
+            "layers": None,
             "train": True,
             "lambda_reg": 1e-6,
             "epochs": 5,
