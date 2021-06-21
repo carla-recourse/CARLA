@@ -1,7 +1,7 @@
 import numpy as np
 
-from carla import redundancy
 from carla.data.catalog import DataCatalog
+from carla.evaluation import redundancy
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.models.pipelining import encode, scale

@@ -30,30 +30,54 @@ from carla.recourse_methods.autoencoder import Autoencoder, train_autoencoder
 
 from ...api import RecourseMethod
 from ...processing import check_counterfactuals
+from ...processing.counterfactuals import merge_default_parameters
 
 
 class CEM(RecourseMethod):
+    __DEFAULT_HYPERPARAMS = {
+        "data_name": None,
+        "batch_size": 1,
+        "kappa": 0.1,
+        "init_learning_rate": 0.01,
+        "binary_search_steps": 9,
+        "max_iterations": 100,
+        "initial_const": 10,
+        "beta": 0.9,
+        "gamma": 0.0,
+        "mode": "PN",
+        "num_classes": 2,
+        "ae_params": {
+            "h1": 20,
+            "h2": 10,
+            "d": 7,
+            "train_ae": True,
+            "epochs": 5,
+        },
+    }
+
     def __init__(self, sess, catalog_model: MLModel, hyperparams):
         self.sess = sess
-        self.hyperparams = hyperparams
+        self.hyperparams = merge_default_parameters(
+            hyperparams, self.__DEFAULT_HYPERPARAMS
+        )
         self.catalog_model = catalog_model
 
         self.data = catalog_model.data
-        self.kappa = hyperparams["kappa"]
-        self.mode = hyperparams["mode"]
+        self.kappa = self.hyperparams["kappa"]
+        self.mode = self.hyperparams["mode"]
 
-        batch_size = hyperparams["batch_size"]
-        num_classes = hyperparams["num_classes"]
-        beta = hyperparams["beta"]
+        batch_size = self.hyperparams["batch_size"]
+        num_classes = self.hyperparams["num_classes"]
+        beta = self.hyperparams["beta"]
 
         # TODO refactor names from img to more general
         super().__init__(catalog_model)
         dimension = len(catalog_model.feature_input_order)
         shape = (batch_size, dimension)
 
-        ae_params = hyperparams["ae_params"]
+        ae_params = self.hyperparams["ae_params"]
         ae = Autoencoder(
-            data_name=hyperparams["data_name"],
+            data_name=self.hyperparams["data_name"],
             layers=[
                 len(catalog_model.feature_input_order),
                 ae_params["h1"],
@@ -173,9 +197,9 @@ class CEM(RecourseMethod):
         )
 
         learning_rate = tf.train.polynomial_decay(
-            hyperparams["init_learning_rate"],
+            self.hyperparams["init_learning_rate"],
             self.global_step,
-            hyperparams["max_iterations"],
+            self.hyperparams["max_iterations"],
             0,
             power=0.5,
         )

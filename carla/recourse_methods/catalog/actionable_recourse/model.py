@@ -8,9 +8,16 @@ from lime.lime_tabular import LimeTabularExplainer
 from carla.recourse_methods.processing import encode_feature_names
 
 from ...api import RecourseMethod
+from ...processing.counterfactuals import merge_default_parameters
 
 
 class ActionableRecourse(RecourseMethod):
+    __DEFAULT_HYPERPARAMS = {
+        "fs_size": 100,
+        "discretize": False,
+        "sample": True,
+    }
+
     def __init__(
         self,
         mlmodel,
@@ -41,7 +48,11 @@ class ActionableRecourse(RecourseMethod):
             ML model
         hyperparams : dict
             Dictionary containing hyperparameters.
-            {"fs_size": int (size of generated flipset, default 100)}
+            {
+                "fs_size": int (size of generated flipset, default 100),
+                "discretize": bool, default: False (LIME parameter),
+                "sample": bool, default: True (LIME parameter)
+            }
         coeffs : np.ndArray
             Coefficients
         intercepts: np.ndArray
@@ -56,17 +67,12 @@ class ActionableRecourse(RecourseMethod):
         )
 
         # Get hyperparameter
-        self._fs_size = (
-            100 if "fs_size" not in hyperparams.keys() else hyperparams["fs_size"]
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self.__DEFAULT_HYPERPARAMS
         )
-        self._discretize_continuous = (
-            False
-            if "discretize" not in hyperparams.keys()
-            else hyperparams["discretize"]
-        )
-        self._sample_around_instance = (
-            True if "sample" not in hyperparams.keys() else hyperparams["sample"]
-        )
+        self._fs_size = checked_hyperparams["fs_size"]
+        self._discretize_continuous = checked_hyperparams["discretize"]
+        self._sample_around_instance = checked_hyperparams["sample"]
 
         # Build ActionSet
         self.action_set = rs.ActionSet(

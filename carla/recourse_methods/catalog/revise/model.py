@@ -15,11 +15,32 @@ from carla.recourse_methods.autoencoder import (
 )
 from carla.recourse_methods.processing.counterfactuals import (
     check_counterfactuals,
+    merge_default_parameters,
     reconstruct_encoding_constraints,
 )
 
 
 class Revise(RecourseMethod):
+    __DEFAULT_HYPERPARAMS = {
+        "data_name": None,
+        "lambda": 0.5,
+        "optimizer": "adam",
+        "lr": 0.1,
+        "max_iter": 1000,
+        "target_class": [0, 1],
+        "binary_cat_features": True,
+        "vae_params": {
+            "d": 8,
+            "H1": 512,
+            "H2": 256,
+            "train": True,
+            "lambda_reg": 1e-6,
+            "epochs": 5,
+            "lr": 1e-3,
+            "batch_size": 32,
+        },
+    }
+
     def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
         """
         Initialisation of the REVISE recourse method.
@@ -58,33 +79,21 @@ class Revise(RecourseMethod):
             }
         """
         super().__init__(mlmodel)
-        self.params = hyperparams
+        self.params = merge_default_parameters(hyperparams, self.__DEFAULT_HYPERPARAMS)
 
         self._target_column = data.target
-        self._lambda = self.params["lambda"] if "lambda" in hyperparams.keys() else 0.5
-        self._optimizer = (
-            self.params["optimizer"] if "optimizer" in hyperparams.keys() else "adam"
-        )
-        self._lr = self.params["lr"] if "lr" in hyperparams.keys() else 0.1
-        self._max_iter = (
-            self.params["max_iter"] if "max_iter" in hyperparams.keys() else 1000
-        )
-        self._target_class = (
-            hyperparams["target_class"]
-            if "target_class" in hyperparams.keys()
-            else [0, 1]
-        )
-        self._binary_cat_features = (
-            hyperparams["binary_cat_features"]
-            if "binary_cat_features" in hyperparams.keys()
-            else True
-        )
+        self._lambda = self.params["lambda"]
+        self._optimizer = self.params["optimizer"]
+        self._lr = self.params["lr"]
+        self._max_iter = self.params["max_iter"]
+        self._target_class = self.params["target_class"]
+        self._binary_cat_features = self.params["binary_cat_features"]
 
         df_enc_norm_data = self.encode_normalize_order_factuals(
             data.raw, with_target=True
         )
 
-        vae_params = hyperparams["vae_params"]
+        vae_params = self.params["vae_params"]
         self.vae = VariationalAutoencoder(
             self.params["data_name"],
             vae_params["layers"],
