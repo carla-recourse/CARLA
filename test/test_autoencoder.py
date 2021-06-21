@@ -2,7 +2,6 @@ import numpy as np
 import tensorflow as tf
 import torch
 from keras import backend as K
-from torch import nn
 
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
@@ -25,20 +24,7 @@ def test_variational_autoencoder():
     test_input = np.zeros((1, 20))
     test_input = torch.Tensor(test_input).to(device)
 
-    vae_params = {
-        "d": 8,  # latent space
-        "H1": 512,
-        "H2": 256,
-        "activFun": nn.ReLU(),
-    }
-
-    vae = VariationalAutoencoder(
-        data_name,
-        vae_params["d"],
-        test_input.shape[1],
-        vae_params["H1"],
-        vae_params["H2"],
-    )
+    vae = VariationalAutoencoder(data_name, layers=[test_input.shape[1], 512, 256, 8])
 
     fitted_vae = train_variational_autoencoder(
         vae, data, model.scaler, model.encoder, model.feature_input_order
@@ -51,13 +37,34 @@ def test_variational_autoencoder():
     # test loading vae
     new_vae = VariationalAutoencoder(
         data_name,
-        vae_params["d"],
-        test_input.shape[1],
-        vae_params["H1"],
-        vae_params["H2"],
+        layers=[test_input.shape[1], 512, 256, 8],
     )
 
     new_vae.load(test_input.shape[1])
+
+
+def test_variational_autoencoder_length():
+    # Build data and mlmodel
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    model = MLModelCatalog(data, "ann", backend="pytorch")
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    test_input = np.zeros((1, 20))
+    test_input = torch.Tensor(test_input).to(device)
+
+    layers = [[test_input.shape[1], 8], [test_input.shape[1], 2, 3, 4, 5, 6, 8]]
+    for layer in layers:
+        vae = VariationalAutoencoder(data_name, layer)
+
+        fitted_vae = train_variational_autoencoder(
+            vae, data, model.scaler, model.encoder, model.feature_input_order
+        )
+
+        test_reconstructed, _, _, _, _ = fitted_vae.predict(test_input)
+
+        assert test_reconstructed.shape == test_input.shape
 
 
 def test_autoencoder():

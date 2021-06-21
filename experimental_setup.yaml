@@ -71,9 +71,7 @@ recourse_methods:
         target_class: [0, 1]
         binary_cat_features: False
         vae_params:
-          d: 8
-          H1: 512
-          H2: 256
+          layers: [512, 256, 8]
           activFun:
           train: True
           lambda_reg: 0.000001
