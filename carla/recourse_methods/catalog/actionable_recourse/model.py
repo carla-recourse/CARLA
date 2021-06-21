@@ -8,7 +8,7 @@ from lime.lime_tabular import LimeTabularExplainer
 from carla.recourse_methods.processing import encode_feature_names
 
 from ...api import RecourseMethod
-from ...processing.counterfactuals import check_hyperparams
+from ...processing.counterfactuals import merge_default_parameters
 
 
 class ActionableRecourse(RecourseMethod):
@@ -67,7 +67,9 @@ class ActionableRecourse(RecourseMethod):
         )
 
         # Get hyperparameter
-        checked_hyperparams = check_hyperparams(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self.__DEFAULT_HYPERPARAMS
+        )
         self._fs_size = checked_hyperparams["fs_size"]
         self._discretize_continuous = checked_hyperparams["discretize"]
         self._sample_around_instance = checked_hyperparams["sample"]

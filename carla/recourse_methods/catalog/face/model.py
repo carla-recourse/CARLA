@@ -7,8 +7,8 @@ from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.face.library import graph_search
 from carla.recourse_methods.processing import (
     check_counterfactuals,
-    check_hyperparams,
     encode_feature_names,
+    merge_default_parameters,
 )
 
 
@@ -38,7 +38,9 @@ class Face(RecourseMethod):
         """
         super().__init__(mlmodel)
 
-        checked_hyperparams = check_hyperparams(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self.__DEFAULT_HYPERPARAMS
+        )
         self.mode = checked_hyperparams["mode"]
         self.fraction = checked_hyperparams["fraction"]
 

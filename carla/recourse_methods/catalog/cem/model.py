@@ -30,7 +30,7 @@ from carla.recourse_methods.autoencoder import Autoencoder, train_autoencoder
 
 from ...api import RecourseMethod
 from ...processing import check_counterfactuals
-from ...processing.counterfactuals import check_hyperparams
+from ...processing.counterfactuals import merge_default_parameters
 
 
 class CEM(RecourseMethod):
@@ -57,7 +57,9 @@ class CEM(RecourseMethod):
 
     def __init__(self, sess, catalog_model: MLModel, hyperparams):
         self.sess = sess
-        self.hyperparams = check_hyperparams(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        self.hyperparams = merge_default_parameters(
+            hyperparams, self.__DEFAULT_HYPERPARAMS
+        )
         self.catalog_model = catalog_model
 
         self.data = catalog_model.data

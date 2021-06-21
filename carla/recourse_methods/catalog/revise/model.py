@@ -15,7 +15,7 @@ from carla.recourse_methods.autoencoder import (
 )
 from carla.recourse_methods.processing.counterfactuals import (
     check_counterfactuals,
-    check_hyperparams,
+    merge_default_parameters,
     reconstruct_encoding_constraints,
 )
 
@@ -79,7 +79,7 @@ class Revise(RecourseMethod):
             }
         """
         super().__init__(mlmodel)
-        self.params = check_hyperparams(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        self.params = merge_default_parameters(hyperparams, self.__DEFAULT_HYPERPARAMS)
 
         self._target_column = data.target
         self._lambda = self.params["lambda"]

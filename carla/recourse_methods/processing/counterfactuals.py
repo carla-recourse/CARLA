@@ -96,7 +96,7 @@ def reconstruct_encoding_constraints(
     return x_enc
 
 
-def check_hyperparams(hyperparams: Dict, default: Dict) -> Dict:
+def merge_default_parameters(hyperparams: Dict, default: Dict) -> Dict:
     """
     Checks if the input parameter hyperparams contains every necessary key and if not, uses default values or
     raises a ValueError if no default value is given.
@@ -122,7 +122,7 @@ def check_hyperparams(hyperparams: Dict, default: Dict) -> Dict:
             hyperparams[key] = (
                 dict() if key not in hyperparams.keys() else hyperparams[key]
             )
-            sub_dict = check_hyperparams(hyperparams[key], default[key])
+            sub_dict = merge_default_parameters(hyperparams[key], default[key])
             dict_output[key] = sub_dict
             continue
         if key not in hyperparams.keys():

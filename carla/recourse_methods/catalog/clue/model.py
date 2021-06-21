@@ -11,7 +11,7 @@ from carla.recourse_methods.catalog.clue.library import (
     vae_gradient_search,
 )
 from carla.recourse_methods.processing import check_counterfactuals
-from carla.recourse_methods.processing.counterfactuals import check_hyperparams
+from carla.recourse_methods.processing.counterfactuals import merge_default_parameters
 
 
 class Clue(RecourseMethod):
@@ -54,7 +54,9 @@ class Clue(RecourseMethod):
         super().__init__(mlmodel)
 
         # get hyperparameter
-        checked_hyperparams = check_hyperparams(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self.__DEFAULT_HYPERPARAMS
+        )
         self._train_vae = checked_hyperparams["train_vae"]
         self._width = checked_hyperparams["width"]
         self._depth = checked_hyperparams["depth"]

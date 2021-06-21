@@ -6,7 +6,7 @@ import pandas as pd
 from carla.models.api import MLModel
 
 from ...api import RecourseMethod
-from ...processing import check_hyperparams
+from ...processing import merge_default_parameters
 
 
 class Dice(RecourseMethod):
@@ -36,7 +36,9 @@ class Dice(RecourseMethod):
         self._categoricals = mlmodel.data.categoricals
         self._target = mlmodel.data.target
 
-        checked_hyperparams = check_hyperparams(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self.__DEFAULT_HYPERPARAMS
+        )
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
             dataframe=mlmodel.data.raw,

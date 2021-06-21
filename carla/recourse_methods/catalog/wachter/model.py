@@ -2,7 +2,10 @@ import pandas as pd
 
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.wachter.library import wachter_recourse
-from carla.recourse_methods.processing import check_counterfactuals, check_hyperparams
+from carla.recourse_methods.processing import (
+    check_counterfactuals,
+    merge_default_parameters,
+)
 
 
 class Wachter(RecourseMethod):
@@ -47,7 +50,9 @@ class Wachter(RecourseMethod):
         """
         super().__init__(mlmodel)
 
-        checked_hyperparams = check_hyperparams(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self.__DEFAULT_HYPERPARAMS
+        )
         self._feature_costs = checked_hyperparams["feature_cost"]
         self._lr = checked_hyperparams["lr"]
         self._lambda = checked_hyperparams["lambda_"]

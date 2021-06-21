@@ -1,4 +1,4 @@
-from carla.recourse_methods.processing.counterfactuals import check_hyperparams
+from carla.recourse_methods.processing.counterfactuals import merge_default_parameters
 
 
 def test_check_hyperparams():
@@ -12,7 +12,7 @@ def test_check_hyperparams():
         "key5": {"sub_key1": None},
     }
 
-    actual = check_hyperparams(hyperparams, default)
+    actual = merge_default_parameters(hyperparams, default)
 
     expected = {
         "key1": 1,
