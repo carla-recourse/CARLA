@@ -92,9 +92,8 @@ class CEM(RecourseMethod):
             hyperparams, self._DEFAULT_HYPERPARAMS
         )
 
-        self.data = mlmodel.data
-        self.kappa = self._hyperparams["kappa"]
-        self.mode = self._hyperparams["mode"]
+        self._kappa = self._hyperparams["kappa"]
+        self._mode = self._hyperparams["mode"]
 
         batch_size = self._hyperparams["batch_size"]
         num_classes = self._hyperparams["num_classes"]
@@ -104,7 +103,7 @@ class CEM(RecourseMethod):
         super().__init__(mlmodel)
         shape_batch = (batch_size, len(mlmodel.feature_input_order))
 
-        self.AE = self._load_ae(self._hyperparams, mlmodel)
+        self._AE = self._load_ae(self._hyperparams, mlmodel)
 
         self._initialize_tf_variables(batch_size, num_classes, shape_batch)
 
@@ -113,88 +112,88 @@ class CEM(RecourseMethod):
         # Commented by us:
         # BEGIN: conditions to compute the ell1 regularization
         # this should be the function S_beta(z) in the paper
-        if self.mode not in ["PP", "PN"]:
+        if self._mode not in ["PP", "PN"]:
             raise ValueError("Mode not known, please use either PP or PN")
 
-        zt = tf.divide(self.global_step, self.global_step + tf.cast(3, tf.float32))
+        zt = tf.divide(self._global_step, self._global_step + tf.cast(3, tf.float32))
 
-        self.assign_adv = self._compute_adv(self.orig, self.adv_s, beta)
-        self.assign_adv_s = self._compute_adv_s(
-            zt, self.orig, self.adv, self.assign_adv
+        self._assign_adv = self._compute_adv(self._orig, self._adv_s, beta)
+        self._assign_adv_s = self._compute_adv_s(
+            zt, self._orig, self._adv, self._assign_adv
         )
 
-        self.adv_updater = tf.assign(self.adv, self.assign_adv)
-        self.adv_updater_s = tf.assign(self.adv_s, self.assign_adv_s)
+        self._adv_updater = tf.assign(self._adv, self._assign_adv)
+        self._adv_updater_s = tf.assign(self._adv_s, self._assign_adv_s)
 
-        delta_img = self.orig - self.adv
-        delta_img_s = self.orig - self.adv_s
+        delta_img = self._orig - self._adv
+        delta_img_s = self._orig - self._adv_s
 
         # distance to the input data
         L1_dist, L2_dist = self._compute_l_norm(delta_img)
         _, L2_dist_s = self._compute_l_norm(delta_img_s)
 
-        self.ImgToEnforceLabel_Score = self._get_label_score(delta_img, self.adv)
-        ImgToEnforceLabel_Score_s = self._get_label_score(delta_img_s, self.adv_s)
+        self._ImgToEnforceLabel_Score = self._get_label_score(delta_img, self._adv)
+        ImgToEnforceLabel_Score_s = self._get_label_score(delta_img_s, self._adv_s)
 
         # composite distance loss
-        self.L2_L1_dist = L2_dist + tf.multiply(L1_dist, beta)
+        self._L2_L1_dist = L2_dist + tf.multiply(L1_dist, beta)
 
-        self.target_lab_score = self._compute_target_lab_score(
-            self.target_label, self.ImgToEnforceLabel_Score
+        self._target_lab_score = self._compute_target_lab_score(
+            self._target_label, self._ImgToEnforceLabel_Score
         )
         target_lab_score_s = self._compute_target_lab_score(
-            self.target_label, ImgToEnforceLabel_Score_s
+            self._target_label, ImgToEnforceLabel_Score_s
         )
 
-        self.max_nontarget_lab_score = self._compute_non_target_lab_score(
-            self.target_label, self.ImgToEnforceLabel_Score
+        self._max_nontarget_lab_score = self._compute_non_target_lab_score(
+            self._target_label, self._ImgToEnforceLabel_Score
         )
         max_nontarget_lab_score_s = self._compute_non_target_lab_score(
-            self.target_label, ImgToEnforceLabel_Score_s
+            self._target_label, ImgToEnforceLabel_Score_s
         )
 
         # sum up the losses
-        self.Loss_L1Dist = tf.reduce_sum(L1_dist)
+        self._Loss_L1Dist = tf.reduce_sum(L1_dist)
         (
-            self.Loss_L2Dist,
-            self.Loss_Attack,
-            self.Loss_AE_Dist,
+            self._Loss_L2Dist,
+            self._Loss_Attack,
+            self._Loss_AE_Dist,
             Loss_ToOptimize,
         ) = self._compute_losses(
             delta_img,
-            self.adv,
+            self._adv,
             L2_dist,
-            self.max_nontarget_lab_score,
-            self.target_lab_score,
+            self._max_nontarget_lab_score,
+            self._target_lab_score,
             gamma,
         )
         (_, _, _, Loss_ToOptimize_s,) = self._compute_losses(
             delta_img_s,
-            self.adv_s,
+            self._adv_s,
             L2_dist_s,
             max_nontarget_lab_score_s,
             target_lab_score_s,
             gamma,
         )
-        self.Loss_Overall = Loss_ToOptimize + tf.multiply(beta, self.Loss_L1Dist)
+        self._Loss_Overall = Loss_ToOptimize + tf.multiply(beta, self._Loss_L1Dist)
 
         learning_rate = tf.train.polynomial_decay(
             self._hyperparams["init_learning_rate"],
-            self.global_step,
+            self._global_step,
             self._hyperparams["max_iterations"],
             0,
             power=0.5,
         )
 
-        self.train = self._optimization(Loss_ToOptimize_s, self.adv_s, learning_rate)
+        self._train = self._optimization(Loss_ToOptimize_s, self._adv_s, learning_rate)
         start_vars = set(x.name for x in tf.global_variables())
         new_vars = [x for x in tf.global_variables() if x.name not in start_vars]
 
         # these are the variables to initialize when we run
-        self.setup = self._set_setup()
+        self._setup = self._set_setup()
 
-        self.init = tf.variables_initializer(
-            var_list=[self.global_step] + [self.adv_s] + [self.adv] + new_vars
+        self._init = tf.variables_initializer(
+            var_list=[self._global_step] + [self._adv_s] + [self._adv] + new_vars
         )
 
     def _optimization(self, Loss_ToOptimize_s, adv_s, learning_rate):
@@ -202,38 +201,38 @@ class CEM(RecourseMethod):
         return optimizer.minimize(
             Loss_ToOptimize_s,
             var_list=[adv_s],
-            global_step=self.global_step,
+            global_step=self._global_step,
         )
 
     def _compute_losses(
         self, delta, adv, l2_dist, max_nontarget_lab_score, target_lab_score, gamma
     ):
         Loss_Attack = self._compute_attack_loss(
-            max_nontarget_lab_score, target_lab_score, self.mode
+            max_nontarget_lab_score, target_lab_score, self._mode
         )
         loss_L2Dist = tf.reduce_sum(l2_dist)
-        loss_Attack = tf.reduce_sum(self.const * Loss_Attack)
+        loss_Attack = tf.reduce_sum(self._const * Loss_Attack)
         loss_AE_Dist = self._compute_AE_dist(adv, delta, gamma)
         loss_ToOptimize = loss_Attack + loss_L2Dist + loss_AE_Dist
 
         return loss_L2Dist, loss_Attack, loss_AE_Dist, loss_ToOptimize
 
     def _compute_AE_dist(self, adv, delta, gamma):
-        delta_input_ae = delta if self.mode == "PP" else adv
+        delta_input_ae = delta if self._mode == "PP" else adv
         return self._compute_AE_lost(delta_input_ae, gamma)
 
     def _set_setup(self):
         setup = []
-        setup.append(self.orig.assign(self.assign_orig))
-        setup.append(self.target_label.assign(self.assign_target_label))
-        setup.append(self.const.assign(self.assign_const))
-        setup.append(self.adv.assign(self.assign_adv))
-        setup.append(self.adv_s.assign(self.assign_adv_s))
+        setup.append(self._orig.assign(self._assign_orig))
+        setup.append(self._target_label.assign(self._assign_target_label))
+        setup.append(self._const.assign(self._assign_const))
+        setup.append(self._adv.assign(self._assign_adv))
+        setup.append(self._adv_s.assign(self._assign_adv_s))
 
         return setup
 
     def _get_label_score(self, delta, adv):
-        enforce_input = delta if self.mode == "PP" else adv
+        enforce_input = delta if self._mode == "PP" else adv
         return self._mlmodel.raw_model(enforce_input)
 
     def _compute_l_norm(self, delta):
@@ -265,20 +264,22 @@ class CEM(RecourseMethod):
 
     def _initialize_tf_variables(self, batch_size, num_classes, shape_batch):
         # these are variables to be more efficient in sending data to tf
-        self.orig = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
-        self.adv = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
-        self.adv_s = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
-        self.target_label = tf.Variable(
+        self._orig = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
+        self._adv = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
+        self._adv_s = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
+        self._target_label = tf.Variable(
             np.zeros((batch_size, num_classes)), dtype=tf.float32
         )
-        self.const = tf.Variable(np.zeros(batch_size), dtype=tf.float32)
-        self.global_step = tf.Variable(0.0, trainable=False)
+        self._const = tf.Variable(np.zeros(batch_size), dtype=tf.float32)
+        self._global_step = tf.Variable(0.0, trainable=False)
         # and here's what we use to assign them
-        self.assign_orig = tf.placeholder(tf.float32, shape_batch)
-        self.assign_adv = tf.placeholder(tf.float32, shape_batch)
-        self.assign_adv_s = tf.placeholder(tf.float32, shape_batch)
-        self.assign_target_label = tf.placeholder(tf.float32, (batch_size, num_classes))
-        self.assign_const = tf.placeholder(tf.float32, [batch_size])
+        self._assign_orig = tf.placeholder(tf.float32, shape_batch)
+        self._assign_adv = tf.placeholder(tf.float32, shape_batch)
+        self._assign_adv_s = tf.placeholder(tf.float32, shape_batch)
+        self._assign_target_label = tf.placeholder(
+            tf.float32, (batch_size, num_classes)
+        )
+        self._assign_const = tf.placeholder(tf.float32, [batch_size])
 
     def _compute_target_lab_score(
         self, target_label, label_score: tf.Tensor
@@ -294,7 +295,7 @@ class CEM(RecourseMethod):
         )
 
     def _compute_AE_lost(self, delta: tf.Tensor, gamma) -> tf.Tensor:
-        return gamma * tf.square(tf.norm(self.AE(delta) - delta))
+        return gamma * tf.square(tf.norm(self._AE(delta) - delta))
 
     def _compute_attack_loss(
         self, nontarget_label_score: tf.Tensor, target_label_score: tf.Tensor, mode: str
@@ -303,7 +304,7 @@ class CEM(RecourseMethod):
 
         return tf.maximum(
             0.0,
-            (sign * nontarget_label_score) - (sign * target_label_score) + self.kappa,
+            (sign * nontarget_label_score) - (sign * target_label_score) + self._kappa,
         )
 
     def _compute_with_mode(self, assign_adv_s, orig) -> tf.Tensor:
@@ -311,11 +312,11 @@ class CEM(RecourseMethod):
         # cond greater      -- x^CF.s - x^F > 0
         # cond less equal   -- x^CF.s - x^F =< 0
         cond_greater, cond_less_equal, _ = self._get_conditions(assign_adv_s, orig)
-        if self.mode == "PP":
+        if self._mode == "PP":
             assign_adv_s = tf.multiply(cond_less_equal, assign_adv_s) + tf.multiply(
                 cond_greater, orig
             )
-        elif self.mode == "PN":
+        elif self._mode == "PN":
             assign_adv_s = tf.multiply(cond_greater, assign_adv_s) + tf.multiply(
                 cond_less_equal, orig
             )
@@ -349,12 +350,12 @@ class CEM(RecourseMethod):
             tf.greater(tf.subtract(adv, orig), beta),
             tf.float32,
         )
-        # (adv - orig) <= beta
+        # (_adv - orig) <= beta
         cond_less_equal = tf.cast(
             tf.less_equal(tf.abs(tf.subtract(adv, orig)), beta),
             tf.float32,
         )
-        # (adv - orig) < beta
+        # (_adv - orig) < beta
         cond_less = tf.cast(
             tf.less(tf.subtract(adv, orig), tf.negative(beta)),
             tf.float32,
@@ -379,12 +380,12 @@ class CEM(RecourseMethod):
             """
             if not isinstance(x, (float, int, np.int64)):
                 x = np.copy(x)
-                if self.mode == "PP":
-                    x[y] -= self.kappa  # type:ignore
-                elif self.mode == "PN":
-                    x[y] += self.kappa  # type:ignore
+                if self._mode == "PP":
+                    x[y] -= self._kappa  # type:ignore
+                elif self._mode == "PN":
+                    x[y] += self._kappa  # type:ignore
                 x = np.argmax(x)  # type:ignore
-            if self.mode == "PP":
+            if self._mode == "PP":
                 return x == y
             else:
                 return x != y
@@ -402,7 +403,7 @@ class CEM(RecourseMethod):
 
         for _ in range(self._hyperparams["binary_search_steps"]):
             # completely reset adam's internal state.
-            self.sess.run(self.init)
+            self.sess.run(self._init)
             input_batch = X[:batch_size]
             label_batch = Y[:batch_size]
 
@@ -411,27 +412,27 @@ class CEM(RecourseMethod):
 
             # set the variables so that we don't have to send them over again
             self.sess.run(
-                self.setup,
+                self._setup,
                 {
-                    self.assign_orig: input_batch,
-                    self.assign_target_label: label_batch,
-                    self.assign_const: CONST,
-                    self.assign_adv: input_batch,
-                    self.assign_adv_s: input_batch,
+                    self._assign_orig: input_batch,
+                    self._assign_target_label: label_batch,
+                    self._assign_const: CONST,
+                    self._assign_adv: input_batch,
+                    self._assign_adv_s: input_batch,
                 },
             )
 
             for i in range(self._hyperparams["max_iterations"]):
                 # perform the attack
-                self.sess.run([self.train])
-                self.sess.run([self.adv_updater, self.adv_updater_s])
+                self.sess.run([self._train])
+                self.sess.run([self._adv_updater, self._adv_updater_s])
 
                 Loss_Overall, Loss_L2_L1_dist, OutputScore, adv = self.sess.run(
                     [
-                        self.Loss_Overall,
-                        self.L2_L1_dist,
-                        self.ImgToEnforceLabel_Score,
-                        self.adv,
+                        self._Loss_Overall,
+                        self._L2_L1_dist,
+                        self._ImgToEnforceLabel_Score,
+                        self._adv,
                     ]
                 )
 
