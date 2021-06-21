@@ -10,7 +10,7 @@ from ...processing import merge_default_parameters
 
 
 class Dice(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {"num": 1, "desired_class": 1}
+    _DEFAULT_HYPERPARAMS = {"num": 1, "desired_class": 1}
 
     def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
         """
@@ -37,7 +37,7 @@ class Dice(RecourseMethod):
         self._target = mlmodel.data.target
 
         checked_hyperparams = merge_default_parameters(
-            hyperparams, self.__DEFAULT_HYPERPARAMS
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(

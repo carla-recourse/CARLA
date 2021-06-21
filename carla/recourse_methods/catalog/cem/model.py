@@ -34,7 +34,7 @@ from ...processing.counterfactuals import merge_default_parameters
 
 
 class CEM(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {
+    _DEFAULT_HYPERPARAMS = {
         "data_name": None,
         "batch_size": 1,
         "kappa": 0.1,
@@ -88,23 +88,23 @@ class CEM(RecourseMethod):
             }
         """
         self.sess = sess  # Tensorflow session
-        self.hyperparams = merge_default_parameters(
-            hyperparams, self.__DEFAULT_HYPERPARAMS
+        self._hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
 
         self.data = mlmodel.data
-        self.kappa = self.hyperparams["kappa"]
-        self.mode = self.hyperparams["mode"]
+        self.kappa = self._hyperparams["kappa"]
+        self.mode = self._hyperparams["mode"]
 
-        batch_size = self.hyperparams["batch_size"]
-        num_classes = self.hyperparams["num_classes"]
-        beta = self.hyperparams["beta"]
-        gamma = self.hyperparams["gamma"]
+        batch_size = self._hyperparams["batch_size"]
+        num_classes = self._hyperparams["num_classes"]
+        beta = self._hyperparams["beta"]
+        gamma = self._hyperparams["gamma"]
 
         super().__init__(mlmodel)
         shape_batch = (batch_size, len(mlmodel.feature_input_order))
 
-        self.AE = self._load_ae(self.hyperparams, mlmodel)
+        self.AE = self._load_ae(self._hyperparams, mlmodel)
 
         self._initialize_tf_variables(batch_size, num_classes, shape_batch)
 
@@ -179,9 +179,9 @@ class CEM(RecourseMethod):
         self.Loss_Overall = Loss_ToOptimize + tf.multiply(beta, self.Loss_L1Dist)
 
         learning_rate = tf.train.polynomial_decay(
-            self.hyperparams["init_learning_rate"],
+            self._hyperparams["init_learning_rate"],
             self.global_step,
-            self.hyperparams["max_iterations"],
+            self._hyperparams["max_iterations"],
             0,
             power=0.5,
         )
@@ -389,18 +389,18 @@ class CEM(RecourseMethod):
             else:
                 return x != y
 
-        batch_size = self.hyperparams["batch_size"]
+        batch_size = self._hyperparams["batch_size"]
 
         # set the lower and upper bounds accordingly
         Const_LB = np.zeros(batch_size)
-        CONST = np.ones(batch_size) * self.hyperparams["initial_const"]
+        CONST = np.ones(batch_size) * self._hyperparams["initial_const"]
         Const_UB = np.ones(batch_size) * 1e10
 
         # the best l2, score, and image attack
         overall_best_dist = [1e10] * batch_size
         overall_best_attack = np.array([np.zeros(X[0].shape)] * batch_size)
 
-        for _ in range(self.hyperparams["binary_search_steps"]):
+        for _ in range(self._hyperparams["binary_search_steps"]):
             # completely reset adam's internal state.
             self.sess.run(self.init)
             input_batch = X[:batch_size]
@@ -421,7 +421,7 @@ class CEM(RecourseMethod):
                 },
             )
 
-            for i in range(self.hyperparams["max_iterations"]):
+            for i in range(self._hyperparams["max_iterations"]):
                 # perform the attack
                 self.sess.run([self.train])
                 self.sess.run([self.adv_updater, self.adv_updater_s])

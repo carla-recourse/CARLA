@@ -15,7 +15,7 @@ from carla.recourse_methods.processing.counterfactuals import merge_default_para
 
 
 class Clue(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {
+    _DEFAULT_HYPERPARAMS = {
         "data_name": None,
         "train_vae": True,
         "width": 10,
@@ -55,7 +55,7 @@ class Clue(RecourseMethod):
 
         # get hyperparameter
         checked_hyperparams = merge_default_parameters(
-            hyperparams, self.__DEFAULT_HYPERPARAMS
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
         self._train_vae = checked_hyperparams["train_vae"]
         self._width = checked_hyperparams["width"]

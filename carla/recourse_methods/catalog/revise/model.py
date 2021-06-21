@@ -21,7 +21,7 @@ from carla.recourse_methods.processing.counterfactuals import (
 
 
 class Revise(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {
+    _DEFAULT_HYPERPARAMS = {
         "data_name": None,
         "lambda": 0.5,
         "optimizer": "adam",
@@ -79,7 +79,7 @@ class Revise(RecourseMethod):
             }
         """
         super().__init__(mlmodel)
-        self.params = merge_default_parameters(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        self.params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
         self._target_column = data.target
         self._lambda = self.params["lambda"]

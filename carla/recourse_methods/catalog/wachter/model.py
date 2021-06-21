@@ -9,7 +9,7 @@ from carla.recourse_methods.processing import (
 
 
 class Wachter(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {
+    _DEFAULT_HYPERPARAMS = {
         "feature_cost": "_optional_",
         "lr": 0.01,
         "lambda_": 0.01,
@@ -51,7 +51,7 @@ class Wachter(RecourseMethod):
         super().__init__(mlmodel)
 
         checked_hyperparams = merge_default_parameters(
-            hyperparams, self.__DEFAULT_HYPERPARAMS
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
         self._feature_costs = checked_hyperparams["feature_cost"]
         self._lr = checked_hyperparams["lr"]
