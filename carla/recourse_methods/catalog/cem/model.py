@@ -30,9 +30,29 @@ from carla.recourse_methods.autoencoder import Autoencoder, train_autoencoder
 
 from ...api import RecourseMethod
 from ...processing import check_counterfactuals
+from ...processing.counterfactuals import merge_default_parameters
 
 
 class CEM(RecourseMethod):
+    __DEFAULT_HYPERPARAMS = {
+        "data_name": None,
+        "batch_size": 1,
+        "kappa": 0.1,
+        "init_learning_rate": 0.01,
+        "binary_search_steps": 9,
+        "max_iterations": 100,
+        "initial_const": 10,
+        "beta": 0.9,
+        "gamma": 0.0,
+        "mode": "PN",
+        "num_classes": 2,
+        "ae_params": {
+            "hidden_layer": None,
+            "train_ae": True,
+            "epochs": 5,
+        },
+    }
+
     def __init__(self, sess, mlmodel: MLModel, hyperparams):
         """
         Initialisation for the Contrastive Explanation Method (CEM).
@@ -68,21 +88,23 @@ class CEM(RecourseMethod):
             }
         """
         self.sess = sess  # Tensorflow session
-        self.hyperparams = hyperparams
+        self.hyperparams = merge_default_parameters(
+            hyperparams, self.__DEFAULT_HYPERPARAMS
+        )
 
         self.data = mlmodel.data
-        self.kappa = hyperparams["kappa"]
-        self.mode = hyperparams["mode"]
+        self.kappa = self.hyperparams["kappa"]
+        self.mode = self.hyperparams["mode"]
 
-        batch_size = hyperparams["batch_size"]
-        num_classes = hyperparams["num_classes"]
-        beta = hyperparams["beta"]
-        gamma = hyperparams["gamma"]
+        batch_size = self.hyperparams["batch_size"]
+        num_classes = self.hyperparams["num_classes"]
+        beta = self.hyperparams["beta"]
+        gamma = self.hyperparams["gamma"]
 
         super().__init__(mlmodel)
         shape_batch = (batch_size, len(mlmodel.feature_input_order))
 
-        self.AE = self.__load_ae(hyperparams, mlmodel)
+        self.AE = self.__load_ae(self.hyperparams, mlmodel)
 
         self.__initialize_tf_variables(batch_size, num_classes, shape_batch)
 
@@ -157,9 +179,9 @@ class CEM(RecourseMethod):
         self.Loss_Overall = Loss_ToOptimize + tf.multiply(beta, self.Loss_L1Dist)
 
         learning_rate = tf.train.polynomial_decay(
-            hyperparams["init_learning_rate"],
+            self.hyperparams["init_learning_rate"],
             self.global_step,
-            hyperparams["max_iterations"],
+            self.hyperparams["max_iterations"],
             0,
             power=0.5,
         )
