@@ -1,6 +1,6 @@
 import numpy as np
 
-from carla import distances
+from carla.evaluation import distances
 
 
 def test_d1():
