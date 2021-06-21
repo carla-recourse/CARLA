@@ -6,3 +6,5 @@ from .clue import Clue
 from .dice import Dice
 from .face import Face
 from .growing_spheres import GrowingSpheres
+from .revise import Revise
+from .wachter import Wachter

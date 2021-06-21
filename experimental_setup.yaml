@@ -62,3 +62,25 @@ recourse_methods:
       fraction: 0.15
   gs:
     hyperparams:
+  revise:
+    hyperparams:
+        lambda: 0.5
+        optimizer: "adam"
+        lr: 0.1
+        max_iter: 1500
+        target_class: [0, 1]
+        binary_cat_features: False
+        vae_params:
+          d: 8
+          H1: 512
+          H2: 256
+          activFun:
+          train: True
+          lambda_reg: 0.000001
+          epochs: 5
+          lr: 0.001
+          batch_size: 32
+  wachter:
+    hyperparams:
+      loss_type: "BCE"
+      binary_cat_features: False
