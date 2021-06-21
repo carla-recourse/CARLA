@@ -21,7 +21,7 @@ from carla.recourse_methods.processing.counterfactuals import (
 
 
 class Revise(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {
+    _DEFAULT_HYPERPARAMS = {
         "data_name": None,
         "lambda": 0.5,
         "optimizer": "adam",
@@ -79,23 +79,23 @@ class Revise(RecourseMethod):
             }
         """
         super().__init__(mlmodel)
-        self.params = merge_default_parameters(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
         self._target_column = data.target
-        self._lambda = self.params["lambda"]
-        self._optimizer = self.params["optimizer"]
-        self._lr = self.params["lr"]
-        self._max_iter = self.params["max_iter"]
-        self._target_class = self.params["target_class"]
-        self._binary_cat_features = self.params["binary_cat_features"]
+        self._lambda = self._params["lambda"]
+        self._optimizer = self._params["optimizer"]
+        self._lr = self._params["lr"]
+        self._max_iter = self._params["max_iter"]
+        self._target_class = self._params["target_class"]
+        self._binary_cat_features = self._params["binary_cat_features"]
 
         df_enc_norm_data = self.encode_normalize_order_factuals(
             data.raw, with_target=True
         )
 
-        vae_params = self.params["vae_params"]
+        vae_params = self._params["vae_params"]
         self.vae = VariationalAutoencoder(
-            self.params["data_name"],
+            self._params["data_name"],
             vae_params["layers"],
         )
 
@@ -135,7 +135,7 @@ class Revise(RecourseMethod):
             for feature in encoded_feature_names
         ]
 
-        list_cfs = self.__counterfactual_optimization(
+        list_cfs = self._counterfactual_optimization(
             cat_features_indices, device, df_enc_norm_fact
         )
 
@@ -143,7 +143,7 @@ class Revise(RecourseMethod):
 
         return cf_df
 
-    def __counterfactual_optimization(self, cat_features_indices, device, df_fact):
+    def _counterfactual_optimization(self, cat_features_indices, device, df_fact):
         # prepare data for optimization steps
         test_loader = torch.utils.data.DataLoader(
             VAEDataset(df_fact.values), batch_size=1, shuffle=False
@@ -172,13 +172,13 @@ class Revise(RecourseMethod):
             for idx in range(self._max_iter):
                 cf = self.vae.decode(z)[0]
                 cf = reconstruct_encoding_constraints(
-                    cf, cat_features_indices, self.params["binary_cat_features"]
+                    cf, cat_features_indices, self._params["binary_cat_features"]
                 )
                 output = self._mlmodel.predict_proba(cf)[0]
                 _, predicted = torch.max(output, 0)
 
                 z.requires_grad = True
-                loss = self.__compute_loss(cf, query_instance, target)
+                loss = self._compute_loss(cf, query_instance, target)
                 all_loss.append(loss)
 
                 if predicted == target_prediction:
@@ -205,7 +205,7 @@ class Revise(RecourseMethod):
                 list_cfs.append(query_instance.cpu().detach().numpy().squeeze(axis=0))
         return list_cfs
 
-    def __compute_loss(self, cf_initialize, query_instance, target):
+    def _compute_loss(self, cf_initialize, query_instance, target):
 
         loss_function = nn.BCELoss()
         output = self._mlmodel.predict_proba(cf_initialize)[0]
