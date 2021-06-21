@@ -6,9 +6,12 @@ import pandas as pd
 from carla.models.api import MLModel
 
 from ...api import RecourseMethod
+from ...processing import merge_default_parameters
 
 
 class Dice(RecourseMethod):
+    _DEFAULT_HYPERPARAMS = {"num": 1, "desired_class": 1, "posthoc_sparsity_param": 0.1}
+
     def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
         """
         Constructor for Dice model
@@ -37,6 +40,10 @@ class Dice(RecourseMethod):
         self._continous = mlmodel.data.continous
         self._categoricals = mlmodel.data.categoricals
         self._target = mlmodel.data.target
+
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
+        )
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
             dataframe=mlmodel.data.raw,
@@ -47,9 +54,9 @@ class Dice(RecourseMethod):
         self._dice_model = dice_ml.Model(model=mlmodel, backend="sklearn")
 
         self._dice = dice_ml.Dice(self._dice_data, self._dice_model, method="random")
-        self._num = hyperparams["num"]
-        self._desired_class = hyperparams["desired_class"]
-        self._post_hoc_sparsity_param = hyperparams["posthoc_sparsity_param"]
+        self._num = checked_hyperparams["num"]
+        self._desired_class = checked_hyperparams["desired_class"]
+        self._post_hoc_sparsity_param = checked_hyperparams["posthoc_sparsity_param"]
 
         # Need scaler and encoder for get_counterfactual output
         self._scaler = mlmodel.scaler

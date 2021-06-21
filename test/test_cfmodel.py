@@ -41,6 +41,9 @@ def test_dice_get_counterfactuals(model_type):
     assert test_factual.shape[0] == cfs.shape[0]
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
+    non_nan_cfs = cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_ar_get_counterfactual(model_type):
@@ -68,6 +71,9 @@ def test_ar_get_counterfactual(model_type):
 
     assert test_factual.shape[0] == cfs.shape[0]
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
 
 
 @pytest.mark.parametrize("model_type", testmodel)
@@ -111,6 +117,9 @@ def test_cem_get_counterfactuals(model_type):
 
     assert counterfactuals_df.shape == test_factuals.shape
 
+    non_nan_cfs = counterfactuals_df.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_cem_vae(model_type):
@@ -153,6 +162,9 @@ def test_cem_vae(model_type):
 
     assert counterfactuals_df.shape == test_factuals.shape
 
+    non_nan_cfs = counterfactuals_df.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_face_get_counterfactuals(model_type):
@@ -180,6 +192,9 @@ def test_face_get_counterfactuals(model_type):
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_growing_spheres(model_type):
@@ -198,6 +213,9 @@ def test_growing_spheres(model_type):
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_clue(model_type):
@@ -211,7 +229,7 @@ def test_clue(model_type):
     test_factual = factuals.iloc[:20]
 
     hyperparams = {
-        "data_name": "adult",
+        "data_name": data_name,
         "train_vae": True,
         "width": 10,
         "depth": 3,
@@ -225,6 +243,9 @@ def test_clue(model_type):
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
 
 
 @pytest.mark.parametrize("model_type", testmodel)
@@ -243,6 +264,9 @@ def test_wachter(model_type):
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
 
 
 @pytest.mark.parametrize("model_type", testmodel)
@@ -282,3 +306,6 @@ def test_revise(model_type):
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
