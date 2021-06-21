@@ -104,9 +104,9 @@ class CEM(RecourseMethod):
         super().__init__(mlmodel)
         shape_batch = (batch_size, len(mlmodel.feature_input_order))
 
-        self.AE = self.__load_ae(self.hyperparams, mlmodel)
+        self.AE = self._load_ae(self.hyperparams, mlmodel)
 
-        self.__initialize_tf_variables(batch_size, num_classes, shape_batch)
+        self._initialize_tf_variables(batch_size, num_classes, shape_batch)
 
         """Fast Iterative Soft Thresholding"""
         """--------------------------------"""
@@ -118,8 +118,8 @@ class CEM(RecourseMethod):
 
         zt = tf.divide(self.global_step, self.global_step + tf.cast(3, tf.float32))
 
-        self.assign_adv = self.__compute_adv(self.orig, self.adv_s, beta)
-        self.assign_adv_s = self.__compute_adv_s(
+        self.assign_adv = self._compute_adv(self.orig, self.adv_s, beta)
+        self.assign_adv_s = self._compute_adv_s(
             zt, self.orig, self.adv, self.assign_adv
         )
 
@@ -130,26 +130,26 @@ class CEM(RecourseMethod):
         delta_img_s = self.orig - self.adv_s
 
         # distance to the input data
-        L1_dist, L2_dist = self.__compute_l_norm(delta_img)
-        _, L2_dist_s = self.__compute_l_norm(delta_img_s)
+        L1_dist, L2_dist = self._compute_l_norm(delta_img)
+        _, L2_dist_s = self._compute_l_norm(delta_img_s)
 
-        self.ImgToEnforceLabel_Score = self.__get_label_score(delta_img, self.adv)
-        ImgToEnforceLabel_Score_s = self.__get_label_score(delta_img_s, self.adv_s)
+        self.ImgToEnforceLabel_Score = self._get_label_score(delta_img, self.adv)
+        ImgToEnforceLabel_Score_s = self._get_label_score(delta_img_s, self.adv_s)
 
         # composite distance loss
         self.L2_L1_dist = L2_dist + tf.multiply(L1_dist, beta)
 
-        self.target_lab_score = self.__compute_target_lab_score(
+        self.target_lab_score = self._compute_target_lab_score(
             self.target_label, self.ImgToEnforceLabel_Score
         )
-        target_lab_score_s = self.__compute_target_lab_score(
+        target_lab_score_s = self._compute_target_lab_score(
             self.target_label, ImgToEnforceLabel_Score_s
         )
 
-        self.max_nontarget_lab_score = self.__compute_non_target_lab_score(
+        self.max_nontarget_lab_score = self._compute_non_target_lab_score(
             self.target_label, self.ImgToEnforceLabel_Score
         )
-        max_nontarget_lab_score_s = self.__compute_non_target_lab_score(
+        max_nontarget_lab_score_s = self._compute_non_target_lab_score(
             self.target_label, ImgToEnforceLabel_Score_s
         )
 
@@ -160,7 +160,7 @@ class CEM(RecourseMethod):
             self.Loss_Attack,
             self.Loss_AE_Dist,
             Loss_ToOptimize,
-        ) = self.__compute_losses(
+        ) = self._compute_losses(
             delta_img,
             self.adv,
             L2_dist,
@@ -168,7 +168,7 @@ class CEM(RecourseMethod):
             self.target_lab_score,
             gamma,
         )
-        (_, _, _, Loss_ToOptimize_s,) = self.__compute_losses(
+        (_, _, _, Loss_ToOptimize_s,) = self._compute_losses(
             delta_img_s,
             self.adv_s,
             L2_dist_s,
@@ -186,18 +186,18 @@ class CEM(RecourseMethod):
             power=0.5,
         )
 
-        self.train = self.__optimization(Loss_ToOptimize_s, self.adv_s, learning_rate)
+        self.train = self._optimization(Loss_ToOptimize_s, self.adv_s, learning_rate)
         start_vars = set(x.name for x in tf.global_variables())
         new_vars = [x for x in tf.global_variables() if x.name not in start_vars]
 
         # these are the variables to initialize when we run
-        self.setup = self.__set_setup()
+        self.setup = self._set_setup()
 
         self.init = tf.variables_initializer(
             var_list=[self.global_step] + [self.adv_s] + [self.adv] + new_vars
         )
 
-    def __optimization(self, Loss_ToOptimize_s, adv_s, learning_rate):
+    def _optimization(self, Loss_ToOptimize_s, adv_s, learning_rate):
         optimizer = tf.train.GradientDescentOptimizer(learning_rate)
         return optimizer.minimize(
             Loss_ToOptimize_s,
@@ -205,24 +205,24 @@ class CEM(RecourseMethod):
             global_step=self.global_step,
         )
 
-    def __compute_losses(
+    def _compute_losses(
         self, delta, adv, l2_dist, max_nontarget_lab_score, target_lab_score, gamma
     ):
-        Loss_Attack = self.__compute_attack_loss(
+        Loss_Attack = self._compute_attack_loss(
             max_nontarget_lab_score, target_lab_score, self.mode
         )
         loss_L2Dist = tf.reduce_sum(l2_dist)
         loss_Attack = tf.reduce_sum(self.const * Loss_Attack)
-        loss_AE_Dist = self.__compute_AE_dist(adv, delta, gamma)
+        loss_AE_Dist = self._compute_AE_dist(adv, delta, gamma)
         loss_ToOptimize = loss_Attack + loss_L2Dist + loss_AE_Dist
 
         return loss_L2Dist, loss_Attack, loss_AE_Dist, loss_ToOptimize
 
-    def __compute_AE_dist(self, adv, delta, gamma):
+    def _compute_AE_dist(self, adv, delta, gamma):
         delta_input_ae = delta if self.mode == "PP" else adv
-        return self.__compute_AE_lost(delta_input_ae, gamma)
+        return self._compute_AE_lost(delta_input_ae, gamma)
 
-    def __set_setup(self):
+    def _set_setup(self):
         setup = []
         setup.append(self.orig.assign(self.assign_orig))
         setup.append(self.target_label.assign(self.assign_target_label))
@@ -232,14 +232,14 @@ class CEM(RecourseMethod):
 
         return setup
 
-    def __get_label_score(self, delta, adv):
+    def _get_label_score(self, delta, adv):
         enforce_input = delta if self.mode == "PP" else adv
         return self._mlmodel.raw_model(enforce_input)
 
-    def __compute_l_norm(self, delta):
+    def _compute_l_norm(self, delta):
         return tf.reduce_sum(tf.abs(delta), [1]), tf.reduce_sum(tf.square(delta), [1])
 
-    def __load_ae(self, hyperparams, mlmodel):
+    def _load_ae(self, hyperparams, mlmodel):
         ae_params = hyperparams["ae_params"]
         ae = Autoencoder(
             data_name=hyperparams["data_name"],
@@ -263,7 +263,7 @@ class CEM(RecourseMethod):
                     "Loading of Autoencoder failed. {}".format(str(exc))
                 )
 
-    def __initialize_tf_variables(self, batch_size, num_classes, shape_batch):
+    def _initialize_tf_variables(self, batch_size, num_classes, shape_batch):
         # these are variables to be more efficient in sending data to tf
         self.orig = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
         self.adv = tf.Variable(np.zeros(shape_batch), dtype=tf.float32)
@@ -280,12 +280,12 @@ class CEM(RecourseMethod):
         self.assign_target_label = tf.placeholder(tf.float32, (batch_size, num_classes))
         self.assign_const = tf.placeholder(tf.float32, [batch_size])
 
-    def __compute_target_lab_score(
+    def _compute_target_lab_score(
         self, target_label, label_score: tf.Tensor
     ) -> tf.Tensor:
         return tf.reduce_sum(target_label * label_score, 1)
 
-    def __compute_non_target_lab_score(
+    def _compute_non_target_lab_score(
         self, target_label, label_score: tf.Tensor
     ) -> tf.Tensor:
         return tf.reduce_max(
@@ -293,10 +293,10 @@ class CEM(RecourseMethod):
             1,
         )
 
-    def __compute_AE_lost(self, delta: tf.Tensor, gamma) -> tf.Tensor:
+    def _compute_AE_lost(self, delta: tf.Tensor, gamma) -> tf.Tensor:
         return gamma * tf.square(tf.norm(self.AE(delta) - delta))
 
-    def __compute_attack_loss(
+    def _compute_attack_loss(
         self, nontarget_label_score: tf.Tensor, target_label_score: tf.Tensor, mode: str
     ) -> tf.Tensor:
         sign = 1 if mode == "PP" else -1
@@ -306,11 +306,11 @@ class CEM(RecourseMethod):
             (sign * nontarget_label_score) - (sign * target_label_score) + self.kappa,
         )
 
-    def __compute_with_mode(self, assign_adv_s, orig) -> tf.Tensor:
+    def _compute_with_mode(self, assign_adv_s, orig) -> tf.Tensor:
         # x^CF.s := assigned adv s
         # cond greater      -- x^CF.s - x^F > 0
         # cond less equal   -- x^CF.s - x^F =< 0
-        cond_greater, cond_less_equal, _ = self.__get_conditions(assign_adv_s, orig)
+        cond_greater, cond_less_equal, _ = self._get_conditions(assign_adv_s, orig)
         if self.mode == "PP":
             assign_adv_s = tf.multiply(cond_less_equal, assign_adv_s) + tf.multiply(
                 cond_greater, orig
@@ -321,12 +321,12 @@ class CEM(RecourseMethod):
             )
         return assign_adv_s
 
-    def __compute_adv_s(self, zt, orig, adv, assign_adv) -> tf.Tensor:
+    def _compute_adv_s(self, zt, orig, adv, assign_adv) -> tf.Tensor:
         assign_adv_s = assign_adv + tf.multiply(zt, assign_adv - adv)
-        return self.__compute_with_mode(assign_adv_s, orig)
+        return self._compute_with_mode(assign_adv_s, orig)
 
-    def __compute_adv(self, orig, adv_s, beta: float) -> tf.Tensor:
-        cond_greater, cond_less_equal, cond_less = self.__get_conditions(
+    def _compute_adv(self, orig, adv_s, beta: float) -> tf.Tensor:
+        cond_greater, cond_less_equal, cond_less = self._get_conditions(
             adv_s, orig, beta
         )
         # lower -- min(x^CF - beta, 0.5)
@@ -339,9 +339,9 @@ class CEM(RecourseMethod):
             + tf.multiply(cond_less, lower)
         )
 
-        return self.__compute_with_mode(assign_adv_img, orig)
+        return self._compute_with_mode(assign_adv_img, orig)
 
-    def __get_conditions(
+    def _get_conditions(
         self, adv: Union[tf.Tensor, tf.Variable], orig, beta: float = 0.0
     ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
         # (adv - orig) > beta
@@ -361,7 +361,7 @@ class CEM(RecourseMethod):
         )
         return cond_greater, cond_less_equal, cond_less
 
-    def attack(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+    def _attack(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
         def compare(x, y) -> bool:
             """
             Compare predictions with target labels and return whether PP or PN conditions hold.
@@ -482,17 +482,17 @@ class CEM(RecourseMethod):
         )
         return overall_best_attack
 
-    def __counterfactual_search(self, instance: np.ndarray) -> np.ndarray:
+    def _counterfactual_search(self, instance: np.ndarray) -> np.ndarray:
 
-        orig_prob, orig_class, orig_prob_str = self.__model_prediction(
+        orig_prob, orig_class, orig_prob_str = self._model_prediction(
             self._mlmodel.raw_model, np.expand_dims(instance, axis=0)
         )
 
         target_label = orig_class
-        orig_sample, target = self.__generate_data(instance, target_label)
+        orig_sample, target = self._generate_data(instance, target_label)
 
         # start the search
-        counterfactual = self.attack(orig_sample, target)
+        counterfactual = self._attack(orig_sample, target)
 
         return counterfactual.reshape(-1)
 
@@ -516,14 +516,14 @@ class CEM(RecourseMethod):
         df_enc_norm_fact = df_enc_norm_fact.reset_index(drop=True)
 
         df_cfs = df_enc_norm_fact.apply(
-            lambda x: self.__counterfactual_search(x), axis=1, raw=True
+            lambda x: self._counterfactual_search(x), axis=1, raw=True
         )
 
         df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
 
         return df_cfs
 
-    def __generate_data(
+    def _generate_data(
         self, instance: np.ndarray, target_label: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         inputs = []
@@ -539,7 +539,7 @@ class CEM(RecourseMethod):
 
         return inputs, target_vec
 
-    def __model_prediction(
+    def _model_prediction(
         self, model, inputs: np.ndarray
     ) -> Tuple[np.ndarray, int, str]:
         prob = model.predict(inputs)
