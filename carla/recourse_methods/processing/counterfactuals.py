@@ -71,7 +71,7 @@ def reconstruct_encoding_constraints(
 
     Parameters
     ----------
-    x: instance where we want to reconstrucht categorical constraints
+    x: instance where we want to reconstruct categorical constraints
     feature_pos: list with positions of categorical features in x
     binary_cat: If true, categorical datas are encoded with drop_if_binary
 
@@ -87,11 +87,22 @@ def reconstruct_encoding_constraints(
     else:
         binary_pairs = list(zip(feature_pos[:-1], feature_pos[1:]))[0::2]
         for pair in binary_pairs:
-            argmax = torch.argmax(x_enc[:, pair[0] : pair[1] + 1])
+            argmax = torch.argmax(x_enc[:, pair[0] : pair[1] + 1], axis=1)
             argmin = 1 - argmax
 
-            x_enc[:, pair[0] + argmax] = 1
-            x_enc[:, pair[0] + argmin] = 0
+            true_pos = pair[0] + argmax
+            false_pos = pair[0] + argmin
+
+            for i, (t, f) in enumerate(zip(true_pos, false_pos)):
+                x_enc[i][t] = 1
+                x_enc[i][f] = 0
+
+            if (x_enc[:, pair[0]] == x_enc[:, pair[1]]).any():
+                raise ValueError(
+                    "Reconstructing encoded features lead to an error. Feature {} and {} have the same value".format(
+                        pair[0], pair[1]
+                    )
+                )
 
     return x_enc
 
