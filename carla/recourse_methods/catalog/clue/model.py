@@ -11,9 +11,22 @@ from carla.recourse_methods.catalog.clue.library import (
     vae_gradient_search,
 )
 from carla.recourse_methods.processing import check_counterfactuals
+from carla.recourse_methods.processing.counterfactuals import merge_default_parameters
 
 
 class Clue(RecourseMethod):
+    _DEFAULT_HYPERPARAMS = {
+        "data_name": None,
+        "train_vae": True,
+        "width": 10,
+        "depth": 3,
+        "latent_dim": 12,
+        "batch_size": 64,
+        "epochs": 1,
+        "lr": 0.001,
+        "early_stop": 10,
+    }
+
     def __init__(self, data, mlmodel, hyperparams):
         """
 
@@ -38,16 +51,21 @@ class Clue(RecourseMethod):
                 "early_stop": int,  [Structure for VAE]
                 }
         """
-        self._mlmodel = mlmodel
-        self._train_vae = hyperparams["train_vae"]
-        self._width = hyperparams["width"]
-        self._depth = hyperparams["depth"]
-        self._latent_dim = hyperparams["latent_dim"]
-        self._data_name = hyperparams["data_name"]
-        self._batch_size = hyperparams["batch_size"]
-        self._epochs = hyperparams["epochs"]
-        self._lr = hyperparams["lr"]
-        self._early_stop = hyperparams["early_stop"]
+        super().__init__(mlmodel)
+
+        # get hyperparameter
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
+        )
+        self._train_vae = checked_hyperparams["train_vae"]
+        self._width = checked_hyperparams["width"]
+        self._depth = checked_hyperparams["depth"]
+        self._latent_dim = checked_hyperparams["latent_dim"]
+        self._data_name = checked_hyperparams["data_name"]
+        self._batch_size = checked_hyperparams["batch_size"]
+        self._epochs = checked_hyperparams["epochs"]
+        self._lr = checked_hyperparams["lr"]
+        self._early_stop = checked_hyperparams["early_stop"]
         self._continous = self._mlmodel.data.continous
         self._categorical = self._mlmodel.data.categoricals
 
