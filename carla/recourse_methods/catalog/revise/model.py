@@ -21,7 +21,7 @@ from carla.recourse_methods.processing.counterfactuals import (
 
 
 class Revise(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {
+    _DEFAULT_HYPERPARAMS = {
         "data_name": None,
         "lambda": 0.5,
         "optimizer": "adam",
@@ -30,9 +30,7 @@ class Revise(RecourseMethod):
         "target_class": [0, 1],
         "binary_cat_features": True,
         "vae_params": {
-            "d": 8,
-            "H1": 512,
-            "H2": 256,
+            "layers": None,
             "train": True,
             "lambda_reg": 1e-6,
             "epochs": 5,
@@ -79,27 +77,24 @@ class Revise(RecourseMethod):
             }
         """
         super().__init__(mlmodel)
-        self.params = merge_default_parameters(hyperparams, self.__DEFAULT_HYPERPARAMS)
+        self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
         self._target_column = data.target
-        self._lambda = self.params["lambda"]
-        self._optimizer = self.params["optimizer"]
-        self._lr = self.params["lr"]
-        self._max_iter = self.params["max_iter"]
-        self._target_class = self.params["target_class"]
-        self._binary_cat_features = self.params["binary_cat_features"]
+        self._lambda = self._params["lambda"]
+        self._optimizer = self._params["optimizer"]
+        self._lr = self._params["lr"]
+        self._max_iter = self._params["max_iter"]
+        self._target_class = self._params["target_class"]
+        self._binary_cat_features = self._params["binary_cat_features"]
 
         df_enc_norm_data = self.encode_normalize_order_factuals(
             data.raw, with_target=True
         )
 
-        vae_params = self.params["vae_params"]
+        vae_params = self._params["vae_params"]
         self.vae = VariationalAutoencoder(
-            self.params["data_name"],
-            vae_params["d"],
-            df_enc_norm_data.shape[1] - 1,  # num features - target
-            vae_params["H1"],
-            vae_params["H2"],
+            self._params["data_name"],
+            vae_params["layers"],
         )
 
         if vae_params["train"]:
@@ -129,11 +124,6 @@ class Revise(RecourseMethod):
             factuals, with_target=True
         )
 
-        # prepare data for optimization steps
-        test_loader = torch.utils.data.DataLoader(
-            VAEDataset(df_enc_norm_fact.values), batch_size=1, shuffle=False
-        )
-
         # pay attention to categorical features
         encoded_feature_names = self._mlmodel.encoder.get_feature_names(
             self._mlmodel.data.categoricals
@@ -142,6 +132,20 @@ class Revise(RecourseMethod):
             df_enc_norm_fact.columns.get_loc(feature)
             for feature in encoded_feature_names
         ]
+
+        list_cfs = self._counterfactual_optimization(
+            cat_features_indices, device, df_enc_norm_fact
+        )
+
+        cf_df = check_counterfactuals(self._mlmodel, list_cfs)
+
+        return cf_df
+
+    def _counterfactual_optimization(self, cat_features_indices, device, df_fact):
+        # prepare data for optimization steps
+        test_loader = torch.utils.data.DataLoader(
+            VAEDataset(df_fact.values), batch_size=1, shuffle=False
+        )
 
         list_cfs = []
         for query_instance, _ in test_loader:
@@ -166,13 +170,13 @@ class Revise(RecourseMethod):
             for idx in range(self._max_iter):
                 cf = self.vae.decode(z)[0]
                 cf = reconstruct_encoding_constraints(
-                    cf, cat_features_indices, self.params["binary_cat_features"]
+                    cf, cat_features_indices, self._params["binary_cat_features"]
                 )
                 output = self._mlmodel.predict_proba(cf)[0]
                 _, predicted = torch.max(output, 0)
 
                 z.requires_grad = True
-                loss = self.compute_loss(cf, query_instance, target)
+                loss = self._compute_loss(cf, query_instance, target)
                 all_loss.append(loss)
 
                 if predicted == target_prediction:
@@ -197,12 +201,9 @@ class Revise(RecourseMethod):
             else:
                 print("No counterfactual found")
                 list_cfs.append(query_instance.cpu().detach().numpy().squeeze(axis=0))
+        return list_cfs
 
-        cf_df = check_counterfactuals(self._mlmodel, list_cfs)
-
-        return cf_df
-
-    def compute_loss(self, cf_initialize, query_instance, target):
+    def _compute_loss(self, cf_initialize, query_instance, target):
 
         loss_function = nn.BCELoss()
         output = self._mlmodel.predict_proba(cf_initialize)[0]
