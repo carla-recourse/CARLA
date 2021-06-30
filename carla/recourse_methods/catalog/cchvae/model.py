@@ -227,12 +227,12 @@ class CCHVAE(RecourseMethod):
             indeces = np.where(y_candidate != instance_label)
             candidate_counterfactuals = x_ce[indeces]
             candidate_dist = distances[indeces]
-            if (
-                len(candidate_dist) == 0
-            ):  # no candidate found & push search range outside
+            # no candidate found & push search range outside
+            if len(candidate_dist) == 0:
                 low = high
                 high = low + step
-            elif len(candidate_dist) > 0:  # certain candidates generated
+            elif len(candidate_dist) > 0:
+                # certain candidates generated
                 min_index = np.argmin(candidate_dist)
                 print("CE found")
                 return candidate_counterfactuals[min_index]
