@@ -87,15 +87,8 @@ def reconstruct_encoding_constraints(
     else:
         binary_pairs = list(zip(feature_pos[:-1], feature_pos[1:]))[0::2]
         for pair in binary_pairs:
-            argmax = torch.argmax(x_enc[:, pair[0] : pair[1] + 1], axis=1)
-            argmin = 1 - argmax
-
-            true_pos = pair[0] + argmax
-            false_pos = pair[0] + argmin
-
-            for i, (t, f) in enumerate(zip(true_pos, false_pos)):
-                x_enc[i][t] = 1
-                x_enc[i][f] = 0
+            x_enc[:, pair[0]] = (x_enc[:, pair[0]] >= x_enc[:, pair[1]]).float()
+            x_enc[:, pair[1]] = (x_enc[:, pair[0]] < x_enc[:, pair[1]]).float()
 
             if (x_enc[:, pair[0]] == x_enc[:, pair[1]]).any():
                 raise ValueError(
