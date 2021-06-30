@@ -7,6 +7,7 @@ from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods import Revise
 from carla.recourse_methods.catalog.actionable_recourse import ActionableRecourse
+from carla.recourse_methods.catalog.cchvae import CCHVAE
 from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.dice import Dice
@@ -301,6 +302,44 @@ def test_revise(model_type):
 
     revise = Revise(model, data, hyperparams)
     df_cfs = revise.get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_cchvae(model_type):
+    data_name = "compas"
+    data = DataCatalog(data_name)
+
+    model = MLModelCatalog(data, model_type, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:5]
+
+    hyperparams = {
+        "data_name": data_name,
+        "n_search_samples": 100,
+        "p_norm": 1,
+        "step": 0.1,
+        "max_iter": 1000,
+        "clamp": True,
+        "binary_cat_features": False,
+        "vae_params": {
+            "layers": [len(model.feature_input_order), 512, 256, 8],
+            "train": True,
+            "lambda_reg": 1e-6,
+            "epochs": 5,
+            "lr": 1e-3,
+            "batch_size": 32,
+        },
+    }
+
+    cchvae = CCHVAE(model, hyperparams)
+    df_cfs = cchvae.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
