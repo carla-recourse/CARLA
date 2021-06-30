@@ -52,6 +52,7 @@ recourse_methods:
     hyperparams:
       num: 1
       desired_class: 1
+      posthoc_sparsity_param: 0
   face_knn:
     hyperparams:
       mode: "knn"
