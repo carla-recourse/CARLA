@@ -10,7 +10,7 @@ from ...processing import merge_default_parameters
 
 
 class Dice(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {"num": 1, "desired_class": 1}
+    _DEFAULT_HYPERPARAMS = {"num": 1, "desired_class": 1, "posthoc_sparsity_param": 0.1}
 
     def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
         """
@@ -29,7 +29,12 @@ class Dice(RecourseMethod):
             ML model to build counterfactuals for.
         hyperparams : dict
             Hyperparameter which are needed for DICE to generate counterfactuals.
-            Structure: {"num": int, "desired_class": int}
+            Structure: {
+                "num": int,
+                "desired_class": int,
+                "posthoc_sparsity_param": float, default: 0.1
+                    Parameter for the post-hoc operation on continuous features to enhance sparsity.
+            }
         """
         super().__init__(mlmodel)
         self._continous = mlmodel.data.continous
@@ -37,7 +42,7 @@ class Dice(RecourseMethod):
         self._target = mlmodel.data.target
 
         checked_hyperparams = merge_default_parameters(
-            hyperparams, self.__DEFAULT_HYPERPARAMS
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
@@ -51,6 +56,7 @@ class Dice(RecourseMethod):
         self._dice = dice_ml.Dice(self._dice_data, self._dice_model, method="random")
         self._num = checked_hyperparams["num"]
         self._desired_class = checked_hyperparams["desired_class"]
+        self._post_hoc_sparsity_param = checked_hyperparams["posthoc_sparsity_param"]
 
         # Need scaler and encoder for get_counterfactual output
         self._scaler = mlmodel.scaler
@@ -88,7 +94,10 @@ class Dice(RecourseMethod):
 
         # Generate counterfactuals
         dice_exp = self._dice.generate_counterfactuals(
-            querry_instances, total_CFs=self._num, desired_class=self._desired_class
+            querry_instances,
+            total_CFs=self._num,
+            desired_class=self._desired_class,
+            posthoc_sparsity_param=self._post_hoc_sparsity_param,
         )
 
         list_cfs = dice_exp.cf_examples_list
