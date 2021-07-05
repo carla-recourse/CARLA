@@ -35,6 +35,14 @@ Actionable Recourse
    :members:
    :undoc-members:
 
+.. _cchvae:
+
+CCHVAE
+^^^^^^
+.. automodule:: recourse_methods.catalog.cchvae.model
+   :members:
+   :undoc-members:
+
 .. _cem:
 
 CEM
