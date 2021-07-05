@@ -17,11 +17,15 @@ Implemented Counterfactual Methods
 ----------------------------------
 
 - Actionable Recourse (AR): `AR <https://arxiv.org/pdf/1809.06514.pdf>`_
+- CCHVAE: `CCHVAE <https://arxiv.org/pdf/1910.09398.pdf>`_
 - Contrastive Explanations Method (CEM): `CEM <https://arxiv.org/pdf/1802.07623.pdf>`_
 - Counterfactual Latent Uncertainty Explanations (CLUE): `CLUE <https://arxiv.org/pdf/2006.06848.pdf>`_
+- CRUDS: `CRUDS <https://finale.seas.harvard.edu/files/finale/files/cruds-_counterfactual_recourse_using_disentangled_subspaces.pdf>`_
 - Diverse Counterfactual Explanations (DiCE): `DiCE <https://arxiv.org/pdf/1905.07697.pdf>`_
 - Feasible and Actionable Counterfactual Explanations (FACE): `FACE <https://arxiv.org/pdf/1909.09369.pdf>`_
 - Growing Sphere (GS): `GS <https://arxiv.org/pdf/1910.09398.pdf>`_
+- Revise: `Revise <https://arxiv.org/pdf/1907.09615.pdf>`_
+- Wachter: `Wachter <https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf>`_
 
 Provided Machine Learning Models
 --------------------------------
