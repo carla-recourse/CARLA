@@ -8,6 +8,7 @@ from lime.lime_tabular import LimeTabularExplainer
 from carla.recourse_methods.processing import encode_feature_names
 
 from ...api import RecourseMethod
+from ...processing.counterfactuals import merge_default_parameters
 
 
 class ActionableRecourse(RecourseMethod):
@@ -41,7 +42,11 @@ class ActionableRecourse(RecourseMethod):
         Please make sure to pass all values as dict with the following keys.
 
         * "fs_size": int, default: 100
-            size of generated flipset
+            Size of generated flipset.
+        * "discretize": bool, default: False
+            Parameter for LIME sampling.
+        * "sample": boo, default: True
+            Lime sampling around instance.
     - Restrictions
         *   Actionable Recourse (AR) supports only binary categorical features.
             See implementation at https://github.com/ustunb/actionable-recourse/blob/master/examples/ex_01_quickstart.ipynb
@@ -54,6 +59,12 @@ class ActionableRecourse(RecourseMethod):
     .. [1] Berk Ustun, Alexander Spangher, and Y. Liu. 2019. Actionable Recourse in Linear Classification.
         InProceedings of the Conference on Fairness, Accountability, and Transparency (FAT*)
     """
+
+    _DEFAULT_HYPERPARAMS = {
+        "fs_size": 100,
+        "discretize": False,
+        "sample": True,
+    }
 
     def __init__(
         self,
@@ -71,17 +82,12 @@ class ActionableRecourse(RecourseMethod):
         )
 
         # Get hyperparameter
-        self._fs_size = (
-            100 if "fs_size" not in hyperparams.keys() else hyperparams["fs_size"]
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
-        self._discretize_continuous = (
-            False
-            if "discretize" not in hyperparams.keys()
-            else hyperparams["discretize"]
-        )
-        self._sample_around_instance = (
-            True if "sample" not in hyperparams.keys() else hyperparams["sample"]
-        )
+        self._fs_size = checked_hyperparams["fs_size"]
+        self._discretize_continuous = checked_hyperparams["discretize"]
+        self._sample_around_instance = checked_hyperparams["sample"]
 
         # Build ActionSet
         self.action_set = rs.ActionSet(
@@ -114,7 +120,7 @@ class ActionableRecourse(RecourseMethod):
     def action_set(self, act_set):
         self._action_set = act_set
 
-    def __get_lime_coefficients(
+    def _get_lime_coefficients(
         self, factuals: pd.DataFrame
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -179,7 +185,7 @@ class ActionableRecourse(RecourseMethod):
         # Check if we need lime to build coefficients
         if (coeffs is None) and (intercepts is None):
             print("Start generating LIME coefficients")
-            coeffs, intercepts = self.__get_lime_coefficients(factuals_enc_norm)
+            coeffs, intercepts = self._get_lime_coefficients(factuals_enc_norm)
             print("Finished generating LIME coefficients")
         else:
             # Local explanations via LIME generate coeffs and intercepts per instance, while global explanations

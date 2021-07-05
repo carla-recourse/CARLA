@@ -7,6 +7,7 @@ from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods import Revise
 from carla.recourse_methods.catalog.actionable_recourse import ActionableRecourse
+from carla.recourse_methods.catalog.cchvae import CCHVAE
 from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.dice import Dice
@@ -27,7 +28,11 @@ def test_dice_get_counterfactuals(model_type):
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
 
-    hyperparams = {"num": 1, "desired_class": 1}
+    hyperparams = {
+        "num": 1,
+        "desired_class": 1,
+        "posthoc_sparsity_param": 0.1,
+    }
     # Pipeline needed for dice, but not for predicting negative instances
     model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]
@@ -36,6 +41,9 @@ def test_dice_get_counterfactuals(model_type):
 
     assert test_factual.shape[0] == cfs.shape[0]
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
 
 
 @pytest.mark.parametrize("model_type", testmodel)
@@ -65,6 +73,9 @@ def test_ar_get_counterfactual(model_type):
     assert test_factual.shape[0] == cfs.shape[0]
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
+    non_nan_cfs = cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_cem_get_counterfactuals(model_type):
@@ -83,7 +94,7 @@ def test_cem_get_counterfactuals(model_type):
         "mode": "PN",
         "num_classes": 2,
         "data_name": data_name,
-        "ae_params": {"h1": 20, "h2": 10, "d": 7, "train_ae": True, "epochs": 5},
+        "ae_params": {"hidden_layer": [20, 10, 7], "train_ae": True, "epochs": 5},
     }
 
     graph = Graph()
@@ -99,13 +110,16 @@ def test_cem_get_counterfactuals(model_type):
 
             recourse = CEM(
                 sess=ann_sess,
-                catalog_model=model_ann,
+                mlmodel=model_ann,
                 hyperparams=hyperparams_cem,
             )
 
             counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
 
     assert counterfactuals_df.shape == test_factuals.shape
+
+    non_nan_cfs = counterfactuals_df.dropna()
+    assert non_nan_cfs.shape[0] > 0
 
 
 @pytest.mark.parametrize("model_type", testmodel)
@@ -125,7 +139,7 @@ def test_cem_vae(model_type):
         "mode": "PN",
         "num_classes": 2,
         "data_name": data_name,
-        "ae_params": {"h1": 20, "h2": 10, "d": 7, "train_ae": True, "epochs": 5},
+        "ae_params": {"hidden_layer": [20, 10, 7], "train_ae": True, "epochs": 5},
     }
 
     graph = Graph()
@@ -141,13 +155,16 @@ def test_cem_vae(model_type):
 
             recourse = CEM(
                 sess=ann_sess,
-                catalog_model=model_ann,
+                mlmodel=model_ann,
                 hyperparams=hyperparams_cem,
             )
 
             counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
 
     assert counterfactuals_df.shape == test_factuals.shape
+
+    non_nan_cfs = counterfactuals_df.dropna()
+    assert non_nan_cfs.shape[0] > 0
 
 
 @pytest.mark.parametrize("model_type", testmodel)
@@ -176,6 +193,9 @@ def test_face_get_counterfactuals(model_type):
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_growing_spheres(model_type):
@@ -194,6 +214,9 @@ def test_growing_spheres(model_type):
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
 
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_clue(model_type):
@@ -207,7 +230,7 @@ def test_clue(model_type):
     test_factual = factuals.iloc[:20]
 
     hyperparams = {
-        "data_name": "adult",
+        "data_name": data_name,
         "train_vae": True,
         "width": 10,
         "depth": 3,
@@ -221,6 +244,9 @@ def test_clue(model_type):
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
 
 
 @pytest.mark.parametrize("model_type", testmodel)
@@ -240,6 +266,9 @@ def test_wachter(model_type):
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
 
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_revise(model_type):
@@ -252,9 +281,7 @@ def test_revise(model_type):
     test_factual = factuals.iloc[:5]
 
     vae_params = {
-        "d": 8,  # latent space
-        "H1": 512,
-        "H2": 256,
+        "layers": [len(model.feature_input_order), 512, 256, 8],
         "train": True,
         "lambda_reg": 1e-6,
         "epochs": 1,
@@ -278,3 +305,44 @@ def test_revise(model_type):
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_cchvae(model_type):
+    data_name = "compas"
+    data = DataCatalog(data_name)
+
+    model = MLModelCatalog(data, model_type, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:5]
+
+    hyperparams = {
+        "data_name": data_name,
+        "n_search_samples": 100,
+        "p_norm": 1,
+        "step": 0.1,
+        "max_iter": 1000,
+        "clamp": True,
+        "binary_cat_features": False,
+        "vae_params": {
+            "layers": [len(model.feature_input_order), 512, 256, 8],
+            "train": True,
+            "lambda_reg": 1e-6,
+            "epochs": 5,
+            "lr": 1e-3,
+            "batch_size": 32,
+        },
+    }
+
+    cchvae = CCHVAE(model, hyperparams)
+    df_cfs = cchvae.get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0

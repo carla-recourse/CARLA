@@ -169,41 +169,53 @@ class Autoencoder:
 
 
 class VariationalAutoencoder(nn.Module):
-    def __init__(self, data_name, latent_dim, input_dim, H1, H2):
+    def __init__(
+        self,
+        data_name: str,
+        layers: List,
+    ):
         super(VariationalAutoencoder, self).__init__()
 
+        if len(layers) < 2:
+            raise ValueError(
+                "Number of layers have to be at least 2 (input and latent space), and number of neurons bigger than 0"
+            )
+
         self._data_name = data_name
-        self._input_dim = input_dim
+        self._input_dim = layers[0]
+        latent_dim = layers[-1]
 
         # The VAE components
-        encoder = nn.Sequential(
-            nn.Linear(input_dim, H1),
-            nn.BatchNorm1d(H1),
-            nn.ReLU(),
-            nn.Linear(H1, H2),
-            nn.BatchNorm1d(H2),
-            nn.ReLU(),
-        )
+        lst_encoder = []
+        for i in range(1, len(layers) - 1):
+            lst_encoder.append(nn.Linear(layers[i - 1], layers[i]))
+            lst_encoder.append(nn.BatchNorm1d(layers[i]))
+            lst_encoder.append(nn.ReLU())
+        encoder = nn.Sequential(*lst_encoder)
 
-        self._mu_enc = nn.Sequential(encoder, nn.Linear(H2, latent_dim))
+        self._mu_enc = nn.Sequential(encoder, nn.Linear(layers[-2], latent_dim))
 
-        self._log_var_enc = nn.Sequential(encoder, nn.Linear(H2, latent_dim))
+        self._log_var_enc = nn.Sequential(encoder, nn.Linear(layers[-2], latent_dim))
 
-        decoder = nn.Sequential(
-            nn.Linear(latent_dim, H2),
-            nn.BatchNorm1d(H2),
-            nn.ReLU(),
-            nn.Linear(H2, H1),
-            nn.BatchNorm1d(H1),
-            nn.ReLU(),
-        )
+        lst_decoder = []
+        for i in range(len(layers) - 2, 0, -1):
+            lst_decoder.append(nn.Linear(layers[i + 1], layers[i]))
+            lst_decoder.append(nn.BatchNorm1d(layers[i]))
+            lst_decoder.append((nn.ReLU()))
+        decoder = nn.Sequential(*lst_decoder)
 
         self.mu_dec = nn.Sequential(
-            decoder, nn.Linear(H1, input_dim), nn.BatchNorm1d(input_dim), nn.Sigmoid()
+            decoder,
+            nn.Linear(layers[1], self._input_dim),
+            nn.BatchNorm1d(self._input_dim),
+            nn.Sigmoid(),
         )
 
         self.log_var_dec = nn.Sequential(
-            decoder, nn.Linear(H1, input_dim), nn.BatchNorm1d(input_dim), nn.Sigmoid()
+            decoder,
+            nn.Linear(layers[1], self._input_dim),
+            nn.BatchNorm1d(self._input_dim),
+            nn.Sigmoid(),
         )
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -267,7 +279,6 @@ class VariationalAutoencoder(nn.Module):
 
             # Train for all the batches
             for data, _ in train_loader:
-
                 data = data.view(data.shape[0], -1)
 
                 # forward pass

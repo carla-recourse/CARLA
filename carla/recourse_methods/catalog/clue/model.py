@@ -15,6 +15,7 @@ from carla.recourse_methods.catalog.clue.library import (
     vae_gradient_search,
 )
 from carla.recourse_methods.processing import check_counterfactuals
+from carla.recourse_methods.processing.counterfactuals import merge_default_parameters
 
 
 class Clue(RecourseMethod):
@@ -69,17 +70,34 @@ class Clue(RecourseMethod):
             Learning Representations (ICLR).
     """
 
+    _DEFAULT_HYPERPARAMS = {
+        "data_name": None,
+        "train_vae": True,
+        "width": 10,
+        "depth": 3,
+        "latent_dim": 12,
+        "batch_size": 64,
+        "epochs": 1,
+        "lr": 0.001,
+        "early_stop": 10,
+    }
+
     def __init__(self, data: Data, mlmodel: MLModel, hyperparams: Dict) -> None:
         super().__init__(mlmodel)
-        self._train_vae = hyperparams["train_vae"]
-        self._width = hyperparams["width"]
-        self._depth = hyperparams["depth"]
-        self._latent_dim = hyperparams["latent_dim"]
-        self._data_name = hyperparams["data_name"]
-        self._batch_size = hyperparams["batch_size"]
-        self._epochs = hyperparams["epochs"]
-        self._lr = hyperparams["lr"]
-        self._early_stop = hyperparams["early_stop"]
+
+        # get hyperparameter
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
+        )
+        self._vae_training = checked_hyperparams["train_vae"]
+        self._width = checked_hyperparams["width"]
+        self._depth = checked_hyperparams["depth"]
+        self._latent_dim = checked_hyperparams["latent_dim"]
+        self._data_name = checked_hyperparams["data_name"]
+        self._batch_size = checked_hyperparams["batch_size"]
+        self._epochs = checked_hyperparams["epochs"]
+        self._lr = checked_hyperparams["lr"]
+        self._early_stop = checked_hyperparams["early_stop"]
         self._continous = self._mlmodel.data.continous
         self._categorical = self._mlmodel.data.categoricals
 
@@ -93,9 +111,9 @@ class Clue(RecourseMethod):
         self._df_norm_enc_data = self.encode_normalize_order_factuals(data.raw)
 
         # load autoencoder
-        self._vae = self.__load_vae()
+        self._vae = self._load_vae()
 
-    def __load_vae(self):
+    def _load_vae(self):
         # save_path
         path = os.environ.get(
             "CF_MODELS",
@@ -118,8 +136,8 @@ class Clue(RecourseMethod):
         if not os.path.exists(path):
             os.makedirs(path)
 
-        if self._train_vae:
-            self.__train_vae(path)
+        if self._vae_training:
+            self._train_vae(path)
 
         # Authors say: 'For automatic explainer generation'
         flat_vae_bools = False
@@ -139,7 +157,7 @@ class Clue(RecourseMethod):
 
         return vae
 
-    def __train_vae(self, path):
+    def _train_vae(self, path):
         # training
         x_train, x_test = train_test_split(
             self._df_norm_enc_data.values, train_size=0.7
@@ -164,7 +182,7 @@ class Clue(RecourseMethod):
             self._early_stop,
         )
 
-    def get_counterfactuals(self, factuals) -> pd.DataFrame:
+    def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         list_cfs = []
 
         # normalize and encode data and instance

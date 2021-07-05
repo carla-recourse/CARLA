@@ -1,6 +1,7 @@
 # flake8: noqa
 
 from .actionable_recourse import ActionableRecourse
+from .cchvae import CCHVAE
 from .cem import CEM
 from .clue import Clue
 from .dice import Dice

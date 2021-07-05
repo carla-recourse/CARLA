@@ -92,6 +92,10 @@ def initialize_recourse_method(
         return GrowingSpheres(mlmodel)
     elif method == "revise":
         hyperparams["data_name"] = data_name
+        # variable input layer dimension is first time here available
+        hyperparams["vae_params"]["layers"] = [
+            len(mlmodel.feature_input_order)
+        ] + hyperparams["vae_params"]["layers"]
         return Revise(mlmodel, data, hyperparams)
     elif "wachter" in method:
         return Wachter(mlmodel, hyperparams)

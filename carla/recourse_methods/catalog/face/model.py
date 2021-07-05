@@ -8,6 +8,7 @@ from carla.recourse_methods.catalog.face.library import graph_search
 from carla.recourse_methods.processing import (
     check_counterfactuals,
     encode_feature_names,
+    merge_default_parameters,
 )
 
 
@@ -44,10 +45,16 @@ class Face(RecourseMethod):
             of the AAAI/ACM Conference on AI, Ethics, and Society (AIES)
     """
 
+    _DEFAULT_HYPERPARAMS = {"mode": None, "fraction": 0.1}
+
     def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
         super().__init__(mlmodel)
-        self.mode = hyperparams["mode"]
-        self.fraction = hyperparams["fraction"]
+
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
+        )
+        self.mode = checked_hyperparams["mode"]
+        self.fraction = checked_hyperparams["fraction"]
 
         # Normalize and encode data
         self._df_enc_norm = self.encode_normalize_order_factuals(self._mlmodel.data.raw)
