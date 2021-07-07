@@ -5,13 +5,15 @@ from tensorflow import Graph, Session
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
-from carla.recourse_methods import CRUD, Revise
 from carla.recourse_methods.catalog.actionable_recourse import ActionableRecourse
+from carla.recourse_methods.catalog.cchvae import CCHVAE
 from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
+from carla.recourse_methods.catalog.crud import CRUD
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
 from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
+from carla.recourse_methods.catalog.revise import Revise
 from carla.recourse_methods.catalog.wachter import Wachter
 
 testmodel = ["ann", "linear"]
@@ -27,7 +29,11 @@ def test_dice_get_counterfactuals(model_type):
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
 
-    hyperparams = {"num": 1, "desired_class": 1}
+    hyperparams = {
+        "num": 1,
+        "desired_class": 1,
+        "posthoc_sparsity_param": 0.1,
+    }
     # Pipeline needed for dice, but not for predicting negative instances
     model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]
@@ -89,7 +95,7 @@ def test_cem_get_counterfactuals(model_type):
         "mode": "PN",
         "num_classes": 2,
         "data_name": data_name,
-        "ae_params": {"h1": 20, "h2": 10, "d": 7, "train_ae": True, "epochs": 5},
+        "ae_params": {"hidden_layer": [20, 10, 7], "train_ae": True, "epochs": 5},
     }
 
     graph = Graph()
@@ -105,7 +111,7 @@ def test_cem_get_counterfactuals(model_type):
 
             recourse = CEM(
                 sess=ann_sess,
-                catalog_model=model_ann,
+                mlmodel=model_ann,
                 hyperparams=hyperparams_cem,
             )
 
@@ -134,7 +140,7 @@ def test_cem_vae(model_type):
         "mode": "PN",
         "num_classes": 2,
         "data_name": data_name,
-        "ae_params": {"h1": 20, "h2": 10, "d": 7, "train_ae": True, "epochs": 5},
+        "ae_params": {"hidden_layer": [20, 10, 7], "train_ae": True, "epochs": 5},
     }
 
     graph = Graph()
@@ -150,7 +156,7 @@ def test_cem_vae(model_type):
 
             recourse = CEM(
                 sess=ann_sess,
-                catalog_model=model_ann,
+                mlmodel=model_ann,
                 hyperparams=hyperparams_cem,
             )
 
@@ -306,6 +312,44 @@ def test_revise(model_type):
 
 
 @pytest.mark.parametrize("model_type", testmodel)
+def test_cchvae(model_type):
+    data_name = "compas"
+    data = DataCatalog(data_name)
+
+    model = MLModelCatalog(data, model_type, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:5]
+
+    hyperparams = {
+        "data_name": data_name,
+        "n_search_samples": 100,
+        "p_norm": 1,
+        "step": 0.1,
+        "max_iter": 1000,
+        "clamp": True,
+        "binary_cat_features": False,
+        "vae_params": {
+            "layers": [len(model.feature_input_order), 512, 256, 8],
+            "train": True,
+            "lambda_reg": 1e-6,
+            "epochs": 5,
+            "lr": 1e-3,
+            "batch_size": 32,
+        },
+    }
+
+    cchvae = CCHVAE(model, hyperparams)
+    df_cfs = cchvae.get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+
+    non_nan_cfs = df_cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
+
+@pytest.mark.parametrize("model_type", testmodel)
 def test_crud(model_type):
     # Build data and mlmodel
     data_name = "adult"
@@ -327,7 +371,7 @@ def test_crud(model_type):
         "vae_params": {
             "layers": [len(model.feature_input_order), 16, 8],
             "train": True,
-            "epochs": 1,
+            "epochs": 2,
             "lr": 1e-3,
             "batch_size": 32,
         },

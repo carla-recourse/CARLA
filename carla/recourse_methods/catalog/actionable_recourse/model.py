@@ -12,7 +12,7 @@ from ...processing.counterfactuals import merge_default_parameters
 
 
 class ActionableRecourse(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {
+    _DEFAULT_HYPERPARAMS = {
         "fs_size": 100,
         "discretize": False,
         "sample": True,
@@ -68,7 +68,7 @@ class ActionableRecourse(RecourseMethod):
 
         # Get hyperparameter
         checked_hyperparams = merge_default_parameters(
-            hyperparams, self.__DEFAULT_HYPERPARAMS
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
         self._fs_size = checked_hyperparams["fs_size"]
         self._discretize_continuous = checked_hyperparams["discretize"]

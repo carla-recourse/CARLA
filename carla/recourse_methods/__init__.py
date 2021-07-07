@@ -2,6 +2,7 @@
 
 from .api import RecourseMethod
 from .catalog import (
+    CCHVAE,
     CEM,
     CRUD,
     ActionableRecourse,

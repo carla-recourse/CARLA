@@ -13,7 +13,7 @@ from carla.recourse_methods.processing import (
 
 
 class Face(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {"mode": None, "fraction": 0.1}
+    _DEFAULT_HYPERPARAMS = {"mode": None, "fraction": 0.1}
 
     def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
         """
@@ -39,7 +39,7 @@ class Face(RecourseMethod):
         super().__init__(mlmodel)
 
         checked_hyperparams = merge_default_parameters(
-            hyperparams, self.__DEFAULT_HYPERPARAMS
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
         self.mode = checked_hyperparams["mode"]
         self.fraction = checked_hyperparams["fraction"]
