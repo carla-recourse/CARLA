@@ -371,7 +371,7 @@ def test_crud(model_type):
         "vae_params": {
             "layers": [len(model.feature_input_order), 16, 8],
             "train": True,
-            "epochs": 2,
+            "epochs": 5,
             "lr": 1e-3,
             "batch_size": 32,
         },
