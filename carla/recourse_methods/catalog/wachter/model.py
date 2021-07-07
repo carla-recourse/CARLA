@@ -55,7 +55,7 @@ class Wachter(RecourseMethod):
         )
         self._feature_costs = checked_hyperparams["feature_cost"]
         self._lr = checked_hyperparams["lr"]
-        self._lambda = checked_hyperparams["lambda_"]
+        self._lambda_param = checked_hyperparams["lambda_"]
         self._n_iter = checked_hyperparams["n_iter"]
         self._t_max_min = checked_hyperparams["t_max_min"]
         self._norm = checked_hyperparams["norm"]
@@ -84,7 +84,7 @@ class Wachter(RecourseMethod):
                 binary_cat_features=self._binary_cat_features,
                 feature_costs=self._feature_costs,
                 lr=self._lr,
-                lambda_=self._lambda,
+                lambda_=self._lambda_param,
                 n_iter=self._n_iter,
                 t_max_min=self._t_max_min,
                 norm=self._norm,
