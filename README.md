@@ -15,13 +15,15 @@ Find extensive documentation [here](https://carla-counterfactual-and-recourse-li
 ### Implemented Counterfactual Methods
 
 - Actionable Recourse (AR): [Paper](https://arxiv.org/pdf/1809.06514.pdf)
-- Action Sequence (AS): [Paper](https://arxiv.org/pdf/1910.00057.pdf)
+- CCHVAE: [Paper](https://arxiv.org/pdf/1910.09398.pdf)
 - Contrastive Explanations Method (CEM): [Paper](https://arxiv.org/pdf/1802.07623.pdf)
 - Counterfactual Latent Uncertainty Explanations (CLUE): [Paper](https://arxiv.org/pdf/2006.06848.pdf)
+- CRUDS: [Paper](https://finale.seas.harvard.edu/files/finale/files/cruds-_counterfactual_recourse_using_disentangled_subspaces.pdf)
 - Diverse Counterfactual Explanations (DiCE): [Paper](https://arxiv.org/pdf/1905.07697.pdf)
-- EB-CF: [Paper](https://arxiv.org/pdf/1912.03277.pdf)
 - Feasible and Actionable Counterfactual Explanations (FACE): [Paper](https://arxiv.org/pdf/1909.09369.pdf)
 - Growing Sphere (GS): [Paper](https://arxiv.org/pdf/1910.09398.pdf)
+- Revise: [Paper](https://arxiv.org/pdf/1907.09615.pdf)
+- Wachter: [Paper](https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf)
 
 ### Provided Machine Learning Models
 
