@@ -17,6 +17,43 @@ from carla.recourse_methods.catalog.wachter import Wachter
 testmodel = ["ann", "linear"]
 
 
+def test_focus_get_counterfactuals():
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    from carla.recourse_methods.catalog.focus.main import FOCUS
+    from carla.recourse_methods.catalog.focus.tree_model import ForestModel, TreeModel
+
+    tree_model = TreeModel(data)
+    forest_model = ForestModel(data)
+
+    hyperparams = {
+        "optimizer": "adam",
+        "lr": 0.001,
+        "n_class": 2,
+        "n_iter": 5,
+        "sigma": 1.0,
+        "temperature": 1.0,
+        "distance_weight": 0.01,
+        "distance_func": "l1",
+    }
+
+    # run tests for multiple possible classification models
+    for model in [tree_model, forest_model]:
+
+        # get factuals
+        factuals = predict_negative_instances(model, data)
+        test_factual = factuals.iloc[:5]
+
+        focus = FOCUS(model, data, hyperparams)
+        cfs = focus.get_counterfactuals(test_factual)
+
+        print(cfs)
+
+        # skip forest model for now
+        break
+
+
 @pytest.mark.parametrize("model_type", testmodel)
 def test_dice_get_counterfactuals(model_type):
     # Build data and mlmodel
