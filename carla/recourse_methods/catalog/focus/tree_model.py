@@ -1,4 +1,5 @@
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
 from carla import MLModel
@@ -11,12 +12,21 @@ class TreeModel(MLModel):
         super().__init__(data)
         # The constructor can be used to load or build an
         # arbitrary black-box-model
-        self._mymodel = DecisionTreeClassifier()
+        self._mymodel = DecisionTreeClassifier(max_depth=4)
+
+        # add support for methods that can also use categorical data
         data_transformed = self.scaler.transform(data.raw[data.continous])
-        self._mymodel.fit(X=data_transformed, y=data.raw[data.target])
+        target = data.raw[data.target]
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            data_transformed, target, test_size=0.20
+        )
+        self._mymodel.fit(X=X_train, y=y_train)
+        train_score = self._mymodel.score(X=X_train, y=y_train)
+        test_score = self._mymodel.score(X=X_test, y=y_test)
         print(
-            "model fitted with training score {}".format(
-                self._mymodel.score(X=data_transformed, y=data.raw[data.target])
+            "model fitted with training score {} and test score {}".format(
+                train_score, test_score
             )
         )
         self._feature_input_order = data.continous
@@ -54,14 +64,24 @@ class ForestModel(MLModel):
         super().__init__(data)
         # The constructor can be used to load or build an
         # arbitrary black-box-model
-        self._mymodel = RandomForestClassifier()
+        self._mymodel = RandomForestClassifier(
+            max_depth=4,
+        )
         data_transformed = self.scaler.transform(data.raw[data.continous])
-        self._mymodel.fit(X=data_transformed, y=data.raw[data.target])
+        target = data.raw[data.target]
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            data_transformed, target, test_size=0.20
+        )
+        self._mymodel.fit(X=X_train, y=y_train)
+        train_score = self._mymodel.score(X=X_train, y=y_train)
+        test_score = self._mymodel.score(X=X_test, y=y_test)
         print(
-            "model fitted with training score {}".format(
-                self._mymodel.score(X=data_transformed, y=data.raw[data.target])
+            "model fitted with training score {} and test score {}".format(
+                train_score, test_score
             )
         )
+
         self._feature_input_order = data.continous
 
     @property
