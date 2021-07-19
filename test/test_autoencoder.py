@@ -6,11 +6,43 @@ from keras import backend as K
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.autoencoder import (
+    CSVAE,
     Autoencoder,
     VariationalAutoencoder,
     train_autoencoder,
     train_variational_autoencoder,
 )
+
+
+def test_cs_vae():
+    # Build data and mlmodel
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    model = MLModelCatalog(data, "ann", backend="pytorch")
+
+    test_input = np.zeros((1, 20))
+    test_input = torch.Tensor(test_input)
+    test_class = torch.Tensor(np.array([[0, 0]]))
+
+    csvae = CSVAE(data_name, layers=[test_input.shape[1], 16, 8])
+
+    fitted_csvae = train_variational_autoencoder(
+        csvae, data, model.scaler, model.encoder, model.feature_input_order, epochs=1
+    )
+
+    output = fitted_csvae.predict(test_input, test_class)
+    test_reconstructed = output[0]
+
+    assert test_reconstructed.shape == test_input.shape
+
+    # test loading vae
+    new_csvae = CSVAE(
+        data_name,
+        layers=[test_input.shape[1], 16, 8],
+    )
+
+    new_csvae.load(test_input.shape[1])
 
 
 def test_variational_autoencoder():

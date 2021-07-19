@@ -87,8 +87,11 @@ def reconstruct_encoding_constraints(
     else:
         binary_pairs = list(zip(feature_pos[:-1], feature_pos[1:]))[0::2]
         for pair in binary_pairs:
-            x_enc[:, pair[0]] = (x_enc[:, pair[0]] >= x_enc[:, pair[1]]).float()
+            # avoid overwritten inconsistent results
+            temp = (x_enc[:, pair[0]] >= x_enc[:, pair[1]]).float()
+
             x_enc[:, pair[1]] = (x_enc[:, pair[0]] < x_enc[:, pair[1]]).float()
+            x_enc[:, pair[0]] = temp
 
             if (x_enc[:, pair[0]] == x_enc[:, pair[1]]).any():
                 raise ValueError(

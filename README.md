@@ -1,6 +1,10 @@
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/indyfree/CARLA/CI?style=for-the-badge) ![Read the Docs](https://img.shields.io/readthedocs/carla-counterfactual-and-recourse-library?style=for-the-badge) ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)
+
 # CARLA - Counterfactual And Recourse Library
 
 CARLA is a python library to benchmark counterfactual explanation and recourse models. It comes out-of-the box with commonly used datasets and various machine learning models. Designed with extensibility in mind: Easily include your own counterfactual methods, new machine learning models or other datasets.
+
+Find extensive documentation [here](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/)!
 
 ### Available Datasets
 
@@ -11,13 +15,15 @@ CARLA is a python library to benchmark counterfactual explanation and recourse m
 ### Implemented Counterfactual Methods
 
 - Actionable Recourse (AR): [Paper](https://arxiv.org/pdf/1809.06514.pdf)
-- Action Sequence (AS): [Paper](https://arxiv.org/pdf/1910.00057.pdf)
+- CCHVAE: [Paper](https://arxiv.org/pdf/1910.09398.pdf)
 - Contrastive Explanations Method (CEM): [Paper](https://arxiv.org/pdf/1802.07623.pdf)
 - Counterfactual Latent Uncertainty Explanations (CLUE): [Paper](https://arxiv.org/pdf/2006.06848.pdf)
+- CRUDS: [Paper](https://finale.seas.harvard.edu/files/finale/files/cruds-_counterfactual_recourse_using_disentangled_subspaces.pdf)
 - Diverse Counterfactual Explanations (DiCE): [Paper](https://arxiv.org/pdf/1905.07697.pdf)
-- EB-CF: [Paper](https://arxiv.org/pdf/1912.03277.pdf)
 - Feasible and Actionable Counterfactual Explanations (FACE): [Paper](https://arxiv.org/pdf/1909.09369.pdf)
 - Growing Sphere (GS): [Paper](https://arxiv.org/pdf/1910.09398.pdf)
+- Revise: [Paper](https://arxiv.org/pdf/1907.09615.pdf)
+- Wachter: [Paper](https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf)
 
 ### Provided Machine Learning Models
 
