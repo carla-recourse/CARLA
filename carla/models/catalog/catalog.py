@@ -5,15 +5,52 @@ import pandas as pd
 import tensorflow as tf
 import torch
 
+from carla.data.catalog import DataCatalog
 from carla.data.load_catalog import load_catalog
+from carla.models.api import MLModel
 from carla.models.pipelining import encode, order_data, scale
 
-from ...data.catalog import DataCatalog
-from ..api import MLModel
 from .load_model import load_model
 
 
 class MLModelCatalog(MLModel):
+    """
+    Use pretrained classifier.
+
+    Parameters
+    ----------
+    data : data.catalog.DataCatalog Class
+        Correct dataset for ML model.
+    model_type : {'ann', 'linear'}
+        Architecture.
+    backend : {'tensorflow', 'pytorch'}
+        Specifies the used framework.
+    cache : boolean, default: True
+        If True, try to load from the local cache first, and save to the cache.
+        if a download is required.
+    models_home : string, optional
+        The directory in which to cache data; see :func:`get_models_home`.
+    kws : keys and values, optional
+        Additional keyword arguments are passed to passed through to the read model function
+    use_pipeline : bool, default: False
+        If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
+
+    Methods
+    -------
+    predict:
+        One-dimensional prediction of ml model for an output interval of [0, 1].
+    predict_proba:
+        Two-dimensional probability prediction of ml model
+    get_pipeline_element:
+        Returns a specific element of the pipeline
+    perform_pipeline:
+        Transforms input for prediction into correct form.
+
+    Returns
+    -------
+    None
+    """
+
     def __init__(
         self,
         data: DataCatalog,
@@ -30,23 +67,7 @@ class MLModelCatalog(MLModel):
         Possible backends are currently "pytorch" and "tensorflow".
         Possible models are corrently "ann".
 
-        Parameters
-        ----------
-        data : data.catalog.DataCatalog Class
-            Correct dataset for ML model
-        model_type : str
-            Architecture [ann]
-        backend : str
-            Specifies the used framework [tensorflow, pytorch]
-        cache : boolean, optional
-            If True, try to load from the local cache first, and save to the cache
-            if a download is required.
-        models_home : string, optional
-            The directory in which to cache data; see :func:`get_models_home`.
-        kws : keys and values, optional
-            Additional keyword arguments are passed to passed through to the read model function
-        use_pipeline : bool, optional
-            If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
+
         """
         self._backend = backend
 

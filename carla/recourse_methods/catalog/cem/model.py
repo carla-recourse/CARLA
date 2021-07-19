@@ -34,6 +34,66 @@ from ...processing.counterfactuals import merge_default_parameters
 
 
 class CEM(RecourseMethod):
+    """
+    Implementation of CEM from Dhurandhar et.al. [1]_.
+    CEM needs an variational autoencoder to generate counterfactual examples.
+    By setting the train_ae key to True in hyperparams, a tensorflow VAE will be trained.
+
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "kappa": float
+            Hyperparameter for CEM
+        * "init_learning_rate": float
+            Learning rate for CEM optimization
+        * "binary_search_steps": int
+            Hyperparameter for CEM
+        * "max_iterations": int
+            Number of maximum iterations to find a counterfactual example.
+        * "initial_const": int
+            Hyperparameter for CEM
+        * "beta": float
+            Hyperparameter for CEM
+        * "gamma": float
+            Hyperparameter for CEM
+        * "mode": {"PN", "PP"}
+            Mode for CEM
+        * "num_classes": int.
+            Currently only binary classifier are supported
+        * "data_name": str
+            Identificates the loaded or saved autoencoder model
+        * "ae_params:" dict
+            Initialisation and training parameter for the autoencoder model
+
+            + "hidden_layer": list
+                Number of neurons and layer of autoencoder.
+            + "train_ae": bool
+                If True, an autoencoder will be trained and saved
+            + "epochs": int
+                Number of training epochs for autoencoder
+
+    .. [1] Amit Dhurandhar, Pin-Yu Chen, Ronny Luss, Chun-Chen Tu, Paishun Ting, Karthikeyan Shanmugam,and Payel Das.
+            2018. Explanations based on the Missing: Towards Contrastive Explanations with Pertinent Negatives.
+            In Advances in Neural Information Processing Systems344(NeurIPS).
+    """
+
     _DEFAULT_HYPERPARAMS = {
         "data_name": None,
         "batch_size": 1,
@@ -54,38 +114,6 @@ class CEM(RecourseMethod):
     }
 
     def __init__(self, sess, mlmodel: MLModel, hyperparams):
-        """
-        Initialisation for the Contrastive Explanation Method (CEM).
-        Paper: https://arxiv.org/abs/1802.07623
-
-        Restrictions
-        ------------
-        - Works currently only on Tensorflow models
-
-        Parameters
-        ----------
-        mlmodel: Black-box-model we want to explore
-        hyperparams: Parameter for CEM method, with following possibilites
-            {
-                "batch_size": int default 1,
-                "kappa": float default 0.1 Confidence parameter for the attack loss term,
-                "init_learning_rate": float default 1e-2 Initial learning rate of optimizer,
-                "binary_search_steps": int default 9 Number of steps when attacking,
-                "max_iterations": int default 100 Maximum number of iterations for finding a PN or PP,
-                "initial_const": int default 10 Initial value to scale that attack loss term,
-                "beta": float default 0.9 Regularization constant for the L1 loss term,
-                "gamma": float default 0.0 Regularization constant for the optional auto-encoder loss term,
-                "mode": str Find pertinant negatives ('PN') or pertinant positives ('PP'),
-                "num_classes": int default 2,
-                "data_name": str Name of the dataset (important for loading AE weights),
-                "ae_params":
-                    {
-                        "hidden_layer": List[int] default [20, 10, 7] Sizes of hidden layers,
-                        "train_ae": bool default True,
-                        "epochs": int default 5 Number of epochs to train for,
-                    },
-            }
-        """
         self.sess = sess  # Tensorflow session
         self._hyperparams = merge_default_parameters(
             hyperparams, self._DEFAULT_HYPERPARAMS

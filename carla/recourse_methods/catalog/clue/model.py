@@ -1,9 +1,13 @@
 import os
+from typing import Dict
 
 import numpy as np
+import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
+from carla.data.api import Data
+from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.clue.library import (
     VAE_gauss_cat_net,
@@ -15,6 +19,57 @@ from carla.recourse_methods.processing.counterfactuals import merge_default_para
 
 
 class Clue(RecourseMethod):
+    """
+    Implementation of CLUE from Antorán et.al. [1]_.
+    CLUE needs an variational autoencoder to generate counterfactual examples.
+    By setting the train_ae key to True in hyperparams, a Pytorch VAE will be trained.
+
+    Parameters
+    ----------
+    data : data.api.Data
+            Underlying dataset we want to build counterfactuals for.
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "data_name": str
+            Identifies the loaded or saved autoencoder model
+        * "train_vae": bool
+            Decides whether to load or train a vae
+        * "width": int
+            Structure for VAE
+        * "depth": int
+            Structure for VAE
+        * "latent_dim": int
+            Structure for VAE
+        * "batch_size": int
+            Structure for VAE
+        * "epochs": int
+            Structure for VAE
+        * "lr": int
+            Structure for VAE
+        * "early_stop": int
+            Structure for VAE
+
+    .. [1] Javier Antorán, Umang Bhatt, Tameem Adel, Adrian Weller, and José Miguel Hernández-Lobato.
+            Getting a CLUE: A Method for Explaining Uncertainty Estimates. In International Conference on
+            Learning Representations (ICLR).
+    """
+
     _DEFAULT_HYPERPARAMS = {
         "data_name": None,
         "train_vae": True,
@@ -27,37 +82,14 @@ class Clue(RecourseMethod):
         "early_stop": 10,
     }
 
-    def __init__(self, data, mlmodel, hyperparams):
-        """
-
-        Parameters
-        ----------
-        data : data.api.Data
-            Underlying dataset we want to build counterfactuals for.
-        mlmodel : models.api.MLModel
-            ML model to build counterfactuals for.
-        hyperparams : dict
-            Hyperparameter which are needed for CLUE to generate counterfactuals.
-            Structure:
-                {
-                "data_name": str,   [Name of the dataset]
-                "train_vae": bool,  [Decides whether to load or train a vae]
-                "width": int,   [Structure for VAE]
-                "depth": int,   [Structure for VAE]
-                "latent_dim": int   [Structure for VAE]
-                "batch_size": int,  [Structure for VAE]
-                "epochs": int,  [Structure for VAE]
-                "lr": int,  [Structure for VAE]
-                "early_stop": int,  [Structure for VAE]
-                }
-        """
+    def __init__(self, data: Data, mlmodel: MLModel, hyperparams: Dict) -> None:
         super().__init__(mlmodel)
 
         # get hyperparameter
         checked_hyperparams = merge_default_parameters(
             hyperparams, self._DEFAULT_HYPERPARAMS
         )
-        self._train_vae = checked_hyperparams["train_vae"]
+        self._vae_training = checked_hyperparams["train_vae"]
         self._width = checked_hyperparams["width"]
         self._depth = checked_hyperparams["depth"]
         self._latent_dim = checked_hyperparams["latent_dim"]
@@ -79,9 +111,9 @@ class Clue(RecourseMethod):
         self._df_norm_enc_data = self.encode_normalize_order_factuals(data.raw)
 
         # load autoencoder
-        self._vae = self.load_vae()
+        self._vae = self._load_vae()
 
-    def load_vae(self):
+    def _load_vae(self):
         # save_path
         path = os.environ.get(
             "CF_MODELS",
@@ -104,8 +136,8 @@ class Clue(RecourseMethod):
         if not os.path.exists(path):
             os.makedirs(path)
 
-        if self._train_vae:
-            self.train_vae(path)
+        if self._vae_training:
+            self._train_vae(path)
 
         # Authors say: 'For automatic explainer generation'
         flat_vae_bools = False
@@ -125,7 +157,7 @@ class Clue(RecourseMethod):
 
         return vae
 
-    def train_vae(self, path):
+    def _train_vae(self, path):
         # training
         x_train, x_test = train_test_split(
             self._df_norm_enc_data.values, train_size=0.7
@@ -150,7 +182,7 @@ class Clue(RecourseMethod):
             self._early_stop,
         )
 
-    def get_counterfactuals(self, factuals):
+    def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         list_cfs = []
 
         # normalize and encode data and instance

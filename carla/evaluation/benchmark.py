@@ -17,24 +17,47 @@ from carla.recourse_methods.processing import get_drop_columns_binary
 
 
 class Benchmark:
+    """
+    The benchmarking class contains all measurements.
+    It is possible to run only individual evaluation metrics or all via one single call.
+
+    For every given factual, the benchmark object will generate one counterfactual example with
+    the given recourse method.
+
+    Parameters
+    ----------
+    mlmodel: carla.models.MLModel
+        Black Box model we want to explain
+    recmodel: carla.recourse_methods.RecourseMethod
+        Recourse method we want to benchmark
+    factuals: pd.DataFrame
+        Instances we want to find counterfactuals
+
+    Methods
+    -------
+    compute_ynn:
+        Computes y-Nearest-Neighbours for generated counterfactuals
+    compute_average_time:
+        Computes average time for generated counterfactual
+    compute_distances:
+        Calculates the distance measure and returns it as dataframe
+    compute_constraint_violation:
+        Computes the constraint violation per factual as dataframe
+    compute_redundancy:
+        Computes redundancy for each counterfactual
+    compute_success_rate:
+        Computes success rate for the whole recourse method.
+    run_benchmark:
+        Runs every measurement and returns every value as dict.
+    """
+
     def __init__(
         self,
         mlmodel: Union[MLModel, MLModelCatalog],
         recourse_method: RecourseMethod,
         factuals: pd.DataFrame,
     ) -> None:
-        """
-        Constructor for benchmarking class
 
-        Parameters
-        ----------
-        mlmodel: MLModel
-            Black Box model we want to explain
-        recmodel: RecourseMethod
-            Recourse method we want to benchmark
-        factuals: pd.DataFrame
-            Instances we want to find counterfactuals
-        """
         self._mlmodel = mlmodel
         self._recourse_method = recourse_method
         start = timeit.default_timer()
