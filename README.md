@@ -30,6 +30,23 @@ Find extensive documentation [here](https://carla-counterfactual-and-recourse-li
 - **ANN**: Artificial Neural Network with 2 hidden layers and ReLU activation function
 - **LR**: Linear Model with no hidden layer and no activation function
 
+### Which Recourse Methods work on which framework?
+The framework a counterfactual method currently works on is highly dependable on its implementation.
+We are working hard on it to make it independent. The latest state can be found here:
+
+| Recourse Method | Tensorflow | Pytorch |
+| --------------- | :--------: | :-----: |
+| Actionable Recourse | X | X |
+| CCHVAE |  | X |
+| CEM | X |  |
+| CLUE |  | X |
+| CRUDS |  | X |
+| DiCE | X | X |
+| FACE | X | X |
+| Growing Spheres | X | X |
+| Revise |  | X |
+| Wachter |  | X |
+
 ## Installation
 
 ### Requirements
