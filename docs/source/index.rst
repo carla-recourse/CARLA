@@ -33,6 +33,34 @@ Provided Machine Learning Models
 - **ANN**: Artificial Neural Network with 2 hidden layers and ReLU activation function
 - **LR**: Linear Model with no hidden layer and no activation function
 
+Which Recourse Methods work with which ML framework?
+-----------------------------------------------
+The framework a counterfactual method currently works with is dependent on its underlying implementation.
+It is planned to make all recourse methods available for all ML frameworks. The latest state can be found here:
+
++-----------------+------------+---------+
+| Recourse Method | Tensorflow | Pytorch |
++=================+============+=========+
+| AR              |     X      |    X    |
++-----------------+------------+---------+
+| CCHVAE          |            |    X    |
++-----------------+------------+---------+
+| CEM             |     X      |         |
++-----------------+------------+---------+
+| CLUE            |            |    X    |
++-----------------+------------+---------+
+| CRUDS           |            |    X    |
++-----------------+------------+---------+
+| DiCE            |     X      |    X    |
++-----------------+------------+---------+
+| FACE            |     X      |    X    |
++-----------------+------------+---------+
+| Growing Spheres |     X      |    X    |
++-----------------+------------+---------+
+| Revise          |            |    X    |
++-----------------+------------+---------+
+| Wachter         |            |    X    |
++-----------------+------------+---------+
 
 .. toctree::
    :maxdepth: 2
@@ -45,8 +73,6 @@ Provided Machine Learning Models
    recourse
    benchmarking
    license
-
-
 
 Indices and tables
 ==================
