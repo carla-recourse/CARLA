@@ -36,7 +36,7 @@ Provided Machine Learning Models
 Which Recourse Methods work on which framework?
 -----------------------------------------------
 The framework a counterfactual method currently works on is highly dependable on its implementation.
-We are working hard on it to make it independent. The latest state can be found here:
+It is planned to make all recourse methods available for all ML frameworks. The latest state can be found here:
 
 +-----------------+------------+---------+
 | Recourse Method | Tensorflow | Pytorch |
