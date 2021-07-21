@@ -56,23 +56,28 @@ Data
            self._dataset = load_dataset_from_disk()
 
        # List of all categorical features
+       @property
        def categoricals(self):
            return [...]
 
        # List of all continous features
+       @property
        def continous(self):
            return [...]
 
        # List of all immutable features which
        # should not be changed by the recourse method
+       @property
        def immutables(self):
            return [...]
 
        # Feature name of the target column
+       @property
        def target(self):
            return "label"
 
        # Non-encoded and  non-normalized, raw data set
+       @property
        def raw(self):
            return self._dataset
 
@@ -101,14 +106,17 @@ Black-Box-Model
             self.encoder = MySklearnEncoder.fit()
 
         # List of the feature order the ml model was trained on
+        @property
         def feature_input_order(self):
             return [...]
 
         # The ML framework the model was trained on
+        @property
         def backend(self):
             return "pytorch"
 
         # The black-box model object
+        @property
         def raw_model(self):
             return self._mymodel
 
