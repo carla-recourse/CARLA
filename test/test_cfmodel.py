@@ -55,7 +55,7 @@ def test_focus_get_counterfactuals():
         "optimizer": "adam",
         "lr": 0.001,
         "n_class": 2,
-        "n_iter": 5,
+        "n_iter": 1000,
         "sigma": 1.0,
         "temperature": 1.0,
         "distance_weight": 0.01,

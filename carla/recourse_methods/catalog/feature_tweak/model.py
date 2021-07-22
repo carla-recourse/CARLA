@@ -10,8 +10,14 @@ from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.processing import check_counterfactuals
 
 
-def cost_func(a, b):
-    return np.linalg.norm(a - b)
+def L1_cost_func(a, b):
+    """ ||a-b||_1 """
+    return np.linalg.norm(a - b, ord=1)
+
+
+def L2_cost_func(a, b):
+    """ ||a-b||_2 """
+    return np.linalg.norm(a - b, ord=2)
 
 
 def search_path(estimator, class_labels, cf_label):
@@ -83,6 +89,7 @@ def get_path_info(paths, threshold, feature):
         for idx in range(len(parents_left)):
 
             def do_appends(node_id):
+                """ helper function to reduce duplicate code"""
                 node_ids.append(node_id)
                 thresholds.append(threshold[node_id])
                 features.append(feature[node_id])
@@ -108,7 +115,9 @@ def get_path_info(paths, threshold, feature):
 
 
 class FeatureTweak(RecourseMethod):
-    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict):
+    def __init__(
+        self, mlmodel: MLModel, data: Data, hyperparams: Dict, cost_func=L2_cost_func
+    ):
 
         super().__init__(mlmodel)
 
@@ -116,6 +125,7 @@ class FeatureTweak(RecourseMethod):
         self.data = data
         self.eps = hyperparams["eps"]
         self.target_col = data.target
+        self.cost_func = cost_func
 
     def esatisfactory_instance(self, x, path_info):
         """
@@ -155,10 +165,10 @@ class FeatureTweak(RecourseMethod):
                     es_instance = self.esatisfactory_instance(x, path_info)
                     if (
                         predict(estimator, es_instance) == cf_label
-                        and cost_func(x, es_instance) < delta_mini
+                        and self.cost_func(x, es_instance) < delta_mini
                     ):
                         x_out = es_instance
-                        delta_mini = cost_func(x, es_instance)
+                        delta_mini = self.cost_func(x, es_instance)
                 else:
                     continue
         return x_out

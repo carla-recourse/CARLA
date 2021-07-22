@@ -29,6 +29,7 @@ class TreeModel(MLModel):
                 train_score, test_score
             )
         )
+
         self._feature_input_order = data.continous
 
     @property

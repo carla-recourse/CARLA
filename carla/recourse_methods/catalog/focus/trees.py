@@ -119,9 +119,6 @@ def get_prob_classification_tree(tree, feat_columns, feat_input, sigma):
 def get_prob_classification_forest(
     model, feat_columns, feat_input, sigma=10.0, temperature=1.0
 ):
-    # tree_parser = lambda x: get_prob_classification_tree(
-    #     x, feat_columns, feat_input, sigma
-    # )
     def tree_parser(x):
         return get_prob_classification_tree(x, feat_columns, feat_input, sigma)
 
@@ -142,43 +139,3 @@ def get_prob_classification_forest(
     softmax = expits / tf.reduce_sum(expits, axis=1)[:, None]
 
     return softmax
-
-
-def parse_boosted_classification_forest(
-    model, feat_columns, feat_input, sigma=1.0, temperature=1.0
-):
-    # tree_parser = lambda x: parse_classification_tree(
-    #     x, feat_columns, feat_input, sigma
-    # )
-    def tree_parser(x):
-        return _parse_class_tree(x, feat_columns, feat_input, sigma)
-
-    tree_l = [tree_parser(estimator) for estimator in model.estimators_]
-
-    weights = model.estimator_weights_
-    inter_result = {}
-    unnormalized_prob = {}
-    prob_denom = 0.0
-    for class_name in model.classes_:
-        inter_result[class_name] = sum(
-            w * tree[0][class_name] for w, tree in zip(weights, tree_l)
-        )
-        unnormalized_prob[class_name] = tf.exp(
-            temperature
-            * sum(w * tree[1][class_name] for w, tree in zip(weights, tree_l))
-        )
-        prob_denom += unnormalized_prob[class_name]
-
-    max_result = tf.reduce_max(
-        tf.stack([inter_result[class_name] for class_name in model.classes_]), axis=0
-    )
-    exact_result = {}
-    prob_result = {}
-    for class_name in model.classes_:
-        exact_result[class_name] = tf.greater_equal(
-            inter_result[class_name], max_result
-        )
-        exact_result[class_name] = tf.cast(exact_result[class_name], tf.float64)
-        prob_result[class_name] = unnormalized_prob[class_name] / prob_denom
-
-    return exact_result, prob_result
