@@ -20,14 +20,14 @@ from carla.recourse_methods.processing import (
 
 class CCHVAE(RecourseMethod):
     """
-    Implementation of CCHVAE [1]_.
+    Implementation of CCHVAE [1]_
 
     Parameters
     ----------
-    mlmodel: carla.model.MLModel
+    mlmodel : carla.model.MLModel
         Black-Box-Model
-    hyperparams: dict
-        Dictionary containing hyperparameters. See notes below for its contents.
+    hyperparams : dict
+        Dictionary containing hyperparameters. See Notes below to see its content.
 
     Methods
     -------
@@ -41,6 +41,7 @@ class CCHVAE(RecourseMethod):
     - Hyperparams
         Hyperparameter contains important information for the recourse method to initialize.
         Please make sure to pass all values as dict with the following keys.
+
         * "data_name": str
             name of the dataset
         * "n_search_samples": int, default: 300
@@ -57,6 +58,7 @@ class CCHVAE(RecourseMethod):
             If true, the encoding of x is done by drop_if_binary.
         * "vae_params": Dict
             With parameter for VAE.
+
             + "layers": list
                 List with number of neurons per layer.
             + "train": bool, default: True
