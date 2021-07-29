@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from numpy import linalg as LA
 
+from carla import log
+
 
 def hyper_sphere_coordindates(n_search_samples, instance, high, low, p_norm=2):
 
@@ -137,7 +139,7 @@ def growing_spheres_search(
                 (candidate_counterfactuals.values - instance_replicated)
             ).sum(axis=1)
         else:
-            print("Distance not defined yet")
+            log.info("Distance not defined yet")
 
         # counterfactual labels
         y_candidate_logits = model.predict_proba(candidate_counterfactuals.values)

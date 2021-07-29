@@ -5,6 +5,7 @@ import os
 import torch
 from torch.autograd import Variable
 
+from carla import log
 from carla.visualisation import cprint
 
 try:
@@ -100,7 +101,7 @@ class BaseNet(object):
         if self.schedule is not None:
             if len(self.schedule) == 0 or epoch in self.schedule:
                 self.lr *= gamma
-                print("learning rate: %f  (%d)\n" % (self.lr, epoch))
+                log.info("learning rate: %f  (%d)\n" % (self.lr, epoch))
                 for param_group in self.optimizer.param_groups:
                     param_group["lr"] = self.lr
 
@@ -123,7 +124,7 @@ class BaseNet(object):
         self.lr = state_dict["lr"]
         self.model = state_dict["model"]
         self.optimizer = state_dict["optimizer"]
-        print("  restoring epoch: %d, lr: %f" % (self.epoch, self.lr))
+        log.info("  restoring epoch: %d, lr: %f" % (self.epoch, self.lr))
         return self.epoch
 
 

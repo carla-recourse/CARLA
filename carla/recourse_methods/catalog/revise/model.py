@@ -5,6 +5,7 @@ import pandas as pd
 import torch
 from torch import nn
 
+from carla import log
 from carla.data.api import Data
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
@@ -216,14 +217,14 @@ class Revise(RecourseMethod):
 
             # Choose the nearest counterfactual
             if len(candidate_counterfactuals):
-                print("Counterfactual found!")
+                log.info("Counterfactual found!")
                 array_counterfactuals = np.array(candidate_counterfactuals)
                 array_distances = np.array(candidate_distances)
 
                 index = np.argmin(array_distances)
                 list_cfs.append(array_counterfactuals[index])
             else:
-                print("No counterfactual found")
+                log.info("No counterfactual found")
                 list_cfs.append(query_instance.cpu().detach().numpy().squeeze(axis=0))
         return list_cfs
 

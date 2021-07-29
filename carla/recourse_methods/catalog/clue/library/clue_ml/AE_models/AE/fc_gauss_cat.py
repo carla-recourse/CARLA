@@ -5,6 +5,7 @@ import torch.backends.cudnn as cudnn
 from torch.distributions import kl_divergence
 from torch.distributions.normal import Normal
 
+from carla import log
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.gauss_cat import *
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.probability import (
     normal_parse_params,
@@ -140,7 +141,7 @@ class VAE_gauss_cat_net(BaseNet):
         if self.cuda:
             self.model = self.model.cuda()
             cudnn.benchmark = True
-        print("    Total params: %.2fM" % (self.get_nb_parameters() / 1000000.0))
+        log.info("    Total params: %.2fM" % (self.get_nb_parameters() / 1000000.0))
 
     def create_opt(self):
         self.optimizer = RAdam(self.model.parameters(), lr=self.lr)

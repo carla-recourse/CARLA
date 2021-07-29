@@ -11,6 +11,7 @@ from keras.models import Model, Sequential, model_from_json
 from torch import optim
 from tqdm import trange
 
+from carla import log
 from carla.recourse_methods.autoencoder.dataloader import VAEDataset
 from carla.recourse_methods.autoencoder.losses import binary_crossentropy, csvae_loss
 from carla.recourse_methods.autoencoder.save_load import get_home
@@ -306,19 +307,19 @@ class VariationalAutoencoder(nn.Module):
 
             ELBO[epoch] = train_loss / train_loss_num
             if epoch % 10 == 0:
-                print(
+                log.info(
                     "[Epoch: {}/{}] [objective: {:.3f}]".format(
                         epoch, epochs, ELBO[epoch, 0]
                     )
                 )
 
             ELBO_train = ELBO[epoch, 0].round(2)
-            print("[ELBO train: " + str(ELBO_train) + "]")
+            log.info("[ELBO train: " + str(ELBO_train) + "]")
         del MU_X_eval, MU_Z_eval, Z_ENC_eval
         del LOG_VAR_X_eval, LOG_VAR_Z_eval
 
         self.save()
-        print("Training finished")
+        log.info("Training finished")
 
     def load(self, input_shape):
         cache_path = get_home()
@@ -541,19 +542,19 @@ class CSVAE(nn.Module):
                 train_x_recon_losses.append(x_recon_loss_val.item())
                 train_y_recon_losses.append(y_recon_loss_val.item())
 
-            print(
+            log.info(
                 "epoch {}: x recon loss: {}".format(
                     i, np.mean(np.array(train_x_recon_losses))
                 )
             )
-            print(
+            log.info(
                 "epoch {}: y recon loss: {}".format(
                     i, np.mean(np.array(train_y_recon_losses))
                 )
             )
 
         self.save()
-        print("Training finished")
+        log.info("Training finished")
 
     def save(self):
         cache_path = get_home()

@@ -103,6 +103,6 @@ def counterfactual_search(
     np_counterfactuals = torch_counterfactuals.cpu().detach().numpy()
     np_distances = torch_distances.cpu().detach().numpy()
     index = np.argmin(np_distances)
-    print("Coutnerfactual found")
+    print("Counterfactual found")
 
     return np_counterfactuals[index].squeeze(axis=0)

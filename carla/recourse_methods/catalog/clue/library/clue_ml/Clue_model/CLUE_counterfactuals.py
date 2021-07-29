@@ -3,6 +3,7 @@ from __future__ import division, print_function
 import torch.nn.functional as F
 from torch.optim import Adam
 
+from carla import log
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.probability import (
     decompose_entropy_cat,
     decompose_std_gauss,
@@ -445,7 +446,7 @@ class CLUE(BaseNet):
         it_mask[to_mask == 1] = step_idx
 
         if (it_mask == 0).sum() == 0 and n_early_stop > 0:
-            print("it %d, all conditions met, stopping" % step_idx)
+            log.info("it %d, all conditions met, stopping" % step_idx)
         return it_mask
 
     @staticmethod

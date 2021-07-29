@@ -1,5 +1,7 @@
 import sys
 
+from carla import log
+
 
 def cprint(color, text, **kwargs):
     if color[0] == "*":
@@ -17,5 +19,5 @@ def cprint(color, text, **kwargs):
         "c": "36",
         "w": "37",
     }
-    print("\x1b[%s%sm%s\x1b[0m" % (pre_code, code[color], text), **kwargs)
+    log.info("\x1b[%s%sm%s\x1b[0m" % (pre_code, code[color], text), **kwargs)
     sys.stdout.flush()
