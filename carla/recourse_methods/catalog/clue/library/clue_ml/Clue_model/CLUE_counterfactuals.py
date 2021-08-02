@@ -446,7 +446,7 @@ class CLUE(BaseNet):
         it_mask[to_mask == 1] = step_idx
 
         if (it_mask == 0).sum() == 0 and n_early_stop > 0:
-            log.info("it %d, all conditions met, stopping" % step_idx)
+            log.debug("iteration %d, all conditions met, stopping" % step_idx)
         return it_mask
 
     @staticmethod
