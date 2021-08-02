@@ -229,7 +229,7 @@ class ActionableRecourse(RecourseMethod):
                         index
                     )
                 )
-                log.info(row.values)
+                log.warning(row.values)
                 cfs.append(counterfactual)
                 continue
 

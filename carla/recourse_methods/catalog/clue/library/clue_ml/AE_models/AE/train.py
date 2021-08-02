@@ -66,7 +66,7 @@ def train_VAE(
     # train
     cprint("c", "\nTrain:")
 
-    print("  init cost variables:")
+    log.info("init cost variables:")
     vlb_train = np.zeros(nb_epochs)
     vlb_dev = np.zeros(nb_epochs)
     best_vlb = -np.inf
@@ -99,7 +99,7 @@ def train_VAE(
         toc = time.time()
 
         # ---- print
-        print("it %d/%d, vlb %f, " % (i, nb_epochs, vlb_train[i]), end="")
+        log.info("it %d/%d, vlb %f, " % (i, nb_epochs, vlb_train[i]))
         cprint("r", "   time: %f seconds\n" % (toc - tic))
         net.update_lr(i)
 
@@ -185,9 +185,9 @@ def train_VAE(
     best_cost_dev = best_vlb
     best_cost_train = best_vlb_train
 
-    print("  best_vlb_dev: %f" % best_cost_dev)
-    print("  best_vlb_train: %f" % best_cost_train)
-    print("  nb_parameters: %d (%s)\n" % (nb_parameters, humansize(nb_parameters)))
+    log.info("  best_vlb_dev: %f" % best_cost_dev)
+    log.info("  best_vlb_train: %f" % best_cost_train)
+    log.info("  nb_parameters: %d (%s)\n" % (nb_parameters, humansize(nb_parameters)))
 
     ## ---------------------------------------------------------------------------------------------------------------------
     return vlb_train, vlb_dev
