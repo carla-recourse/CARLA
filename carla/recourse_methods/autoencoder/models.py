@@ -275,6 +275,7 @@ class VariationalAutoencoder(nn.Module):
 
         # Train the VAE with the new prior
         ELBO = np.zeros((epochs, 1))
+        log.info("Start training of Variational Autoencoder...")
         for epoch in range(epochs):
 
             # Initialize the losses
@@ -319,7 +320,7 @@ class VariationalAutoencoder(nn.Module):
         del LOG_VAR_X_eval, LOG_VAR_Z_eval
 
         self.save()
-        log.info("Training finished")
+        log.info("... finished training of Variational Autoencoder.")
 
     def load(self, input_shape):
         cache_path = get_home()
@@ -519,6 +520,7 @@ class CSVAE(nn.Module):
         train_x_recon_losses = []
         train_y_recon_losses = []
 
+        log.info("Start training of CSVAE...")
         for i in trange(epochs):
             for x, y in train_loader:
                 (
@@ -554,7 +556,7 @@ class CSVAE(nn.Module):
             )
 
         self.save()
-        log.info("Training finished")
+        log.info("... finished training of CSVAE")
 
     def save(self):
         cache_path = get_home()
