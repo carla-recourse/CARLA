@@ -5,7 +5,7 @@ import logging
 from ._logger import INFOFORMATTER
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 # defines the stream handler
 _ch = logging.StreamHandler()
