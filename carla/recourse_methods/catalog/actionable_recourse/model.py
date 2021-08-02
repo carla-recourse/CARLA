@@ -224,8 +224,8 @@ class ActionableRecourse(RecourseMethod):
             try:
                 fs_pop = fs.populate(total_items=self._fs_size)
             except (ValueError, KeyError):
-                log.info(
-                    "Actionable Recours is not able to produce a counterfactual explanation for instance {}".format(
+                log.warning(
+                    "Actionable Recourse is not able to produce a counterfactual explanation for instance {}".format(
                         index
                     )
                 )
