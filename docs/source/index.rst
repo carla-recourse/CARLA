@@ -62,6 +62,22 @@ It is planned to make all recourse methods available for all ML frameworks. The 
 | Wachter         |            |    X    |
 +-----------------+------------+---------+
 
+Citation
+--------
+
+This project was recently accepted to NeurIPS 2021 (Benchmark & Data Sets Track).
+
+If you use this codebase, please cite: ::
+
+    @misc{pawelczyk2021carla,
+          title={CARLA: A Python Library to Benchmark Algorithmic Recourse and Counterfactual Explanation Algorithms},
+          author={Martin Pawelczyk and Sascha Bielawski and Johannes van den Heuvel and Tobias Richter and Gjergji Kasneci},
+          year={2021},
+          eprint={2108.00783},
+          archivePrefix={arXiv},
+          primaryClass={cs.LG}
+    }
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
