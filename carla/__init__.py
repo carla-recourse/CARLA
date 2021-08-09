@@ -1,19 +1,14 @@
 # flake8: noqa
 # isort:skip
-import logging
+import logging.config
 
-from ._logger import INFOFORMATTER
+import yaml
+
+with open("logging.yaml", "r") as f:
+    config = yaml.safe_load(f.read())
+    logging.config.dictConfig(config)
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
-
-# defines the stream handler
-_ch = logging.StreamHandler()
-_ch.setLevel(logging.INFO)
-_ch.setFormatter(logging.Formatter(INFOFORMATTER))
-
-# adds the handler to the global variable: log
-log.addHandler(_ch)
 
 from ._version import __version__
 from .data import Data, DataCatalog
