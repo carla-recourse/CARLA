@@ -1,4 +1,4 @@
 Licence
 =======
 
-`LICENSE <https://github.com/indyfree/CARLA/blob/main/LICENSE>`_
+`LICENSE <https://github.com/carla-recourse/CARLA/blob/main/LICENSE>`_
