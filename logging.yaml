@@ -9,8 +9,8 @@ handlers:
     formatter: simple
     stream: ext://sys.stdout
 loggers:
-  sampleLogger:
-    level: INFO
+  tensorflow:
+    level: WARN
     handlers: [console]
     propagate: no
 root:
