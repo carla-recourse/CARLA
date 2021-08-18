@@ -1,7 +1,7 @@
 import pathlib
 import re
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 VERSIONFILE = "carla/_version.py"
 verstrline = open(VERSIONFILE, "rt").read()
@@ -33,7 +33,8 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
     ],
-    package_dir={"carla": "carla"},
+    packages=find_packages(exclude=("test",)),
+    include_package_data=True,
     install_requires=[
         "lime==0.2.0.1",
         "mip==1.12.0",

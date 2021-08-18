@@ -1,0 +1,5 @@
+recursive-exclude test *
+include *.yaml
+exclude .*.yaml
+include experiments/*
+include LICENSE
