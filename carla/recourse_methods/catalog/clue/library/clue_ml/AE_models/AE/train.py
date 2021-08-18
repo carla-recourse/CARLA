@@ -185,9 +185,9 @@ def train_VAE(
     best_cost_dev = best_vlb
     best_cost_train = best_vlb_train
 
-    log.info("  best_vlb_dev: %f" % best_cost_dev)
-    log.info("  best_vlb_train: %f" % best_cost_train)
-    log.info("  nb_parameters: %d (%s)\n" % (nb_parameters, humansize(nb_parameters)))
+    log.info("best_vlb_dev: %f" % best_cost_dev)
+    log.info("best_vlb_train: %f" % best_cost_train)
+    log.info("nb_parameters: %d (%s)\n" % (nb_parameters, humansize(nb_parameters)))
 
     ## ---------------------------------------------------------------------------------------------------------------------
     return vlb_train, vlb_dev
