@@ -1,6 +1,8 @@
 # flake8: noqa
 import os
 
+from carla import log
+
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import warnings
@@ -180,10 +182,10 @@ for rm in args.recourse_method:
     for data_name in args.dataset:
         dataset = DataCatalog(data_name)
         for model_type in args.type:
-            print("=====================================")
-            print("Recourse method: {}".format(rm))
-            print("Dataset: {}".format(data_name))
-            print("Model type: {}".format(model_type))
+            log.info("=====================================")
+            log.info("Recourse method: {}".format(rm))
+            log.info("Dataset: {}".format(data_name))
+            log.info("Model type: {}".format(model_type))
 
             if rm in session_models:
                 graph = Graph()
@@ -250,6 +252,6 @@ for rm in args.recourse_method:
             ]
 
             results = pd.concat([results, df_benchmark], axis=0)
-            print("=====================================")
+            log.info("=====================================")
 
 save_result(results, path)

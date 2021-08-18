@@ -2,7 +2,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score
 
 from carla.data.api import Data
 from carla.models.pipelining import encode, scale
@@ -46,7 +45,6 @@ def predict_label(model: Any, data: Data, as_prob: bool = False) -> np.ndarray:
     -------
     predictions :  2d numpy array with predictions
     """
-    print(f"Predicing label '{data.target}'.")
 
     # normalize and encode data
     norm_enc_data = scale(model.scaler, data.continous, data.raw)
@@ -58,8 +56,5 @@ def predict_label(model: Any, data: Data, as_prob: bool = False) -> np.ndarray:
 
     if not as_prob:
         predictions = predictions.round()
-
-    acc = accuracy_score(data.raw[data.target], predictions.round())
-    print(f"Model accuracy is: {(100* acc).round(2)}%.")
 
     return predictions

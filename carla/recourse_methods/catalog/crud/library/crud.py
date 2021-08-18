@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from torch import nn
 
+from carla import log
 from carla.models.api import MLModel
 from carla.recourse_methods.autoencoder import CSVAE
 from carla.recourse_methods.processing import reconstruct_encoding_constraints
@@ -86,7 +87,7 @@ def counterfactual_search(
 
     if not len(counterfactuals):
         # if no counterfactual is present, returing the last candidate
-        print("No counterfactual found")
+        log.debug("No counterfactual found")
         output = mlmodel.predict_proba(cf)
         _, predicted = torch.max(output[0], 0)
         return (
@@ -103,6 +104,6 @@ def counterfactual_search(
     np_counterfactuals = torch_counterfactuals.cpu().detach().numpy()
     np_distances = torch_distances.cpu().detach().numpy()
     index = np.argmin(np_distances)
-    print("Coutnerfactual found")
+    log.debug("Counterfactual found")
 
     return np_counterfactuals[index].squeeze(axis=0)
