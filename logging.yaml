@@ -1,7 +1,7 @@
 version: 1
 formatters:
   simple:
-    format: "%(message)s"
+    format: "[%(levelname)s] %(message)s [%(filename)s %(funcName)s]"
 handlers:
   console:
     class: logging.StreamHandler
