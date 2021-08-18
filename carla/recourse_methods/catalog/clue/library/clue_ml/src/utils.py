@@ -6,7 +6,6 @@ import torch
 from torch.autograd import Variable
 
 from carla import log
-from carla.visualisation import cprint
 
 try:
     import cPickle as pickle  # type: ignore
@@ -85,7 +84,7 @@ class Datafeed(data.Dataset):
 # ----------------------------------------------------------------------------------------------------------------------
 class BaseNet(object):
     def __init__(self):
-        cprint("c", "\nNet:")
+        log.info("\nNet:")
 
     def get_nb_parameters(self):
         return np.sum(p.numel() for p in self.model.parameters())
@@ -106,7 +105,7 @@ class BaseNet(object):
                     param_group["lr"] = self.lr
 
     def save(self, filename):
-        cprint("c", "Writting %s\n" % filename)
+        log.info("Writting %s\n" % filename)
         torch.save(
             {
                 "epoch": self.epoch,
@@ -118,7 +117,7 @@ class BaseNet(object):
         )
 
     def load(self, filename):
-        cprint("c", "Reading %s\n" % filename)
+        log.info("Reading %s\n" % filename)
         state_dict = torch.load(filename)  # added map_location
         self.epoch = state_dict["epoch"]
         self.lr = state_dict["lr"]

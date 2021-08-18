@@ -15,7 +15,6 @@ from carla.recourse_methods.catalog.clue.library.clue_ml.src.utils import (
     BaseNet,
     to_variable,
 )
-from carla.visualisation import cprint
 
 from .models import MLP_preact_generator_net, MLP_preact_recognition_net
 
@@ -98,7 +97,7 @@ class VAE_gauss_cat_net(BaseNet):
         flatten=True,
     ):
         super(VAE_gauss_cat_net, self).__init__()
-        cprint("y", "VAE_gauss_net")
+        log.info("VAE_gauss_net")
 
         self.cuda = cuda
         self.input_dim = 0
