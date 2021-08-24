@@ -1,10 +1,13 @@
 # flake8: noqa
 # isort:skip
 import logging.config
+import os
+import pathlib
 
 import yaml
 
-with open("logging.yaml", "r") as f:
+lib_path = pathlib.Path(__file__).parent.resolve()
+with open(os.path.join(lib_path, "logging.yaml"), "r") as f:
     config = yaml.safe_load(f.read())
     logging.config.dictConfig(config)
 
