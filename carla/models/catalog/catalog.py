@@ -85,7 +85,7 @@ class MLModelCatalog(MLModel):
 
         # Load catalog
         catalog_content = ["ann", "linear"]
-        catalog = load_catalog("mlmodel_catalog.yaml", data.name, catalog_content)
+        catalog = load_catalog("mlmodel_catalog.yaml", data.name, catalog_content)  # type: ignore
 
         if model_type not in catalog:
             raise ValueError("Model type not in model catalog")
