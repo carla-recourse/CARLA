@@ -121,6 +121,9 @@ def merge_default_parameters(hyperparams: Dict, default: Dict) -> Dict:
     dict
         Dictionary with every necessary key.
     """
+    if hyperparams is None:
+        return default
+
     keys = default.keys()
     dict_output = dict()
 
