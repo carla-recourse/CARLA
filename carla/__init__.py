@@ -16,14 +16,6 @@ with open(os.path.join(lib_path, "logging.yaml"), "r") as f:
 
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
-
-# defines the stream handler
-_ch = logging.StreamHandler()
-_ch.setLevel(logging.INFO)
-_ch.setFormatter(logging.Formatter(INFOFORMATTER))
-
-log = logging.getLogger(__name__)
 
 from ._version import __version__
 from .data import Data, DataCatalog
