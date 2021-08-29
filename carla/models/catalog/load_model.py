@@ -3,8 +3,13 @@ from typing import Optional
 from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
+import logging
+
 import tensorflow as tf
 import torch
+
+
+tf.get_logger().setLevel(logging.ERROR)
 
 
 def load_model(
