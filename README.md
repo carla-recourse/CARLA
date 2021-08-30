@@ -1,4 +1,4 @@
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/carla-recourse/CARLA/CI?style=for-the-badge) [![Read the Docs](https://img.shields.io/readthedocs/carla-counterfactual-and-recourse-library?style=for-the-badge)](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/?badge=latest) ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/carla-recourse?style=for-the-badge)](https://pypi.org/project/carla-recourse/) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/carla-recourse/CARLA/CI?style=for-the-badge) [![Read the Docs](https://img.shields.io/readthedocs/carla-counterfactual-and-recourse-library?style=for-the-badge)](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/?badge=latest) ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)
 
 # CARLA - Counterfactual And Recourse Library
 
@@ -58,8 +58,33 @@ It is planned to make all recourse methods available for all ML frameworks . The
 ### Install via pip
 
 ```sh
-pip install git+https://github.com/indyfree/carla.git#egg=carla
+pip install carla-recourse
 ```
+
+## Usage Example
+
+
+```python
+from carla import DataCatalog, MLModelCatalog
+from carla.recourse_methods import GrowingSpheres
+
+# load a catalog dataset
+data_name = "adult"
+dataset = DataCatalog(data_name)
+
+# load artificial neural network from catalog
+model = MLModelCatalog(dataset, "ann")
+
+# get factuals from the data to generate counterfactual examples
+factuals = dataset.raw.iloc[:10]
+
+# load a recourse model and pass black box model
+gs = GrowingSpheres(model)
+
+# generate counterfactual examples
+counterfactuals = gs.get_counterfactuals(factuals)
+```
+
 
 ## Contributing
 
