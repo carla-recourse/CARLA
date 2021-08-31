@@ -96,7 +96,6 @@ class FOCUS(RecourseMethod):
         )
         to_optimize = [perturbed]
 
-        # TODO what does this block do?
         class_index = np.zeros(len(original_input), dtype=np.int64)
         for i, class_name in enumerate(self.model.raw_model.classes_):
             mask = np.equal(ground_truth, class_name)
@@ -113,7 +112,6 @@ class FOCUS(RecourseMethod):
         temperature = np.full(len(factuals), self.temp_val)
         distance_weight = np.full(len(factuals), self.distance_weight_val)
 
-        # TODO use np.inf instead?
         best_distance = np.full(len(factuals), 1000.0)
         best_perturb = np.zeros(perturbed.shape)
         for i in range(self.n_iter):
@@ -144,7 +142,6 @@ class FOCUS(RecourseMethod):
                     global_step=tf.train.get_or_create_global_step(),
                 )
                 # clip perturbed values between 0 and 1 (inclusive)
-                # TODO add optimization constraint instead
                 tf.assign(perturbed, tf.math.minimum(1, tf.math.maximum(0, perturbed)))
 
                 true_distance = distance_func(
@@ -176,7 +173,7 @@ class FOCUS(RecourseMethod):
         feat_columns = self.data.continous
         if not isinstance(self.model.raw_model, DecisionTreeClassifier):
             return trees.get_prob_classification_forest(
-                self.model.raw_model,
+                self.model,
                 feat_columns,
                 perturbed,
                 sigma=sigma,

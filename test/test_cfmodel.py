@@ -12,7 +12,8 @@ from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
 from carla.recourse_methods.catalog.feature_tweak import FeatureTweak
-from carla.recourse_methods.catalog.focus.main import FOCUS
+from carla.recourse_methods.catalog.focus import FOCUS
+from carla.recourse_methods.catalog.focus.tree_model import ForestModel, XGBoostModel
 from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
 from carla.recourse_methods.catalog.wachter import Wachter
 
@@ -20,12 +21,12 @@ testmodel = ["ann", "linear"]
 
 
 def test_feature_tweak_get_counterfactuals():
-    from carla.recourse_methods.catalog.focus.tree_model import ForestModel
 
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model = ForestModel(data)
+    model = XGBoostModel(data)
+    # model = ForestModel(data)
 
     hyperparams = {
         "eps": 0.1,
@@ -38,18 +39,15 @@ def test_feature_tweak_get_counterfactuals():
     feature_tweak = FeatureTweak(model, data, hyperparams)
     cfs = feature_tweak.get_counterfactuals(test_factual)
 
-    print(test_factual)
-    print(cfs)
+    assert test_factual[data.continous + [data.target]].shape == cfs.shape
 
 
 def test_focus_get_counterfactuals():
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    from carla.recourse_methods.catalog.focus.tree_model import ForestModel, TreeModel
-
-    tree_model = TreeModel(data)
-    forest_model = ForestModel(data)
+    # model = XGBoostModel(data)
+    model = ForestModel(data)
 
     hyperparams = {
         "optimizer": "adam",
@@ -62,20 +60,14 @@ def test_focus_get_counterfactuals():
         "distance_func": "l1",
     }
 
-    # run tests for multiple possible classification models
-    for model in [tree_model, forest_model]:
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:5]
 
-        # get factuals
-        factuals = predict_negative_instances(model, data)
-        test_factual = factuals.iloc[:5]
+    focus = FOCUS(model, data, hyperparams)
+    cfs = focus.get_counterfactuals(test_factual)
 
-        focus = FOCUS(model, data, hyperparams)
-        cfs = focus.get_counterfactuals(test_factual)
-
-        print(cfs)
-
-        # skip forest model for now
-        # break
+    assert test_factual[data.continous].shape == cfs.shape
 
 
 @pytest.mark.parametrize("model_type", testmodel)
