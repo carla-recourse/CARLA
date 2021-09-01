@@ -20,6 +20,7 @@ setup(
         "dice-ml==0.5",
         "ipython",
         "keras==2.3.0",
+        "xgboost==1.4.2",
     ],
     entry_points="""
                 [console_scripts]
