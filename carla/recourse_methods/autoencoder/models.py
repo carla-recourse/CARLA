@@ -12,6 +12,8 @@ from carla.recourse_methods.autoencoder.dataloader import VAEDataset
 from carla.recourse_methods.autoencoder.losses import binary_crossentropy
 from carla.recourse_methods.autoencoder.save_load import get_home
 
+tf.compat.v1.disable_eager_execution()
+
 
 class Autoencoder:
     def __init__(

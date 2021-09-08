@@ -43,6 +43,7 @@ def test_feature_tweak_get_counterfactuals():
 
 
 def test_focus_get_counterfactuals():
+
     data_name = "adult"
     data = DataCatalog(data_name)
 

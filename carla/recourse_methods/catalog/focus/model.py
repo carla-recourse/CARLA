@@ -3,6 +3,7 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import tensorflow.contrib.eager as tfe
 from sklearn.tree import DecisionTreeClassifier
 
 from carla.data.api import Data
@@ -11,7 +12,7 @@ from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.focus import trees
 from carla.recourse_methods.catalog.focus.distances import distance_func
 
-tf.enable_eager_execution()
+# tf.enable_eager_execution()
 
 
 def filter_hinge_loss(n_class, mask_vector, features, sigma, temperature, model_fn):
@@ -81,91 +82,106 @@ class FOCUS(RecourseMethod):
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
 
-        # normalize and remove target
-        original_input = self.encode_normalize_order_factuals(
-            factuals, with_target=False
-        )
-        # doesn't work with categorical features, so they aren't used
-        original_input = original_input[self.data.continous]
-        original_input = original_input.to_numpy()
-        ground_truth = self.model.predict(original_input)
+        best_perturb = np.array([])
 
-        # these will be the perturbed features, i.e. counterfactuals
-        perturbed = tf.Variable(
-            initial_value=original_input, name="perturbed_features", trainable=True
-        )
-        to_optimize = [perturbed]
+        def f(best_perturb):
+            # normalize and remove target
+            original_input = self.encode_normalize_order_factuals(
+                factuals, with_target=False
+            )
+            # doesn't work with categorical features, so they aren't used
+            original_input = original_input[self.data.continous]
+            original_input = original_input.to_numpy()
+            ground_truth = self.model.predict(original_input)
 
-        class_index = np.zeros(len(original_input), dtype=np.int64)
-        for i, class_name in enumerate(self.model.raw_model.classes_):
-            mask = np.equal(ground_truth, class_name)
-            class_index[mask] = i
-        class_index = tf.constant(class_index, dtype=tf.int64)
-        example_range = tf.constant(np.arange(len(original_input), dtype=np.int64))
-        example_class_index = tf.stack((example_range, class_index), axis=1)
+            # these will be the perturbed features, i.e. counterfactuals
+            perturbed = tf.Variable(
+                initial_value=original_input, name="perturbed_features", trainable=True
+            )
+            to_optimize = [perturbed]
 
-        # booleans to indicate if label has flipped
-        indicator = np.ones(len(factuals))
+            class_index = np.zeros(len(original_input), dtype=np.int64)
+            for i, class_name in enumerate(self.model.raw_model.classes_):
+                mask = np.equal(ground_truth, class_name)
+                class_index[mask] = i
+            class_index = tf.constant(class_index, dtype=tf.int64)
+            example_range = tf.constant(np.arange(len(original_input), dtype=np.int64))
+            example_class_index = tf.stack((example_range, class_index), axis=1)
 
-        # hyperparameters
-        sigma = np.full(len(factuals), self.sigma_val)
-        temperature = np.full(len(factuals), self.temp_val)
-        distance_weight = np.full(len(factuals), self.distance_weight_val)
+            # booleans to indicate if label has flipped
+            indicator = np.ones(len(factuals))
 
-        best_distance = np.full(len(factuals), 1000.0)
-        best_perturb = np.zeros(perturbed.shape)
-        for i in range(self.n_iter):
-            with tf.GradientTape(persistent=True) as t:
-                p_model = filter_hinge_loss(
-                    self.n_class,
-                    indicator,
-                    perturbed,
-                    sigma,
-                    temperature,
-                    self.prob_from_input,
-                )
-                approx_prob = tf.gather_nd(p_model, example_class_index)
+            # hyperparameters
+            sigma = np.full(len(factuals), self.sigma_val)
+            temperature = np.full(len(factuals), self.temp_val)
+            distance_weight = np.full(len(factuals), self.distance_weight_val)
 
-                eps = 10.0 ** -10
-                distance = distance_func(
-                    self.distance_function, perturbed, original_input, eps
-                )
+            best_distance = np.full(len(factuals), 1000.0)
+            best_perturb = np.zeros(perturbed.shape)
 
-                # the losses
-                prediction_loss = indicator * approx_prob
-                distance_loss = distance_weight * distance
-                total_loss = tf.reduce_mean(prediction_loss + distance_loss)
-                # optimize the losses
-                grad = t.gradient(total_loss, to_optimize)
-                self.optimizer.apply_gradients(
-                    zip(grad, to_optimize),
-                    global_step=tf.train.get_or_create_global_step(),
-                )
-                # clip perturbed values between 0 and 1 (inclusive)
-                tf.assign(perturbed, tf.math.minimum(1, tf.math.maximum(0, perturbed)))
+            for i in range(self.n_iter):
+                with tf.GradientTape(persistent=True) as t:
+                    p_model = filter_hinge_loss(
+                        self.n_class,
+                        indicator,
+                        perturbed,
+                        sigma,
+                        temperature,
+                        self.prob_from_input,
+                    )
+                    approx_prob = tf.gather_nd(p_model, example_class_index)
 
-                true_distance = distance_func(
-                    self.distance_function, perturbed, original_input, 0
-                ).numpy()
+                    eps = 10.0 ** -10
+                    distance = distance_func(
+                        self.distance_function, perturbed, original_input, eps
+                    )
 
-                # get the class predictions for the perturbed features
-                current_predict = self.model.predict(perturbed.numpy())
-                indicator = np.equal(ground_truth, current_predict).astype(np.float64)
+                    # the losses
+                    prediction_loss = indicator * approx_prob
+                    distance_loss = distance_weight * distance
+                    total_loss = tf.reduce_mean(prediction_loss + distance_loss)
+                    # optimize the losses
+                    grad = t.gradient(total_loss, to_optimize)
+                    self.optimizer.apply_gradients(
+                        zip(grad, to_optimize),
+                        global_step=tf.train.get_or_create_global_step(),
+                    )
+                    # clip perturbed values between 0 and 1 (inclusive)
+                    tf.assign(
+                        perturbed, tf.math.minimum(1, tf.math.maximum(0, perturbed))
+                    )
 
-                # get best perturbation so far, did prediction flip
-                mask_flipped = np.not_equal(ground_truth, current_predict)
-                # is distance lower then previous best distance
-                mask_smaller_dist = np.less(true_distance, best_distance)
+                    true_distance = distance_func(
+                        self.distance_function, perturbed, original_input, 0
+                    ).numpy()
 
-                # update best distances
-                temp_dist = best_distance.copy()
-                temp_dist[mask_flipped] = true_distance[mask_flipped]
-                best_distance[mask_smaller_dist] = temp_dist[mask_smaller_dist]
+                    # get the class predictions for the perturbed features
+                    current_predict = self.model.predict(perturbed.numpy())
+                    indicator = np.equal(ground_truth, current_predict).astype(
+                        np.float64
+                    )
 
-                # update best perturbations
-                temp_perturb = best_perturb.copy()
-                temp_perturb[mask_flipped] = perturbed[mask_flipped]
-                best_perturb[mask_smaller_dist] = temp_perturb[mask_smaller_dist]
+                    # get best perturbation so far, did prediction flip
+                    mask_flipped = np.not_equal(ground_truth, current_predict)
+                    # is distance lower then previous best distance
+                    mask_smaller_dist = np.less(true_distance, best_distance)
+
+                    # update best distances
+                    temp_dist = best_distance.copy()
+                    temp_dist[mask_flipped] = true_distance[mask_flipped]
+                    best_distance[mask_smaller_dist] = temp_dist[mask_smaller_dist]
+
+                    # update best perturbations
+                    temp_perturb = best_perturb.copy()
+                    temp_perturb[mask_flipped] = perturbed[mask_flipped]
+                    best_perturb[mask_smaller_dist] = temp_perturb[mask_smaller_dist]
+
+            return best_perturb
+
+        # Little bit hacky, but needed as other tf code is graph based.
+        with tf.Session() as sess:
+            pf = tfe.py_func(f, [best_perturb], tf.float32)
+            best_perturb = sess.run(pf)
 
         return pd.DataFrame(best_perturb, columns=self.data.continous)
 
