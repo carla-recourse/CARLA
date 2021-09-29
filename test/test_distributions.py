@@ -91,5 +91,5 @@ def test_gamma():
     assert isinstance(dist.sample(size=1), float)
     assert np.all([x >= 0 for x in s])
 
-    # for visual confirmation
-    dist.visualize()
+    # # for visual confirmation
+    # dist.visualize()

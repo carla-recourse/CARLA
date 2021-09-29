@@ -35,7 +35,7 @@ class Normal(BaseDistribution):
         super().__init__(name)
         self.dist = norm(mean, np.sqrt(var))
 
-    def sample(self, size=1):
+    def sample(self, size=1) -> Union[np.ndarray, float]:
         s = self.dist.rvs(size)
         # returns a single number rather then a list if a single sample
         return s[0] if size == 1 else s
@@ -58,13 +58,13 @@ class MixtureOfGaussians(BaseDistribution):
         self.means = means
         self.vars = vars
 
-    def sample(self, size=1):
+    def sample(self, size=1) -> Union[np.ndarray, float]:
         mixtures = np.random.choice(len(self.probs), size=size, p=self.probs)
         s = [
             np.random.normal(self.means[mixture_idx], np.sqrt(self.vars[mixture_idx]))
             for mixture_idx in mixtures
         ]
-        return s[0] if size == 1 else s
+        return s[0] if size == 1 else np.array(s)
 
     def pdf(self, value):
         return np.sum(
@@ -86,9 +86,9 @@ class Uniform(BaseDistribution):
         self.lower = lower
         self.upper = upper
 
-    def sample(self, size=1):
+    def sample(self, size=1) -> Union[np.ndarray, float]:
         s = np.random.uniform(self.lower, self.upper, size=size)
-        return s[0] if size == 1 else list(s)
+        return s[0] if size == 1 else s
 
     def pdf(self, value):
         raise 1 / (self.upper - self.lower)
@@ -105,11 +105,11 @@ class Bernoulli(BaseDistribution):
         self.prob = prob
         self.btype = btype  # '01' is standard, '-11' also supported here
 
-    def sample(self, size=1):
-        tmp = bernoulli.rvs(self.prob, size=size)
+    def sample(self, size=1) -> Union[np.ndarray, int]:
+        s = bernoulli.rvs(self.prob, size=size)
         if self.btype == "-11":
-            tmp = tmp * 2 - 1
-        return tmp[0] if size == 1 else list(tmp)
+            s = s * 2 - 1
+        return s[0] if size == 1 else s
 
     def pdf(self, value):
         raise Exception("not supported yet; code should not come here.")
@@ -125,9 +125,9 @@ class Poisson(BaseDistribution):
 
         self.p_lambda = p_lambda
 
-    def sample(self, size=1):
-        tmp = np.random.poisson(self.p_lambda, size)
-        return tmp[0] if size == 1 else list(tmp)
+    def sample(self, size=1) -> Union[np.ndarray, np.integer]:
+        s = np.random.poisson(self.p_lambda, size)
+        return s[0] if size == 1 else s
 
     def pdf(self, value):
         raise Exception("not supported yet; code should not come here.")
@@ -146,9 +146,9 @@ class Gamma(BaseDistribution):
         self.shape = shape
         self.scale = scale
 
-    def sample(self, size=1):
-        tmp = np.random.gamma(self.shape, self.scale, size)
-        return tmp[0] if size == 1 else list(tmp)
+    def sample(self, size=1) -> Union[np.ndarray, float]:
+        s = np.random.gamma(self.shape, self.scale, size)
+        return s[0] if size == 1 else s
 
     def pdf(self, value):
         raise Exception("not supported yet; code should not come here.")
