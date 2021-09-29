@@ -26,50 +26,6 @@ def _remove_prefix(node):
 
 def _load_scm_equations(scm_class: str):
 
-    # TODO what is this for
-    # structural_equations_np = {
-    #   'x1': lambda n_samples, : n_samples,
-    #   # 'x2': TBD
-    # }
-    # structural_equations_ts = {
-    #   'x1': lambda n_samples, : n_samples,
-    #   # 'x2': TBD
-    # }
-    # noises_distributions = {
-    #   'u1': MixtureOfGaussians([0.5, 0.5], [-2, +2], [1, 1]),
-    #   'u2': Normal(0, 1),
-    # }
-
-    # if scm_class == 'sanity-2-add':
-    #   structural_equations_np['x2'] = lambda n_samples, x1 : 2 * x1 + n_samples
-    #   structural_equations_ts['x2'] = lambda n_samples, x1 : 2 * x1 + n_samples
-    # elif scm_class == 'sanity-2-mult':
-    #   structural_equations_np['x2'] = lambda n_samples, x1 : x1 * n_samples
-    #   structural_equations_ts['x2'] = lambda n_samples, x1 : x1 * n_samples
-    # elif scm_class == 'sanity-2-add-pow':
-    #   structural_equations_np['x2'] = lambda n_samples, x1 : (x1 + n_samples) ** 2
-    #   structural_equations_ts['x2'] = lambda n_samples, x1 : (x1 + n_samples) ** 2
-    # elif scm_class == 'sanity-2-add-sig':
-    #   structural_equations_np['x2'] = lambda n_samples, x1 : 5 / (1 + np.exp(- x1 - n_samples))
-    #   structural_equations_ts['x2'] = lambda n_samples, x1 : 5 / (1 + torch.exp(- x1 - n_samples))
-    # elif scm_class == 'sanity-2-sig-add':
-    #   structural_equations_np['x2'] = lambda n_samples, x1 : 5 / (1 + np.exp(-x1)) + n_samples
-    #   structural_equations_ts['x2'] = lambda n_samples, x1 : 5 / (1 + torch.exp(-x1)) + n_samples
-    # elif scm_class == 'sanity-2-pow-add':
-    #   structural_equations_np['x2'] = lambda n_samples, x1 : x1 ** 2 + n_samples
-    #   structural_equations_ts['x2'] = lambda n_samples, x1 : x1 ** 2 + n_samples
-    # elif scm_class == 'sanity-2-sin-add':
-    #   structural_equations_np['x2'] = lambda n_samples, x1 : np.sin(x1) + n_samples
-    #   structural_equations_ts['x2'] = lambda n_samples, x1 : torch.sin(x1) + n_samples
-    # elif scm_class == 'sanity-2-cos-exp-add':
-    #   structural_equations_np['x2'] = lambda n_samples, x1 : 2 * np.cos(3 * x1) * np.exp(-0.3 * x1**2) + n_samples
-    #   structural_equations_ts['x2'] = lambda n_samples, x1 : 2 * torch.cos(3 * x1) * torch.exp(-0.3 * x1**2) + n_samples
-
-    # ============================================================================
-    # ABOVE: 2-variable sanity models used for checking cond. dist. fit
-    # BELOW: 3+variable sanity models used in paper
-    # ============================================================================
-
     ###########################
     #  loading scm equations  #
     ###########################
@@ -167,6 +123,16 @@ def _load_scm_equations(scm_class: str):
 
 
 def load_scm(scm_class: str):
+    """
+
+    Parameters
+    ----------
+    scm_class: name of the structural equations
+
+    Returns
+    -------
+    CausalModel
+    """
 
     (
         structural_equations_np,

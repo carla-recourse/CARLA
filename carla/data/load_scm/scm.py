@@ -1,3 +1,6 @@
+"""
+Based on https://github.com/amirhk/recourse/blob/master/loadSCM.py
+"""
 import numpy as np
 import torch
 
