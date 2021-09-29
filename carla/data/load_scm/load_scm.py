@@ -147,6 +147,7 @@ def _load_scm_equations(scm_class: str):
     ###########################
     #       some checks       #
     ###########################
+    # TODO duplicate with tests
     if not (
         [_remove_prefix(node) for node in structural_equations_np.keys()]
         == [_remove_prefix(node) for node in structural_equations_ts.keys()]
@@ -156,8 +157,9 @@ def _load_scm_equations(scm_class: str):
             "structural_equations_np & structural_equations_ts & noises_distributions should have identical keys."
         )
 
-    if not np.all(["x" in node for node in structural_equations_np.keys()]) and np.all(
-        ["x" in node for node in structural_equations_ts.keys()]
+    if not (
+        np.all(["x" in node for node in structural_equations_np.keys()])
+        and np.all(["x" in node for node in structural_equations_ts.keys()])
     ):
         raise ValueError("endogenous variables must start with `x`.")
 
