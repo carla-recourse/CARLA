@@ -1,0 +1,4 @@
+recursive-exclude test *
+include carla/*.yaml
+include experiments/*
+include LICENSE

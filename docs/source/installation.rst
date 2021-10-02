@@ -12,7 +12,7 @@ Install via pip
 
 ::
 
-   pip install git+https://github.com/indyfree/carla.git#egg=carla
+   pip install git+https://github.com/carla-recourse/carla.git#egg=carla
 
 
 Contributing

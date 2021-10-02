@@ -7,7 +7,6 @@ from numpy.random import normal
 from torchvision.utils import make_grid
 
 from carla.recourse_methods.catalog.clue.library.clue_ml.src.utils import *
-from carla.visualisation import cprint
 
 
 def train_VAE(
@@ -58,15 +57,15 @@ def train_VAE(
 
     ## ---------------------------------------------------------------------------------------------------------------------
     # net dims
-    cprint("c", "\nNetwork:")
+    log.info("\nNetwork:")
 
     epoch = 0
 
     ## ---------------------------------------------------------------------------------------------------------------------
     # train
-    cprint("c", "\nTrain:")
+    log.info("\nTrain:")
 
-    print("  init cost variables:")
+    log.info("init cost variables:")
     vlb_train = np.zeros(nb_epochs)
     vlb_dev = np.zeros(nb_epochs)
     best_vlb = -np.inf
@@ -99,8 +98,8 @@ def train_VAE(
         toc = time.time()
 
         # ---- print
-        print("it %d/%d, vlb %f, " % (i, nb_epochs, vlb_train[i]), end="")
-        cprint("r", "   time: %f seconds\n" % (toc - tic))
+        log.info("it %d/%d, vlb %f, " % (i, nb_epochs, vlb_train[i]))
+        log.info("time: %f seconds\n" % (toc - tic))
         net.update_lr(i)
 
         if vlb_train[i] > best_vlb_train:
@@ -124,7 +123,7 @@ def train_VAE(
 
             vlb_dev[i] /= nb_samples
 
-            cprint("g", "    vlb %f (%f)\n" % (vlb_dev[i], best_vlb))
+            log.info("vlb %f (%f)\n" % (vlb_dev[i], best_vlb))
 
             if train_plot:
                 zz = net.recongnition(x).sample()
@@ -176,18 +175,18 @@ def train_VAE(
     net.save(models_dir + "/theta_last.dat")
     toc0 = time.time()
     runtime_per_it = (toc0 - tic0) / float(nb_epochs)
-    cprint("r", "   average time: %f seconds\n" % runtime_per_it)
+    log.info("average time: %f seconds\n" % runtime_per_it)
 
     ## ---------------------------------------------------------------------------------------------------------------------
     # results
-    cprint("c", "\nRESULTS:")
+    log.info("\nRESULTS:")
     nb_parameters = net.get_nb_parameters()
     best_cost_dev = best_vlb
     best_cost_train = best_vlb_train
 
-    print("  best_vlb_dev: %f" % best_cost_dev)
-    print("  best_vlb_train: %f" % best_cost_train)
-    print("  nb_parameters: %d (%s)\n" % (nb_parameters, humansize(nb_parameters)))
+    log.info("best_vlb_dev: %f" % best_cost_dev)
+    log.info("best_vlb_train: %f" % best_cost_train)
+    log.info("nb_parameters: %d (%s)\n" % (nb_parameters, humansize(nb_parameters)))
 
     ## ---------------------------------------------------------------------------------------------------------------------
     return vlb_train, vlb_dev

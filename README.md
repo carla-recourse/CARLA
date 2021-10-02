@@ -1,10 +1,11 @@
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/indyfree/CARLA/CI?style=for-the-badge) [![Read the Docs](https://img.shields.io/readthedocs/carla-counterfactual-and-recourse-library?style=for-the-badge)](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/?badge=latest) ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/carla-recourse?style=for-the-badge)](https://pypi.org/project/carla-recourse/) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/carla-recourse/CARLA/CI?style=for-the-badge) [![Read the Docs](https://img.shields.io/readthedocs/carla-counterfactual-and-recourse-library?style=for-the-badge)](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/?badge=latest) ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)
 
 # CARLA - Counterfactual And Recourse Library
 
 CARLA is a python library to benchmark counterfactual explanation and recourse models. It comes out-of-the box with commonly used datasets and various machine learning models. Designed with extensibility in mind: Easily include your own counterfactual methods, new machine learning models or other datasets.
 
 Find extensive documentation [here](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/)!
+Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 
 ### Available Datasets
 
@@ -57,8 +58,33 @@ It is planned to make all recourse methods available for all ML frameworks . The
 ### Install via pip
 
 ```sh
-pip install git+https://github.com/indyfree/carla.git#egg=carla
+pip install carla-recourse
 ```
+
+## Usage Example
+
+
+```python
+from carla import DataCatalog, MLModelCatalog
+from carla.recourse_methods import GrowingSpheres
+
+# load a catalog dataset
+data_name = "adult"
+dataset = DataCatalog(data_name)
+
+# load artificial neural network from catalog
+model = MLModelCatalog(dataset, "ann")
+
+# get factuals from the data to generate counterfactual examples
+factuals = dataset.raw.iloc[:10]
+
+# load a recourse model and pass black box model
+gs = GrowingSpheres(model)
+
+# generate counterfactual examples
+counterfactuals = gs.get_counterfactuals(factuals)
+```
+
 
 ## Contributing
 
@@ -120,3 +146,19 @@ pre-commit install
 ## Licence
 
 carla is under the MIT Licence. See the [LICENCE](github.com/indyfree/carla/blob/master/LICENSE) for more details.
+
+## Citation
+
+This project was recently accepted to NeurIPS 2021 (Benchmark & Data Sets Track).
+If you use this codebase, please cite:
+
+```sh
+@misc{pawelczyk2021carla,
+      title={CARLA: A Python Library to Benchmark Algorithmic Recourse and Counterfactual Explanation Algorithms},
+      author={Martin Pawelczyk and Sascha Bielawski and Johannes van den Heuvel and Tobias Richter and Gjergji Kasneci},
+      year={2021},
+      eprint={2108.00783},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+```
