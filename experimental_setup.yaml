@@ -2,6 +2,20 @@ recourse_methods:
   ar:
     hyperparams:
       fs_size: 150
+  cchvae:
+    hyperparams:
+      n_search_samples: 100
+      p_norm: 1
+      step: 0.1
+      max_iter: 1000
+      binary_cat_features: False
+      vae_params:
+        layers: [ 512, 256, 8 ]
+        train: True
+        lambda_reg: 0.000001
+        epochs: 5
+        lr: 0.001
+        batch_size: 32
   cem:
     hyperparams:
       batch_size: 1
@@ -15,9 +29,7 @@ recourse_methods:
       mode: "PN"
       num_classes: 2
       ae_params:
-        h1: 20
-        h2: 10
-        d: 7
+        hidden_layer: [20, 10, 7]
         train_ae: True
         epochs: 5
   cem-vae:
@@ -28,14 +40,12 @@ recourse_methods:
       binary_search_steps: 9
       max_iterations: 100
       initial_const: 10
-      beta: 0.0
-      gamma: 6.0
+      beta: 0.9
+      gamma: 1.0
       mode: "PN"
       num_classes: 2
       ae_params:
-        h1: 20
-        h2: 10
-        d: 7
+        hidden_layer: [20, 10, 7]
         train_ae: True
         epochs: 5
   clue:
@@ -48,6 +58,18 @@ recourse_methods:
       epochs: 1
       lr: 0.001
       early_stop: 10
+  cruds:
+    hyperparams:
+      lambda_param: 0.001
+      optimizer: "RMSprop"
+      lr: 0.008
+      max_iter: 2000
+      vae_params:
+        layers: [ 16, 8 ]
+        train: True
+        epochs: 5
+        lr: 0.001
+        batch_size: 32
   dice:
     hyperparams:
       num: 1
@@ -65,20 +87,20 @@ recourse_methods:
     hyperparams:
   revise:
     hyperparams:
-        lambda: 0.5
-        optimizer: "adam"
-        lr: 0.1
-        max_iter: 1500
-        target_class: [0, 1]
-        binary_cat_features: False
-        vae_params:
-          layers: [512, 256, 8]
-          activFun:
-          train: True
-          lambda_reg: 0.000001
-          epochs: 5
-          lr: 0.001
-          batch_size: 32
+      lambda: 0.5
+      optimizer: "adam"
+      lr: 0.1
+      max_iter: 1500
+      target_class: [ 0, 1 ]
+      binary_cat_features: False
+      vae_params:
+        layers: [ 512, 256, 8 ]
+        activFun:
+        train: True
+        lambda_reg: 0.000001
+        epochs: 5
+        lr: 0.001
+        batch_size: 32
   wachter:
     hyperparams:
       loss_type: "BCE"
