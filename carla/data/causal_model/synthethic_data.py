@@ -6,13 +6,13 @@ import pandas as pd
 from carla.data.api import Data
 
 
-def get_noise_string(node):
+def _get_noise_string(node):
     if not node[0] == "x":
         raise ValueError
     return "u" + node[1:]
 
 
-def create_synthetic_data(scm, num_samples):
+def _create_synthetic_data(scm, num_samples):
 
     exogenous_variables = np.concatenate(
         [
@@ -43,7 +43,7 @@ def create_synthetic_data(scm, num_samples):
                 "parents in endogenous_variables should already be occupied"
             )
         endogenous_variables[node] = scm.structural_equations_np[node](
-            exogenous_variables[get_noise_string(node)],
+            exogenous_variables[_get_noise_string(node)],
             *[endogenous_variables[p] for p in parents],
         )
 
@@ -71,17 +71,16 @@ class ScmDataset(Data):
 
     Parameters
     ----------
-    scm :
-        structural causal model
+    scm : CausalModel
+        Structural causal model
+    size : int
+        Number of samples in the dataset
 
-    Returns
-    -------
-    None
     """
 
     def __init__(self, scm, size: int):
         self.name = scm.scm_class
-        self._raw = create_synthetic_data(scm, num_samples=size)
+        self._raw = _create_synthetic_data(scm, num_samples=size)
 
     @property
     def categoricals(self) -> List[str]:

@@ -1,7 +1,5 @@
 import numpy as np
 
-from carla.data.causal_model import CausalModel
-
 from .scm import (
     adult,
     bu_sanity_3_gen,
@@ -42,8 +40,7 @@ def _remove_prefix(node):
     return node[1:]
 
 
-def _load_scm_equations(scm_class: str):
-
+def load_scm_equations(scm_class: str):
     ###########################
     #  loading scm equations  #
     ###########################
@@ -71,31 +68,3 @@ def _load_scm_equations(scm_class: str):
         raise ValueError("endogenous variables must start with `x`.")
 
     return structural_equations_np, structural_equations_ts, noise_distributions
-
-
-def load_scm(scm_class: str):
-    """
-
-    Parameters
-    ----------
-    scm_class: name of the structural equations
-
-    Returns
-    -------
-    CausalModel
-    """
-
-    (
-        structural_equations_np,
-        structural_equations_ts,
-        noise_distributions,
-    ) = _load_scm_equations(scm_class)
-
-    scm = CausalModel(
-        scm_class,
-        structural_equations_np,
-        structural_equations_ts,
-        noise_distributions,
-    )
-
-    return scm
