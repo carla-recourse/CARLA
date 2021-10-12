@@ -17,6 +17,24 @@ from .scm import (
     sanity_6_lin,
 )
 
+scm_dict = {
+    "adult": adult,
+    "german-credit": german_credit,
+    "sanity-3-anm": sanity_3_anm,
+    "sanity-3-lin": sanity_3_lin,
+    "sanity-6-lin": sanity_6_lin,
+    "sanity-3-gen": sanity_3_gen,
+    "sanity-3-gen-OLD": sanity_3_gen_old,
+    "sanity-3-gen-NEW": sanity_3_gen_new,
+    "_bu_sanity-3-gen": bu_sanity_3_gen,
+    "fair-IMF-LIN": fair_imf_lin,
+    "fair-CAU-LIN": fair_cau_lin,
+    "fair-CAU-ANM": fair_cau_anm,
+    "fair-IMF-LIN-radial": fair_imf_lin,
+    "fair-CAU-LIN-radial": fair_cau_lin,
+    "fair-CAU-ANM-radial": fair_cau_anm,
+}
+
 
 def _remove_prefix(node):
     """replaces e.g. x101 or u101 with 101"""
@@ -29,76 +47,9 @@ def _load_scm_equations(scm_class: str):
     ###########################
     #  loading scm equations  #
     ###########################
-    if scm_class == "sanity-3-lin":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = sanity_3_lin()
-    elif scm_class == "sanity-3-anm":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = sanity_3_anm()
-    elif scm_class == "_bu_sanity-3-gen":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = bu_sanity_3_gen()
-    elif scm_class == "sanity-3-gen-OLD":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = sanity_3_gen_old()
-    elif scm_class == "sanity-3-gen-NEW":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = sanity_3_gen_new()
-    elif scm_class == "sanity-3-gen":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = sanity_3_gen()
-    elif scm_class == "sanity-6-lin":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = sanity_6_lin()
-    elif scm_class == "german-credit":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = german_credit()
-    elif scm_class == "adult":
-        structural_equations_np, structural_equations_ts, noise_distributions = adult()
-    elif scm_class == "fair-IMF-LIN" or scm_class == "fair-IMF-LIN-radial":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = fair_imf_lin()
-    elif scm_class == "fair-CAU-LIN" or scm_class == "fair-CAU-LIN-radial":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = fair_cau_lin()
-    elif scm_class == "fair-CAU-ANM" or scm_class == "fair-CAU-ANM-radial":
-        (
-            structural_equations_np,
-            structural_equations_ts,
-            noise_distributions,
-        ) = fair_cau_anm()
-    else:
-        raise Exception(f"scm_class `{scm_class}` not recognized.")
+    structural_equations_np, structural_equations_ts, noise_distributions = scm_dict[
+        scm_class
+    ]()
 
     ###########################
     #       some checks       #

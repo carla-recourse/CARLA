@@ -1,6 +1,14 @@
 import networkx as nx
 from causalgraphicalmodels import StructuralCausalModel
 
+from .synthethic_data import ScmDataset
+
+
+def get_noise_string(node):
+    if not node[0] == "x":
+        raise ValueError
+    return "u" + node[1:]
+
 
 class CausalModel(object):
     def __init__(
@@ -49,9 +57,8 @@ class CausalModel(object):
             .symmetric_difference(set([node]))
         )
 
-    def get_structural_equation(self, node):
-        # self._scm.assignment[node]
-        raise NotImplementedError
+    def generate_dataset(self, size):
+        return ScmDataset(self, size)
 
     def visualize_graph(self, experiment_folder_name=None):
         if experiment_folder_name:
