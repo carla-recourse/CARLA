@@ -26,7 +26,7 @@ class DataCatalog(Data):
         self.name = data_name
 
         catalog_content = ["continous", "categorical", "immutable", "target"]
-        self.catalog: Dict[str, Any] = load_catalog(
+        self.catalog: Dict[str, Any] = load_catalog(  # type: ignore
             "data_catalog.yaml", data_name, catalog_content
         )
 

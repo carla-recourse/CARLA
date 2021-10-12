@@ -21,7 +21,7 @@ def load_model(
     datasets that are commonly useful for evaluating counterfatual methods.
 
     Note that the models have been trained on the example datasets hosted on
-    https://github.com/indyfree/cf-models.
+    https://github.com/carla-recourse/cf-models.
 
 
     Use :func:`get_model_names` to see a list of available models given the dataset.
@@ -29,7 +29,7 @@ def load_model(
     Parameters
     ----------
     name : str
-        Name of the model ``{name}.{ext}`` on https://github.com/indyfree/cf-models.
+        Name of the model ``{name}.{ext}`` on https://github.com/carla-recourse/cf-models.
     dataset : str
         Name of the dataset the model has been trained on.
     cache : boolean, optional
@@ -45,7 +45,7 @@ def load_model(
     """
     full_path = (
         "https://raw.githubusercontent.com/"
-        "indyfree/cf-models/main/models/"
+        "carla-recourse/cf-models/main/models/"
         f"{dataset}/{name}.{ext}"
     )
 

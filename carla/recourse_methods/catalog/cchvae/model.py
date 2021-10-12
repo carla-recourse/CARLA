@@ -5,6 +5,7 @@ import pandas as pd
 import torch
 from numpy import linalg as LA
 
+from carla import log
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.autoencoder import (
@@ -193,7 +194,7 @@ class CCHVAE(RecourseMethod):
         while count <= self._max_iter or len(candidate_dist) <= 0:
             count = count + counter_step
             if count > self._max_iter:
-                print("No CE found")
+                log.debug("No counterfactual example found")
                 return x_ce[0]
 
             # STEP 1 -- SAMPLE POINTS on hyper sphere around instance
@@ -236,7 +237,7 @@ class CCHVAE(RecourseMethod):
             elif len(candidate_dist) > 0:
                 # certain candidates generated
                 min_index = np.argmin(candidate_dist)
-                print("CE found")
+                log.debug("Counterfactual example found")
                 return candidate_counterfactuals[min_index]
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
