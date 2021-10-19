@@ -16,10 +16,6 @@ class DataCatalog(Data):
     ----------
     data_name : {'adult', 'compas', 'give_me_some_credit'}
         Used to get the correct dataset from online repository.
-
-    Returns
-    -------
-    None
     """
 
     def __init__(self, data_name: str):
