@@ -9,11 +9,19 @@ class AnnModel(nn.Module):
     ):
         """
         Defines the structure of the neural network
-        :param input_layer: int > 0, number of neurons for this layer
-        :param hidden_layer_1: int > 0, number of neurons for this layer
-        :param hidden_layer_2: int > 0, number of neurons for this layer
-        :param output_layer: int > 0, number of neurons for this layer
-        :param num_of_classes: int > 0, number of classes
+
+        Parameters
+        ----------
+        input_layer: int > 0
+            Number of neurons for this layer.
+        hidden_layer_1: int > 0
+            Number of neurons for this layer.
+        hidden_layer_2: int > 0
+            Number of neurons for this layer.
+        output_layer: int > 0
+            Number of neurons for this layer.
+        num_of_classes: int > 0
+            Number of classes.
         """
         super().__init__()
 
@@ -28,14 +36,20 @@ class AnnModel(nn.Module):
 
         # Activation
         self.relu = nn.ReLU()
-        # self.sigmoid = nn.Sigmoid()
         self.softmax = nn.Softmax()
 
     def forward(self, x):
         """
-        Forwardpass through the network
-        :param input: tabular data
-        :return: prediction
+        Forward pass through the network
+
+        Parameters
+        ----------
+        x: tabular data
+            input
+
+        Returns
+        -------
+        prediction
         """
         output = self.input(x)
         output = self.relu(output)
@@ -46,15 +60,21 @@ class AnnModel(nn.Module):
         output = self.output(output)
         output = self.softmax(output)
 
-        # output = output.squeeze()
-
         return output
 
     def proba(self, data):
         """
         Computes probabilistic output for two classes
-        :param data: torch tabular input
-        :return: np.array
+
+        Parameters
+        ----------
+        data: torch tabular
+            input
+
+        Returns
+        -------
+        np.array
+
         """
         if not torch.is_tensor(data):
             input = torch.from_numpy(np.array(data)).float()
@@ -70,12 +90,18 @@ class AnnModel(nn.Module):
     def prob_predict(self, data):
         """
         Computes probabilistic output for two classes
-        :param data: torch tabular input
-        :return: np.array
+
+        Parameters
+        ----------
+        data: torch tabular
+            input
+
+        Returns
+        -------
+        np.array
         """
         if not torch.is_tensor(data):
             input = torch.from_numpy(np.array(data)).float()
-            # input = torch.squeeze(input)
         else:
             input = torch.squeeze(data)
 
@@ -93,8 +119,15 @@ class AnnModel(nn.Module):
     def predict(self, data):
         """
         predict method for CFE-Models which need this method.
-        :param data: torch or list
-        :return: np.array with prediction
+
+        Parameters
+        ----------
+        data: Union(torch, list)
+
+        Returns
+        -------
+        np.array with prediction
+
         """
         if not torch.is_tensor(data):
             input = torch.from_numpy(np.array(data)).float()

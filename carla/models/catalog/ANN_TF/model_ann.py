@@ -1,6 +1,7 @@
+import os
+
 import tensorflow as tf
-from keras import activations
-from keras.layers import Activation, Dense
+from keras.layers import Dense
 from keras.models import Sequential
 from keras.utils import to_categorical
 
@@ -19,20 +20,24 @@ class AnnModel:
         dim_output_layer,
         num_of_classes,
         data_name,
-        restore=None,
-        use_prob=False,
     ):
-
-        # For model loading
         """
-        :param dim_input: int > 0, number of neurons for this layer
-        :param dim_hidden_layer_1: int > 0, number of neurons for this layer
-        :param dim_hidden_layer_2: int > 0, number of neurons for this layer
-        :param dim_output_layer: int > 0, number of neurons for this layer
-        :param num_of_classes: int > 0, number of classes
-        :param use_prob: boolean; FALSE required for CEM; all others should use True
-        """  #
 
+        Parameters
+        ----------
+        dim_input: int > 0
+            Number of neurons for this layer.
+        dim_hidden_layer1: int > 0
+            Number of neurons for this layer.
+        dim_hidden_layer2: int > 0
+            Number of neurons for this layer.
+        dim_output_layer: int > 0
+            Number of neurons for this layer.
+        num_of_classes: int > 0
+            Number of classes.
+        data_name: str
+            Name of the dataset.
+        """
         self.data_name = data_name
         self.dim_input = dim_input
         self.dim_hidden_layer1 = dim_hidden_layer1
@@ -40,45 +45,7 @@ class AnnModel:
         self.dim_output_layer = dim_output_layer
         self.num_of_classes = num_of_classes
 
-        model = Sequential(
-            [
-                Dense(
-                    self.dim_hidden_layer1, input_dim=self.dim_input, activation="relu"
-                ),
-                Dense(self.dim_hidden_layer2, activation="relu"),
-                Dense(self.dim_output_layer, activation="relu"),
-                Dense(self.num_of_classes),
-            ]
-        )
-
-        # whether to output probability
-        if use_prob:
-            model.add(Activation(activations.softmax))
-        if restore:
-            model.load_weights(restore)
-            model.summary()
-
-        self.model = model
-
-    def __call__(self, data):
-        return self.predict(data)
-
-    def predict(self, data):
-        return self.model(data)
-
-    def build_train_save_model(
-        self,
-        xtrain,
-        ytrain,
-        xtest,
-        ytest,
-        learning_rate,
-        epochs,
-        batch_size,
-        model_name="ann_tf",
-        model_directory="saved_models",
-    ):
-        model = Sequential(
+        self.model = Sequential(
             [
                 Dense(
                     self.dim_hidden_layer1, input_dim=self.dim_input, activation="relu"
@@ -89,7 +56,24 @@ class AnnModel:
             ]
         )
 
-        # sgd = optimizers.SGD(lr=self.learning_rate, momentum=0.9, decay=0, nesterov=False)
+    def __call__(self, data):
+        return self.predict(data)
+
+    def predict(self, data):
+        return self.model(data)
+
+    def build_train_save_model(
+        self,
+        x_train,
+        y_train,
+        x_test,
+        y_test,
+        epochs,
+        batch_size,
+        model_name="ann_tf",
+        model_directory="saved_models",
+    ):
+        model = self.model
 
         # Compile the model
         model.compile(
@@ -100,18 +84,23 @@ class AnnModel:
 
         # Train the model
         model.fit(
-            xtrain,
-            to_categorical(ytrain),
+            x_train,
+            to_categorical(y_train),
             epochs=epochs,
             shuffle=True,
             batch_size=batch_size,
-            validation_data=(xtest, to_categorical(ytest)),
+            validation_data=(x_test, to_categorical(y_test)),
         )
 
-        # hist = model
-        # test_error = 1 - hist.history.history["val_accuracy"][-1]
+        hist = model
+        test_error = 1 - hist.history.history["val_accuracy"][-1]
+        print(f"Test {model_name} on {self.data_name}:", test_error)
 
         # save model
+        if not os.path.exists(model_directory):
+            os.mkdir(model_directory)
         model.save(
             f"{model_directory}/{model_name}_{self.data_name}_input_{self.dim_input:.0f}.h5"
         )
+
+        self.model = model

@@ -1,3 +1,4 @@
+import os
 from typing import Union
 
 import pandas as pd
@@ -19,8 +20,28 @@ def train_model(
     learning_rate: float,
     epochs: int,
     batch_size: int,
-    **kws,
 ):
+    """
+
+    Parameters
+    ----------
+    catalog_model: MLModelCatalog
+        API for classifier
+    x: pd.DataFrame
+        features
+    y: pd.DataFrame
+        labels
+    learning_rate: float
+        Learning rate for the training.
+    epochs: int
+        Number of epochs to train on.
+    batch_size: int
+        Size of each batch
+
+    Returns
+    -------
+
+    """
     x_train, x_test, y_train, y_test = train_test_split(x, y)
     if catalog_model.backend == "tensorflow":
         if catalog_model.model_type == "linear":
@@ -41,7 +62,7 @@ def train_model(
         else:
             raise ValueError("model type not recognized")
         model.build_train_save_model(
-            x_train, y_train, x_test, y_test, learning_rate, epochs, batch_size
+            x_train, y_train, x_test, y_test, epochs, batch_size
         )
         model = model.model
     elif catalog_model.backend == "pytorch":
@@ -102,17 +123,7 @@ def training_torch(
     model_name,
     model_directory="saved_models",
 ):
-    def weighted_binary_cross_entropy(output, target, weights=None):
-        if weights is not None:
-            assert len(weights) == 2
-
-            loss = weights[1] * (target * torch.log(output)) + weights[0] * (
-                (1 - target) * torch.log(1 - output)
-            )
-        else:
-            loss = target * torch.log(output) + (1 - target) * torch.log(1 - output)
-
-        return torch.neg(torch.mean(loss))
+    loaders = {"train": train_loader, "test": test_loader}
 
     # Use GPU is available
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -122,68 +133,66 @@ def training_torch(
     criterion = nn.BCELoss()
 
     # declaring optimizer
-    # optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
 
     # training
-    loss_per_iter = []
-    loss_per_batch = []
+    # loss_per_iter = []
+    # loss_per_batch = []
+    trace_input = True
     for e in range(epochs):
-        running_loss = 0.0
-        for i, (inputs, labels) in enumerate(train_loader):
-            inputs = inputs.to(device)
-            labels = labels.to(device)
-            labels = torch.nn.functional.one_hot(labels)
+        print("Epoch {}/{}".format(e, epochs - 1))
+        print("-" * 10)
 
-            # Training pass
-            optimizer.zero_grad()
+        # Each epoch has a training and validation phase
+        for phase in ["train", "test"]:
 
-            outputs = model(inputs.float())
+            running_loss = 0.0
+            running_corrects = 0.0
 
-            """
-            Due to high class imbalance for give-me credit data set, we give 0-class higher weight
-            For the ANN, the weight has to be quite high; otherwise constant class 1 is predicted
-            """
-            if data_name == "give-me":
-                loss = weighted_binary_cross_entropy(
-                    outputs.reshape(-1), labels.float(), [0.7, 0.3]
-                )
+            if phase == "train":
+                model.train()  # Set model to training mode
             else:
-                loss = criterion(outputs, labels.float())
-            loss.backward()
-            optimizer.step()
+                model.eval()  # Set model to evaluation mode
 
-            # Save loss to plot
-            running_loss += loss.item()
-            loss_per_iter.append(loss.item())
+            for i, (inputs, labels) in enumerate(loaders[phase]):
+                inputs = inputs.to(device)
+                if trace_input:
+                    x_for_trace = inputs
+                    trace_input = False
+                labels = labels.to(device)
 
-        loss_per_batch.append(running_loss / (i + 1))
-        print("Epoch {} Loss {:.5f}".format(e, running_loss / (i + 1)))
+                labels = labels.to(device).type(torch.int64)
+                labels = torch.nn.functional.one_hot(labels)
 
-    # Comparing training to test
-    dataiter = iter(test_loader)
-    inputs, labels = dataiter.next()
-    inputs = inputs.to(device)
-    labels = labels.to(device)
-    labels = torch.nn.functional.one_hot(labels)
-    outputs = model(inputs.float())
-    print("==========================================")
-    print("Binary Cross Entropy loss")
-    train_loss = loss_per_batch[-1]
-    print("Training:", train_loss)
-    test_loss = (
-        criterion(
-            outputs,
-            labels.float(),
-        )
-        .detach()
-        .cpu()
-        .numpy()
-    )
-    print("Test:", test_loss)
+                optimizer.zero_grad()
+
+                with torch.set_grad_enabled(phase == "train"):
+                    outputs = model(inputs.float())
+                    loss = criterion(outputs, labels.float())
+
+                    # backward + optimize only if in training phase
+                    if phase == "train":
+                        loss.backward()
+                        optimizer.step()
+
+                # statistics
+                running_loss += loss.item() * inputs.size(0)
+                running_corrects += torch.sum(
+                    torch.argmax(outputs, axis=1)
+                    == torch.argmax(labels, axis=1).float()
+                )
+
+            epoch_loss = running_loss / len(loaders[phase].dataset)
+            epoch_acc = running_corrects.double() / len(loaders[phase].dataset)
+
+            print("{} Loss: {:.4f} Acc: {:.4f}".format(phase, epoch_loss, epoch_acc))
+            print()
 
     # save model
-    torch.save(
-        model.state_dict(),
+    if not os.path.exists(model_directory):
+        os.mkdir(model_directory)
+    model_to_trace = model.to("cpu")
+    traced = torch.jit.trace(model_to_trace, (x_for_trace.cpu().float()))
+    traced.save(
         f"{model_directory}/{model_name}_{data_name}_input_{model.input_neurons}.pt",
     )

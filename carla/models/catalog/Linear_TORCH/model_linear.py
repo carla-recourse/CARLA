@@ -25,7 +25,7 @@ class LinearModel(nn.Module):
 
     def forward(self, x):
         """
-        Forwardpass through the network
+        Forward pass through the network
         :param input: tabular data
         :return: prediction
         """

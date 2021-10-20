@@ -1,46 +1,36 @@
 import os
 
-from keras import activations
-from keras.layers import Activation, Dense
+from keras.layers import Dense
 from keras.models import Sequential
 from keras.utils import to_categorical
 
 
 class LinearModel:
-    def __init__(
-        self, dim_input, num_of_classes, data_name, restore=None, use_prob=False
-    ):
-
-        # For model loading
+    def __init__(self, dim_input, num_of_classes, data_name):
         """
-        :param dim_input: int > 0, number of neurons for this layer
-        :param num_of_classes: int > 0, number of classes
-        :param use_prob: boolean; FALSE required for CEM; all others should use True
-        """  #
+
+        Parameters
+        ----------
+        dim_input: int > 0
+            number of neurons for this layer
+        num_of_classes: int > 0
+            number of classes
+        data_name: str
+            name of the dataset
+        """
 
         self.data_name = data_name
         self.dim_input = dim_input
         self.num_of_classes = num_of_classes
 
-        model = Sequential(
+        self.model = Sequential(
             [
                 Dense(
                     self.num_of_classes, input_dim=self.dim_input, activation="linear"
                 ),
-                Dense(self.num_of_classes),
+                Dense(self.num_of_classes, activation="softmax"),
             ]
         )
-
-        self.model = model
-
-        # whether to output probability
-        if use_prob:
-            model.add(Activation(activations.softmax))
-        if restore:
-            model.load_weights(restore)
-            model.summary()
-
-        self.model = model
 
     def __call__(self, data):
         return self.predict(data)
@@ -51,9 +41,18 @@ class LinearModel:
     def get_coefficients(self, c):
         """
         Calculates the coefficients of the model.
-        :param c: int, defines the coefficients
-        :return: Tuple of tensor (coefficients), tensor (intersection)
+
+        Parameters
+        ----------
+        c: int
+            defines the coeficients
+
+        Returns
+        -------
+        Tuple of tensor (coefficients), tensor (intersection)
+
         """
+
         coef = self.model.weights[0]
         coef = coef[:, c]
 
@@ -64,26 +63,16 @@ class LinearModel:
 
     def build_train_save_model(
         self,
-        xtrain,
-        ytrain,
-        xtest,
-        ytest,
-        learning_rate,
+        x_train,
+        y_train,
+        x_test,
+        y_test,
         epochs,
         batch_size,
         model_name="linear_tf",
         model_directory="saved_models",
     ):
-        model = Sequential(
-            [
-                Dense(
-                    self.num_of_classes, input_dim=self.dim_input, activation="linear"
-                ),
-                Dense(self.num_of_classes, activation="softmax"),
-            ]
-        )
-
-        # sgd = optimizers.SGD(lr=self.learning_rate, momentum=0.9, decay=0, nesterov=False)
+        model = self.model
 
         # Compile the model
         model.compile(
@@ -94,22 +83,24 @@ class LinearModel:
 
         # Train the model
         model.fit(
-            xtrain,
-            to_categorical(ytrain),
+            x_train,
+            to_categorical(y_train),
             epochs=epochs,
             shuffle=True,
             batch_size=batch_size,
-            validation_data=(xtest, to_categorical(ytest)),
+            validation_data=(x_test, to_categorical(y_test)),
         )
 
-        self.model = model
-
-        # hist = model
-        # test_error = 1 - hist.history.history["val_accuracy"][-1]
+        hist = model
+        test_error = 1 - hist.history.history["val_accuracy"][-1]
+        print(f"Test {model_name} on {self.data_name}:", test_error)
 
         # save model
         if not os.path.exists(model_directory):
             os.mkdir(model_directory)
+
         model.save(
             f"{model_directory}/{model_name}_{self.data_name}_input_{self.dim_input:.0f}.h5"
         )
+
+        self.model = model
