@@ -4,23 +4,24 @@ from torch import nn
 
 
 class LinearModel(nn.Module):
-    def __init__(self, input_layer, output_layer, num_of_classes):
+    def __init__(self, dim_input, num_of_classes):
         """
-        Defines the structure of the neural network
-        :param input_layer: int > 0, number of neurons for this layer
-        :param output_layer: int > 0, number of neurons for this layer
-        :param num_of_classes: int > 0, number of classes
+
+        Parameters
+        ----------
+        dim_input: int > 0
+            number of neurons for this layer
+        num_of_classes: int > 0
+            number of classes
         """
         super().__init__()
 
         # number of input neurons
-        self.input_neurons = input_layer
+        self.input_neurons = dim_input
 
         # Layer
-        self.input = nn.Linear(input_layer, output_layer)
-        self.output = nn.Linear(output_layer, num_of_classes)
+        self.output = nn.Linear(dim_input, num_of_classes)
 
-        # self.sigmoid = nn.Sigmoid()
         self.softmax = nn.Softmax()
 
     def forward(self, x):
@@ -29,8 +30,7 @@ class LinearModel(nn.Module):
         :param input: tabular data
         :return: prediction
         """
-        output = self.input(x)
-        output = self.output(output)
+        output = self.output(x)
         output = self.softmax(output)
 
         # output = output.squeeze()

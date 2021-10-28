@@ -71,9 +71,7 @@ def train_model(
         test_dataset = DataFrameDataset(x_test, y_test)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
         if catalog_model.model_type == "linear":
-            model = linear_torch(
-                input_layer=x.shape[1], output_layer=2, num_of_classes=len(pd.unique(y))
-            )
+            model = linear_torch(dim_input=x.shape[1], num_of_classes=len(pd.unique(y)))
         elif catalog_model.model_type == "ann":
             model = ann_torch(
                 input_layer=x.shape[1],
