@@ -37,29 +37,6 @@ class LinearModel:
     def predict(self, data):
         return self.model(data)
 
-    def get_coefficients(self, c):
-        """
-        Calculates the coefficients of the model.
-
-        Parameters
-        ----------
-        c: int
-            defines the coeficients
-
-        Returns
-        -------
-        Tuple of tensor (coefficients), tensor (intersection)
-
-        """
-
-        coef = self.model.weights[0]
-        coef = coef[:, c]
-
-        inter = self.model.weights[1]
-        inter = inter[c]
-
-        return coef, inter
-
     def build_train_save_model(
         self,
         x_train,
