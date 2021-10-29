@@ -26,9 +26,8 @@ class LinearModel:
         self.model = Sequential(
             [
                 Dense(
-                    self.num_of_classes, input_dim=self.dim_input, activation="linear"
+                    self.num_of_classes, input_dim=self.dim_input, activation="softmax"
                 ),
-                Dense(self.num_of_classes, activation="softmax"),
             ]
         )
 
