@@ -58,8 +58,15 @@ def test_ar_get_counterfactual(model_type):
 
     if model_type == "linear":
         # get weights and bias of linear layer for negative class 0
-        coeffs = model_tf.raw_model.layers[0].get_weights()[0][:, 0]
-        intercepts = np.array(model_tf.raw_model.layers[0].get_weights()[1][0])
+        coeffs_neg = model_tf.raw_model.layers[0].get_weights()[0][:, 0]
+        intercepts_neg = np.array(model_tf.raw_model.layers[0].get_weights()[1][0])
+
+        # get weights and bias of linear layer for positive class 1
+        coeffs_pos = model_tf.raw_model.layers[0].get_weights()[0][:, 1]
+        intercepts_pos = np.array(model_tf.raw_model.layers[0].get_weights()[1][1])
+
+        coeffs = -(coeffs_neg - coeffs_pos)
+        intercepts = -(intercepts_neg - intercepts_pos)
 
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
