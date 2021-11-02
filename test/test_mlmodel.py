@@ -37,6 +37,23 @@ def test_properties():
     assert model_tf_adult.feature_input_order == exp_feature_order_adult
 
 
+def test_inverse_pipeline():
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    model_tf_adult = MLModelCatalog(data, "ann")
+
+    transformed_data = model_tf_adult.perform_pipeline(data.raw)
+    detransformed_data = model_tf_adult.perform_inverse_pipeline(transformed_data)
+    # sklearn scales produces results of e.g. 38.9999999999 vs 39.0
+    detransformed_data[data.continous] = detransformed_data[data.continous].round(1)
+
+    expected_data = data.raw[detransformed_data.columns]
+    expected_data[data.continous] = expected_data[data.continous].astype("float")
+    expected_data.columns = detransformed_data.columns
+    assert detransformed_data.equals(expected_data)
+
+
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_tf(model_type, data_name):

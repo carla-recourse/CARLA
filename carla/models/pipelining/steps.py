@@ -31,6 +31,33 @@ def scale(
     return output
 
 
+def descale(
+    fitted_scaler: BaseEstimator, features: List[str], df: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Pipeline function to de-normalize data with fitted sklearn scaler.
+
+    Parameters
+    ----------
+    fitted_scaler : sklearn Scaler
+        Normalizes input data
+    features : list
+        List of continuous feature
+    df : pd.DataFrame
+        Data we want to de-normalize
+
+    Returns
+    -------
+    output : pd.DataFrame
+        Whole DataFrame with de-normalized values
+
+    """
+    output = df.copy()
+    output[features] = fitted_scaler.inverse_transform(output[features])
+
+    return output
+
+
 def encode(
     fitted_encoder: BaseEstimator, features: List[str], df: pd.DataFrame
 ) -> pd.DataFrame:
@@ -96,6 +123,8 @@ def decode(
 def order_data(feature_order: List[str], df: pd.DataFrame) -> pd.DataFrame:
     """
     Restores the correct input feature order for the ML model
+
+    Only works for encoded data
 
     Parameters
     ----------
