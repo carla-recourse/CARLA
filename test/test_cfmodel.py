@@ -234,8 +234,8 @@ def test_clue(model_type):
         "data_name": data_name,
         "train_vae": True,
         "width": 10,
-        "depth": 3,
-        "latent_dim": 12,
+        "depth": 2,
+        "latent_dim": 8,
         "batch_size": 64,
         "epochs": 1,  # Only for test purpose, else at least 10 epochs
         "lr": 1e-3,
