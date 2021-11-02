@@ -82,7 +82,7 @@ def train_model(
             )
         else:
             raise ValueError("model type not recognized")
-        training_torch(
+        _training_torch(
             model,
             train_loader,
             test_loader,
@@ -111,7 +111,7 @@ class DataFrameDataset(Dataset):
         return self.X_train[idx], self.Y_train[idx]
 
 
-def training_torch(
+def _training_torch(
     model,
     train_loader,
     test_loader,
