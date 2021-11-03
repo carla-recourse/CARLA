@@ -47,8 +47,8 @@ def test_dice_get_counterfactuals(model_type):
     assert non_nan_cfs.shape[0] > 0
 
 
-# @pytest.mark.parametrize("model_type", testmodel)
-def test_ar_get_counterfactual(model_type="linear"):
+@pytest.mark.parametrize("model_type", testmodel)
+def test_ar_get_counterfactual(model_type):
     # Build data and mlmodel
     data_name = "adult"
     data = DataCatalog(data_name)
