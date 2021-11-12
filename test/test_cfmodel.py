@@ -20,13 +20,18 @@ from carla.recourse_methods.catalog.wachter import Wachter
 testmodel = ["ann", "linear"]
 
 
-def test_feature_tweak_get_counterfactuals():
+@pytest.mark.parametrize("model_type", ["xgboost", "sklearn"])
+def test_feature_tweak_get_counterfactuals(model_type):
 
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    model = XGBoostModel(data)
-    # model = ForestModel(data)
+    if model_type == "xgboost":
+        model = XGBoostModel(data)
+    elif model_type == "sklearn":
+        model = ForestModel(data)
+    else:
+        raise ValueError("model type not recognized")
 
     hyperparams = {
         "eps": 0.1,
@@ -42,13 +47,18 @@ def test_feature_tweak_get_counterfactuals():
     assert test_factual[data.continous + [data.target]].shape == cfs.shape
 
 
-def test_focus_get_counterfactuals():
+@pytest.mark.parametrize("model_type", ["xgboost", "sklearn"])
+def test_focus_get_counterfactuals(model_type):
 
     data_name = "adult"
     data = DataCatalog(data_name)
 
-    # model = XGBoostModel(data)
-    model = ForestModel(data)
+    if model_type == "xgboost":
+        model = XGBoostModel(data)
+    elif model_type == "sklearn":
+        model = ForestModel(data)
+    else:
+        raise ValueError("model type not recognized")
 
     hyperparams = {
         "optimizer": "adam",

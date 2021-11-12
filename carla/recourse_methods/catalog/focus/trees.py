@@ -3,11 +3,8 @@ import tensorflow as tf
 import xgboost.core
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 
-from carla.recourse_methods.catalog.focus.tree_model import (
-    ForestModel,
-    XGBoostModel,
-    parse_booster,
-)
+from carla.recourse_methods.catalog.focus.parse_xgboost import parse_booster
+from carla.recourse_methods.catalog.focus.tree_model import ForestModel, XGBoostModel
 
 
 def _split_approx(node, feat_input, feat_index, threshold, sigma):

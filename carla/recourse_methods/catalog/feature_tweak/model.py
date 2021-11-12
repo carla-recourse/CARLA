@@ -9,11 +9,8 @@ import xgboost.core
 
 from carla.data.api import Data
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.catalog.focus.tree_model import (
-    ForestModel,
-    XGBoostModel,
-    parse_booster,
-)
+from carla.recourse_methods.catalog.focus.parse_xgboost import parse_booster
+from carla.recourse_methods.catalog.focus.tree_model import ForestModel, XGBoostModel
 from carla.recourse_methods.processing import check_counterfactuals
 
 
