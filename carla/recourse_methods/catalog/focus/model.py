@@ -1,3 +1,9 @@
+"""
+Lucic, A., Oosterhuis, H., Haned, H., & de Rijke, M. (2019).
+FOCUS: Flexible optimizable counterfactual explanations for tree ensembles.
+arXiv preprint arXiv:1911.12199.
+"""
+
 from typing import Dict
 
 import numpy as np
