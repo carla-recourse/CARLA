@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import torch
+from pandas._testing import assert_frame_equal
 
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
@@ -50,13 +51,7 @@ def test_inverse_pipeline():
     expected_data[data.continous] = expected_data[data.continous].astype("float")
     expected_data.columns = detransformed_data.columns
 
-    # sklearn scales produces results of e.g. 38.9999999999 vs 39.0
-    assert (
-        expected_data[data.continous] - detransformed_data[data.continous]
-    ).sum().sum() == pytest.approx(0.0, abs=1e-6)
-    assert detransformed_data[data.categoricals].equals(
-        expected_data[data.categoricals]
-    )
+    assert_frame_equal(expected_data, detransformed_data)
 
 
 @pytest.mark.parametrize("model_type", testmodel)
