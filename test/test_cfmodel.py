@@ -58,8 +58,15 @@ def test_ar_get_counterfactual(model_type):
 
     if model_type == "linear":
         # get weights and bias of linear layer for negative class 0
-        coeffs = model_tf.raw_model.layers[0].get_weights()[0][:, 0]
-        intercepts = np.array(model_tf.raw_model.layers[0].get_weights()[1][0])
+        coeffs_neg = model_tf.raw_model.layers[0].get_weights()[0][:, 0]
+        intercepts_neg = np.array(model_tf.raw_model.layers[0].get_weights()[1][0])
+
+        # get weights and bias of linear layer for positive class 1
+        coeffs_pos = model_tf.raw_model.layers[0].get_weights()[0][:, 1]
+        intercepts_pos = np.array(model_tf.raw_model.layers[0].get_weights()[1][1])
+
+        coeffs = -(coeffs_neg - coeffs_pos)
+        intercepts = -(intercepts_neg - intercepts_pos)
 
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
@@ -177,7 +184,7 @@ def test_face_get_counterfactuals(model_type):
     model_tf = MLModelCatalog(data, model_type)
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
-    test_factual = factuals.iloc[:2]
+    test_factual = factuals.iloc[:5]
 
     # Test for knn mode
     hyperparams = {"mode": "knn", "fraction": 0.05}
@@ -234,8 +241,8 @@ def test_clue(model_type):
         "data_name": data_name,
         "train_vae": True,
         "width": 10,
-        "depth": 3,
-        "latent_dim": 12,
+        "depth": 2,
+        "latent_dim": 8,
         "batch_size": 64,
         "epochs": 1,  # Only for test purpose, else at least 10 epochs
         "lr": 1e-3,
