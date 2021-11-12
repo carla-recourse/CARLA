@@ -44,9 +44,13 @@ def load_scm_equations(scm_class: str):
     ###########################
     #  loading scm equations  #
     ###########################
-    structural_equations_np, structural_equations_ts, noise_distributions = scm_dict[
-        scm_class
-    ]()
+    (
+        structural_equations_np,
+        structural_equations_ts,
+        noise_distributions,
+        continous,
+        categoricals,
+    ) = scm_dict[scm_class]()
 
     ###########################
     #       some checks       #
@@ -67,4 +71,10 @@ def load_scm_equations(scm_class: str):
     ):
         raise ValueError("endogenous variables must start with `x`.")
 
-    return structural_equations_np, structural_equations_ts, noise_distributions
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noise_distributions,
+        continous,
+        categoricals,
+    )

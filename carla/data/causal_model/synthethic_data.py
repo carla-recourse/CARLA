@@ -13,6 +13,17 @@ def _get_noise_string(node):
 
 
 def _create_synthetic_data(scm, num_samples):
+    """
+    Generate synthetic data.
+
+    Parameters
+    ----------
+    scm : CausalModel
+        Structural causal model
+    num_samples : int
+        Number of samples in the dataset
+
+    """
 
     exogenous_variables = np.concatenate(
         [
@@ -80,15 +91,16 @@ class ScmDataset(Data):
 
     def __init__(self, scm, size: int):
         self.name = scm.scm_class
+        self.scm = scm
         self._raw = _create_synthetic_data(scm, num_samples=size)
 
     @property
     def categoricals(self) -> List[str]:
-        pass
+        return self.scm._categoricals
 
     @property
     def continous(self) -> List[str]:
-        pass
+        return self.scm._continous
 
     @property
     def immutables(self) -> List[str]:

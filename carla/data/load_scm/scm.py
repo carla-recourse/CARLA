@@ -24,8 +24,16 @@ def sanity_3_lin():
         "u2": Normal(0, 1),
         "u3": Normal(0, 1),
     }
+    continous = list(structural_equations_np.keys()) + list(noises_distributions.keys())
+    categoricals = []
 
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def sanity_3_anm():
@@ -44,8 +52,16 @@ def sanity_3_anm():
         "u2": Normal(0, 0.1),
         "u3": Normal(0, 1),
     }
+    continous = list(structural_equations_np.keys()) + list(noises_distributions.keys())
+    categoricals = []
 
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def bu_sanity_3_gen():
@@ -68,7 +84,15 @@ def bu_sanity_3_gen():
         "u2": Normal(0, 1),
         "u3": Normal(0, 1),
     }
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = list(structural_equations_np.keys()) + list(noises_distributions.keys())
+    categoricals = []
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def sanity_3_gen_old():
@@ -93,7 +117,15 @@ def sanity_3_gen_old():
         "u2": Normal(0, 1),
         "u3": Normal(0, 1),
     }
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = list(structural_equations_np.keys()) + list(noises_distributions.keys())
+    categoricals = []
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def sanity_3_gen_new():
@@ -115,7 +147,15 @@ def sanity_3_gen_new():
         "u2": Normal(0, 0.3),
         "u3": Normal(0, 1),
     }
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = list(structural_equations_np.keys()) + list(noises_distributions.keys())
+    categoricals = []
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def sanity_3_gen():
@@ -150,7 +190,15 @@ def sanity_3_gen():
         "u2": Normal(0, 0.5 ** 2),
         "u3": Normal(0, 0.25 ** 2),
     }
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = list(structural_equations_np.keys()) + list(noises_distributions.keys())
+    categoricals = []
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def sanity_6_lin():
@@ -171,7 +219,15 @@ def sanity_6_lin():
         "u5": Normal(0, 2),
         "u6": Normal(0, 2),
     }
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = list(structural_equations_np.keys()) + list(noises_distributions.keys())
+    categoricals = []
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def german_credit():
@@ -286,7 +342,19 @@ def german_credit():
         # Savings
         "u7": Normal(0, 5 ** 2),
     }
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = (
+        list(structural_equations_np.keys())[1:] + list(noises_distributions.keys())[1:]
+    )
+    categoricals = (
+        list(structural_equations_np.keys())[:1] + list(noises_distributions.keys())[:1]
+    )
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def adult():
@@ -312,7 +380,19 @@ def adult():
         "u7": Normal(0, 1),
         "u8": Normal(0, 1),
     }
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = (
+        list(structural_equations_np.keys())[3:] + list(noises_distributions.keys())[3:]
+    )
+    categoricals = (
+        list(structural_equations_np.keys())[:3] + list(noises_distributions.keys())[:3]
+    )
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def fair_imf_lin():
@@ -329,7 +409,19 @@ def fair_imf_lin():
         "u3": Normal(0, 1),
         "u4": Normal(0, 1),
     }
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = (
+        list(structural_equations_np.keys())[1:] + list(noises_distributions.keys())[1:]
+    )
+    categoricals = (
+        list(structural_equations_np.keys())[:1] + list(noises_distributions.keys())[:1]
+    )
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def fair_cau_lin():
@@ -348,8 +440,19 @@ def fair_cau_lin():
         "u3": Normal(0, 1),
         "u4": Normal(0, 1),
     }
-
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = (
+        list(structural_equations_np.keys())[1:] + list(noises_distributions.keys())[1:]
+    )
+    categoricals = (
+        list(structural_equations_np.keys())[:1] + list(noises_distributions.keys())[:1]
+    )
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )
 
 
 def fair_cau_anm():
@@ -368,4 +471,16 @@ def fair_cau_anm():
         "u3": Normal(0, 1),
         "u4": Normal(0, 1),
     }
-    return structural_equations_np, structural_equations_ts, noises_distributions
+    continous = (
+        list(structural_equations_np.keys())[1:] + list(noises_distributions.keys())[1:]
+    )
+    categoricals = (
+        list(structural_equations_np.keys())[:1] + list(noises_distributions.keys())[:1]
+    )
+    return (
+        structural_equations_np,
+        structural_equations_ts,
+        noises_distributions,
+        continous,
+        categoricals,
+    )

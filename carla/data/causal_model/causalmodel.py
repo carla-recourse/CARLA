@@ -36,6 +36,8 @@ class CausalModel:
             self._structural_equations_np,
             self._structural_equations_ts,
             self._noise_distributions,
+            self._continous,
+            self._categoricals,
         ) = load_scm_equations(scm_class)
 
         self._scm = StructuralCausalModel(self._structural_equations_np)
