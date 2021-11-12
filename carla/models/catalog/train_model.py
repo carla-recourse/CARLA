@@ -53,9 +53,7 @@ def train_model(
         elif catalog_model.model_type == "ann":
             model = ann_tf(
                 dim_input=x.shape[1],
-                dim_hidden_layer1=18,
-                dim_hidden_layer2=9,
-                dim_output_layer=3,
+                dim_hidden_layers=[18, 9, 3],
                 num_of_classes=len(pd.unique(y)),
                 data_name=catalog_model.data.name,
             )
@@ -75,9 +73,7 @@ def train_model(
         elif catalog_model.model_type == "ann":
             model = ann_torch(
                 input_layer=x.shape[1],
-                hidden_layer_1=18,
-                hidden_layer_2=9,
-                output_layer=3,
+                hidden_layers=[18, 9, 3],
                 num_of_classes=len(pd.unique(y)),
             )
         else:
@@ -134,8 +130,6 @@ def _training_torch(
     optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
 
     # training
-    # loss_per_iter = []
-    # loss_per_batch = []
     trace_input = True
     for e in range(epochs):
         print("Epoch {}/{}".format(e, epochs - 1))

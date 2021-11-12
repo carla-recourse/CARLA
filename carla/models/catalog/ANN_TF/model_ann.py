@@ -15,9 +15,7 @@ class AnnModel:
     def __init__(
         self,
         dim_input,
-        dim_hidden_layer1,
-        dim_hidden_layer2,
-        dim_output_layer,
+        dim_hidden_layers,
         num_of_classes,
         data_name,
     ):
@@ -26,35 +24,36 @@ class AnnModel:
         Parameters
         ----------
         dim_input: int > 0
-            Number of neurons for this layer.
-        dim_hidden_layer1: int > 0
-            Number of neurons for this layer.
-        dim_hidden_layer2: int > 0
-            Number of neurons for this layer.
-        dim_output_layer: int > 0
-            Number of neurons for this layer.
+            Dimension of the input / number of features
+        dim_hidden_layers: list
+            List where each element is the number of neurons in the ith hidden layer
         num_of_classes: int > 0
-            Number of classes.
+            Dimension of the output / number of classes.
         data_name: str
             Name of the dataset.
         """
         self.data_name = data_name
         self.dim_input = dim_input
-        self.dim_hidden_layer1 = dim_hidden_layer1
-        self.dim_hidden_layer2 = dim_hidden_layer2
-        self.dim_output_layer = dim_output_layer
+        self.dim_hidden_layers = dim_hidden_layers
         self.num_of_classes = num_of_classes
 
-        self.model = Sequential(
-            [
-                Dense(
-                    self.dim_hidden_layer1, input_dim=self.dim_input, activation="relu"
-                ),
-                Dense(self.dim_hidden_layer2, activation="relu"),
-                Dense(self.dim_output_layer, activation="relu"),
-                Dense(self.num_of_classes, activation="softmax"),
-            ]
-        )
+        self.model = Sequential()
+        for i, dim_layer in enumerate(dim_hidden_layers):
+            # first layer requires input dimension
+            if i == 0:
+                self.model.add(
+                    Dense(
+                        units=dim_layer,
+                        input_dim=self.dim_input,
+                        activation="relu",
+                    )
+                )
+            else:
+                self.model.add(Dense(units=dim_layer, activation="relu"))
+        # layer that does the classification
+        self.model.add(Dense(units=self.num_of_classes, activation="softmax"))
+
+        print(self.model.summary())
 
     def __call__(self, data):
         return self.predict(data)
