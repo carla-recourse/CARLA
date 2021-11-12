@@ -19,6 +19,8 @@ class AnnModel(nn.Module):
         """
         super().__init__()
 
+        self.input_neurons = input_layer
+
         # Layer
         self.layers = nn.ModuleList()
         # input layer
@@ -28,11 +30,6 @@ class AnnModel(nn.Module):
             self.layers.append(nn.Linear(hidden_layers[i], hidden_layers[i + 1]))
         # output layer
         self.layers.append(nn.Linear(hidden_layers[-1], num_of_classes))
-
-        # self.input = nn.Linear(input_layer, hidden_layer_1)
-        # self.hidden_1 = nn.Linear(hidden_layer_1, hidden_layer_2)
-        # self.hidden_2 = nn.Linear(hidden_layer_2, output_layer)
-        # self.output = nn.Linear(output_layer, num_of_classes)
 
         # Activation
         self.relu = nn.ReLU()
@@ -51,15 +48,6 @@ class AnnModel(nn.Module):
         -------
         prediction
         """
-        # output = self.input(x)
-        # output = self.relu(output)
-        # output = self.hidden_1(output)
-        # output = self.relu(output)
-        # output = self.hidden_2(output)
-        # output = self.relu(output)
-        # output = self.output(output)
-        # output = self.softmax(output)
-
         for i, l in enumerate(self.layers):
             x = l(x)
             if i < len(self.layers) - 1:
