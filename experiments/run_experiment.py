@@ -1,6 +1,8 @@
 # flake8: noqa
 import os
 
+from carla import log
+
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import warnings
@@ -78,12 +80,25 @@ def initialize_recourse_method(
         ar.action_set = act_set
 
         return ar
+    elif method == "cchvae":
+        hyperparams["data_name"] = data_name
+        hyperparams["vae_params"]["layers"] = [
+            len(mlmodel.feature_input_order)
+        ] + hyperparams["vae_params"]["layers"]
+        return CCHVAE(mlmodel, hyperparams)
     elif "cem" in method:
         hyperparams["data_name"] = data_name
         return CEM(sess, mlmodel, hyperparams)
     elif method == "clue":
         hyperparams["data_name"] = data_name
         return Clue(data, mlmodel, hyperparams)
+    elif method == "cruds":
+        hyperparams["data_name"] = data_name
+        # variable input layer dimension is first time here available
+        hyperparams["vae_params"]["layers"] = [
+            len(mlmodel.feature_input_order)
+        ] + hyperparams["vae_params"]["layers"]
+        return CRUD(mlmodel, hyperparams)
     elif method == "dice":
         return Dice(mlmodel, hyperparams)
     elif "face" in method:
@@ -127,9 +142,11 @@ parser.add_argument(
     default=[
         "dice",
         "ar",
+        "cchvae",
         "cem",
         "cem-vae",
         "clue",
+        "cruds",
         "face_knn",
         "face_epsilon",
         "gs",
@@ -139,9 +156,11 @@ parser.add_argument(
     choices=[
         "dice",
         "ar",
+        "cchvae",
         "cem",
         "cem-vae",
         "clue",
+        "cruds",
         "face_knn",
         "face_epsilon",
         "gs",
@@ -172,7 +191,7 @@ results = pd.DataFrame()
 path = args.path
 
 session_models = ["cem", "cem-vae"]
-torch_methods = ["clue", "wachter", "revise"]
+torch_methods = ["cchvae", "clue", "cruds", "wachter", "revise"]
 for rm in args.recourse_method:
     backend = "tensorflow"
     if rm in torch_methods:
@@ -180,10 +199,10 @@ for rm in args.recourse_method:
     for data_name in args.dataset:
         dataset = DataCatalog(data_name)
         for model_type in args.type:
-            print("=====================================")
-            print("Recourse method: {}".format(rm))
-            print("Dataset: {}".format(data_name))
-            print("Model type: {}".format(model_type))
+            log.info("=====================================")
+            log.info("Recourse method: {}".format(rm))
+            log.info("Dataset: {}".format(data_name))
+            log.info("Model type: {}".format(model_type))
 
             if rm in session_models:
                 graph = Graph()
@@ -250,6 +269,6 @@ for rm in args.recourse_method:
             ]
 
             results = pd.concat([results, df_benchmark], axis=0)
-            print("=====================================")
+            log.info("=====================================")
 
 save_result(results, path)

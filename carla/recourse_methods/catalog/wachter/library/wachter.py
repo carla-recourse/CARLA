@@ -7,6 +7,7 @@ import torch.optim as optim
 from torch import nn
 from torch.autograd import Variable
 
+from carla import log
 from carla.recourse_methods.processing import reconstruct_encoding_constraints
 
 DECISION_THRESHOLD = 0.5
@@ -19,7 +20,7 @@ def wachter_recourse(
     binary_cat_features: bool = True,
     feature_costs: Optional[List[float]] = None,
     lr: float = 0.01,
-    lambda_: float = 0.01,
+    lambda_param: float = 0.01,
     y_target: List[int] = [0, 1],
     n_iter: int = 1000,
     t_max_min: float = 0.5,
@@ -38,7 +39,7 @@ def wachter_recourse(
     binary_cat_features: If true, the encoding of x is done by drop_if_binary
     feature_costs: List with costs per feature
     lr: learning rate for gradient descent
-    lambda_: weight factor for feature_cost
+    lambda_param: weight factor for feature_cost
     y_target: List of one-hot-encoded target class
     n_iter: maximum number of iteration
     t_max_min: maximum time of search
@@ -59,7 +60,7 @@ def wachter_recourse(
 
     x = torch.from_numpy(x).float().to(device)
     y_target = torch.tensor(y_target).float().to(device)
-    lamb = torch.tensor(lambda_).float().to(device)
+    lamb = torch.tensor(lambda_param).float().to(device)
     # x_new is used for gradient search in optimizing process
     x_new = Variable(x.clone(), requires_grad=True)
     # x_new_enc is a copy of x_new with reconstructed encoding constraints of x_new
@@ -108,8 +109,8 @@ def wachter_recourse(
         lamb -= 0.05
 
         if datetime.datetime.now() - t0 > t_max:
-            print("Timeout - No Counterfactual Explanation Found")
+            log.info("Timeout - No Counterfactual Explanation Found")
             break
         elif f_x_new >= 0.5:
-            print("Counterfactual Explanation Found")
+            log.info("Counterfactual Explanation Found")
     return x_new_enc.cpu().detach().numpy().squeeze(axis=0)

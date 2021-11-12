@@ -9,7 +9,55 @@ from carla.recourse_methods.processing import (
 
 
 class Wachter(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {
+    """
+    Implementation of Wachter from Wachter et.al. [1]_.
+
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "feature_cost": str, optional
+            List with costs per feature.
+        * "lr": float, default: 0.01
+            Learning rate for gradient descent.
+        * "lambda_param": float, default: 0.01
+            Weight factor for feature_cost.
+        * "n_iter": int, defaul: 1000
+            Maximum number of iteration.
+        * "t_max_min": float, default: 0.5
+            Maximum time of search.
+        * "norm": int, default: 1
+            L-norm to calculate cost.
+        * "clamp": bool, defaul: True
+            If true, feature values will be clamped to (0, 1).
+        * "loss_type": {"MSE", "BCE"}
+            String for loss function.
+        * "y_target" list, default: [0, 1]
+            List of one-hot-encoded target class.
+        * "binary_cat_features": bool, default: True
+            If true, the encoding of x is done by drop_if_binary.
+
+    .. [1] Sandra Wachter, B. Mittelstadt, and Chris Russell. 2017. Counterfactual Explanations Withoutpening
+            the Black Box: Automated Decisions and the GDPR. Cybersecurity(2017).
+    """
+
+    _DEFAULT_HYPERPARAMS = {
         "feature_cost": "_optional_",
         "lr": 0.01,
         "lambda_": 0.01,
@@ -23,39 +71,14 @@ class Wachter(RecourseMethod):
     }
 
     def __init__(self, mlmodel, hyperparams):
-        """
-        Initialisation of the Wachter recourse method.
-
-        Restrictions
-        ------------
-        - Works currently only on Pytorch models
-        - Only binary categorical features with and without one-hot-encoding
-
-        Parameters
-        ----------
-        mlmodel: black-box-model we want to explore
-        hyperparams: Parameter for Wachter method, with following possibilites
-            {
-                feature_cost: Optional[str]   List with costs per feature
-                lr: float default: 0.01   learning rate for gradient descent
-                lambda_: float default: 0.01  weight factor for feature_cost
-                n_iter: int defaul: 1000 maximum number of iteration
-                t_max_min: float default: 0.5   maximum time of search
-                norm: int default: 2  L-norm to calculate cost
-                clamp: bool defaul: True  If true, feature values will be clamped to (0, 1)
-                loss_type: str default: 'MSE'  String for loss function (MSE or BCE)
-                y_target List default: [0, 1]  List of one-hot-encoded target class
-                binary_cat_features: bool default: True If true, the encoding of x is done by drop_if_binary
-            }
-        """
         super().__init__(mlmodel)
 
         checked_hyperparams = merge_default_parameters(
-            hyperparams, self.__DEFAULT_HYPERPARAMS
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
         self._feature_costs = checked_hyperparams["feature_cost"]
         self._lr = checked_hyperparams["lr"]
-        self._lambda = checked_hyperparams["lambda_"]
+        self._lambda_param = checked_hyperparams["lambda_"]
         self._n_iter = checked_hyperparams["n_iter"]
         self._t_max_min = checked_hyperparams["t_max_min"]
         self._norm = checked_hyperparams["norm"]
@@ -84,7 +107,7 @@ class Wachter(RecourseMethod):
                 binary_cat_features=self._binary_cat_features,
                 feature_costs=self._feature_costs,
                 lr=self._lr,
-                lambda_=self._lambda,
+                lambda_param=self._lambda_param,
                 n_iter=self._n_iter,
                 t_max_min=self._t_max_min,
                 norm=self._norm,

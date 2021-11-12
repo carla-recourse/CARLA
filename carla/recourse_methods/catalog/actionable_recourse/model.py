@@ -5,6 +5,7 @@ import pandas as pd
 import recourse as rs
 from lime.lime_tabular import LimeTabularExplainer
 
+from carla import log
 from carla.recourse_methods.processing import encode_feature_names
 
 from ...api import RecourseMethod
@@ -12,7 +13,55 @@ from ...processing.counterfactuals import merge_default_parameters
 
 
 class ActionableRecourse(RecourseMethod):
-    __DEFAULT_HYPERPARAMS = {
+    """
+    Implementation of Actionable Recourse from Ustun et.al. [1]_
+
+    Parameters
+    ----------
+    data : carla.data.Data
+        Dataset
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See Notes below to see its content.
+    coeffs : np.ndArray, optional
+        Coefficients. Will be approximated by LIME if None
+    intercepts: np.ndArray, optional
+        Intercepts. Will be approximated by LIME if None
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "fs_size": int, default: 100
+            Size of generated flipset.
+        * "discretize": bool, default: False
+            Parameter for LIME sampling.
+        * "sample": boo, default: True
+            Lime sampling around instance.
+    - Restrictions
+        *   Actionable Recourse (AR) supports only binary categorical features.
+            See implementation at https://github.com/ustunb/actionable-recourse/blob/master/examples/ex_01_quickstart.ipynb
+        *   AR is only defined on linear models. To make it work for arbitrary non-linear networks
+            we need to find Actionab coefficients for every instance, for example with lime.
+    - Warning
+        *   AR does not always find a counterfactual example. The probability of finding one raises for a high size
+            of flip set.
+
+    .. [1] Berk Ustun, Alexander Spangher, and Y. Liu. 2019. Actionable Recourse in Linear Classification.
+        InProceedings of the Conference on Fairness, Accountability, and Transparency (FAT*)
+    """
+
+    _DEFAULT_HYPERPARAMS = {
         "fs_size": 100,
         "discretize": False,
         "sample": True,
@@ -25,39 +74,6 @@ class ActionableRecourse(RecourseMethod):
         coeffs: Optional[np.ndarray] = None,
         intercepts: Optional[np.ndarray] = None,
     ) -> None:
-        """
-        Initializing Actionable Recourse
-
-        Restrictions
-        ------------
-        -   Actionable Recourse (AR) supports only binary categorical features.
-            See implementation at https://github.com/ustunb/actionable-recourse/blob/master/examples/ex_01_quickstart.ipynb
-        -   AR is only defined on linear models. To make it work for arbitrary non-linear networks
-            we need to find coefficients for every instance, for example with lime.
-
-        Warning
-        -------
-        - AR does not always find a counterfactual example. The probability of finding one raises for a high size
-          of flip set.
-
-        Parameters
-        ----------
-        data : carla.data.Data()
-            Dataset
-        mlmodel : carla.model.MLModel()
-            ML model
-        hyperparams : dict
-            Dictionary containing hyperparameters.
-            {
-                "fs_size": int (size of generated flipset, default 100),
-                "discretize": bool, default: False (LIME parameter),
-                "sample": bool, default: True (LIME parameter)
-            }
-        coeffs : np.ndArray
-            Coefficients
-        intercepts: np.ndArray
-            Intercepts
-        """
         super().__init__(mlmodel)
         self._data = mlmodel.data
 
@@ -68,7 +84,7 @@ class ActionableRecourse(RecourseMethod):
 
         # Get hyperparameter
         checked_hyperparams = merge_default_parameters(
-            hyperparams, self.__DEFAULT_HYPERPARAMS
+            hyperparams, self._DEFAULT_HYPERPARAMS
         )
         self._fs_size = checked_hyperparams["fs_size"]
         self._discretize_continuous = checked_hyperparams["discretize"]
@@ -92,13 +108,20 @@ class ActionableRecourse(RecourseMethod):
 
     @property
     def action_set(self):
+        """
+        Contains dictionary with possible actions for every input feature.
+
+        Returns
+        -------
+        dict
+        """
         return self._action_set
 
     @action_set.setter
     def action_set(self, act_set):
         self._action_set = act_set
 
-    def get_lime_coefficients(
+    def _get_lime_coefficients(
         self, factuals: pd.DataFrame
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -162,9 +185,9 @@ class ActionableRecourse(RecourseMethod):
 
         # Check if we need lime to build coefficients
         if (coeffs is None) and (intercepts is None):
-            print("Start generating LIME coefficients")
-            coeffs, intercepts = self.get_lime_coefficients(factuals_enc_norm)
-            print("Finished generating LIME coefficients")
+            log.info("Start generating LIME coefficients")
+            coeffs, intercepts = self._get_lime_coefficients(factuals_enc_norm)
+            log.info("Finished generating LIME coefficients")
         else:
             # Local explanations via LIME generate coeffs and intercepts per instance, while global explanations
             # via input parameter need to be set into correct shape [num_of_instances, num_of_features]
@@ -201,12 +224,12 @@ class ActionableRecourse(RecourseMethod):
             try:
                 fs_pop = fs.populate(total_items=self._fs_size)
             except (ValueError, KeyError):
-                print(
-                    "Actionable Recours is not able to produce a counterfactual explanation for instance {}".format(
+                log.warning(
+                    "Actionable Recourse is not able to produce a counterfactual explanation for instance {}".format(
                         index
                     )
                 )
-                print(row.values)
+                log.warning(row.values)
                 cfs.append(counterfactual)
                 continue
 

@@ -9,19 +9,24 @@ from .load_data import load_dataset
 
 
 class DataCatalog(Data):
-    def __init__(self, data_name: str):
-        """
-        Constructor for catalog datasets.
+    """
+    Use already implemented datasets.
 
-        Parameters
-        ----------
-        data_name : String
-            Used to get the correct dataset from online repository
-        """
+    Parameters
+    ----------
+    data_name : {'adult', 'compas', 'give_me_some_credit'}
+        Used to get the correct dataset from online repository.
+
+    Returns
+    -------
+    None
+    """
+
+    def __init__(self, data_name: str):
         self.name = data_name
 
         catalog_content = ["continous", "categorical", "immutable", "target"]
-        self.catalog: Dict[str, Any] = load_catalog(
+        self.catalog: Dict[str, Any] = load_catalog(  # type: ignore
             "data_catalog.yaml", data_name, catalog_content
         )
 

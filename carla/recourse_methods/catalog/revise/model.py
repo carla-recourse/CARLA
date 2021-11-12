@@ -5,6 +5,7 @@ import pandas as pd
 import torch
 from torch import nn
 
+from carla import log
 from carla.data.api import Data
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
@@ -21,6 +22,66 @@ from carla.recourse_methods.processing.counterfactuals import (
 
 
 class Revise(RecourseMethod):
+    """
+    Implementation of Revise from Joshi et.al. [1]_.
+
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    data: carla.data.Data
+        Dataset to perform on
+    hyperparams : dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    encode_normalize_order_factuals:
+        Uses encoder and scaler from black-box-model to preprocess data as needed.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "data_name": str
+            name of the dataset
+        * "lambda": float, default: 0.5
+            Decides how similar the counterfactual is to the factual
+        * "optimizer": {"adam", "rmsprop"}
+            Optimizer for generation of counterfactuals.
+        * "lr": float, default: 0.1
+            Learning rate for Revise.
+        * "max_iter": int, default: 1000
+            Number of iterations for Revise optimization.
+        * "target_class": List, default: [0, 1]
+            List of one-hot-encoded target class.
+        * "binary_cat_features": bool, default: True
+            If true, the encoding of x is done by drop_if_binary.
+        * "vae_params": Dict
+            With parameter for VAE.
+
+            + "layers": list
+                Number of neurons and layer of autoencoder.
+            + "train": bool
+                Decides if a new Autoencoder will be learned.
+            + "lambda_reg": flot
+                Hyperparameter for variational autoencoder.
+            + "epochs": int
+                Number of epcchs to train VAE
+            + "lr": float
+                Learning rate for VAE training
+            + "batch_size": int
+                Batch-size for VAE training
+
+    .. [1] Shalmali Joshi, Oluwasanmi Koyejo, Warut Vijitbenjaronk, Been Kim, and Joydeep Ghosh.2019.
+            Towards Realistic  Individual Recourse  and Actionable Explanations  in Black-BoxDecision Making Systems.
+            arXiv preprint arXiv:1907.09615(2019).
+    """
+
     _DEFAULT_HYPERPARAMS = {
         "data_name": None,
         "lambda": 0.5,
@@ -40,42 +101,6 @@ class Revise(RecourseMethod):
     }
 
     def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
-        """
-        Initialisation of the REVISE recourse method.
-
-        Restrictions
-        ------------
-        - Works currently only on Pytorch models
-        - Only binary categorical features with and without one-hot-encoding
-
-        Parameters
-        ----------
-        mlmodel: Black-box-model we want to explore
-        data: Dataset to perform on
-        hyperparams: Parameter for Revise method, with following possibilites
-            {
-                "data_name": str  name of the dataset,
-                "lambda": float default: 0.5    Decides how similar the counterfactual is to the factual,
-                "optimizer": str defaul: "adam" Optimizer for generation of counterfactuals,
-                            only adam and rmsprop possible
-                "lr": float default: 0.1    learning rate for Revise,
-                "max_iter": int default 1000, number of iterations for Revise optimization,
-                "target_class": List default: [0, 1]  List of one-hot-encoded target class,
-                "binary_cat_features": bool default: True If true, the encoding of x is done by drop_if_binary
-                "vae_params": Dict with parameter for VAE,
-                    {
-                        "d": 8,  # latent space
-                        "D": test_factual.shape[1],  # input size
-                        "H1": 512,
-                        "H2": 256,
-                        "train": False,
-                        "lambda_reg": 1e-6,
-                        "epochs": 5,
-                        "lr": 1e-3,
-                        "batch_size": 32,
-                    }
-            }
-        """
         super().__init__(mlmodel)
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
@@ -192,14 +217,14 @@ class Revise(RecourseMethod):
 
             # Choose the nearest counterfactual
             if len(candidate_counterfactuals):
-                print("Counterfactual found!")
+                log.info("Counterfactual found!")
                 array_counterfactuals = np.array(candidate_counterfactuals)
                 array_distances = np.array(candidate_distances)
 
                 index = np.argmin(array_distances)
                 list_cfs.append(array_counterfactuals[index])
             else:
-                print("No counterfactual found")
+                log.info("No counterfactual found")
                 list_cfs.append(query_instance.cpu().detach().numpy().squeeze(axis=0))
         return list_cfs
 
