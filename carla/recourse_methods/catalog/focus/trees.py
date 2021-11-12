@@ -117,7 +117,7 @@ def get_prob_classification_tree(tree, feat_columns, feat_input, sigma):
 
 
 def get_prob_classification_forest(
-    model, feat_columns, feat_input, sigma=10.0, temperature=1.0
+    model, feat_columns, feat_input, number_trees=100, sigma=10.0, temperature=1.0
 ):
     def tree_parser(tree):
         """parse and individual tree"""
@@ -126,10 +126,12 @@ def get_prob_classification_forest(
     if isinstance(model, ForestModel):
         tree_l = [
             tree_parser(estimator) for estimator in model.tree_iterator.estimators_
-        ][:100]
+        ][:number_trees]
     elif isinstance(model, XGBoostModel):
         # TODO what is being parsed here
-        tree_l = [tree_parser(estimator) for estimator in model.tree_iterator][:100]
+        tree_l = [tree_parser(estimator) for estimator in model.tree_iterator][
+            :number_trees
+        ]
 
     if isinstance(model.tree_iterator, AdaBoostClassifier):
         weights = model.tree_iterator.estimator_weights_
