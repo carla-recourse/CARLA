@@ -45,13 +45,18 @@ def test_inverse_pipeline():
 
     transformed_data = model_tf_adult.perform_pipeline(data.raw)
     detransformed_data = model_tf_adult.perform_inverse_pipeline(transformed_data)
-    # sklearn scales produces results of e.g. 38.9999999999 vs 39.0
-    detransformed_data[data.continous] = detransformed_data[data.continous].round(1)
 
     expected_data = data.raw[detransformed_data.columns]
     expected_data[data.continous] = expected_data[data.continous].astype("float")
     expected_data.columns = detransformed_data.columns
-    assert detransformed_data.equals(expected_data)
+
+    # sklearn scales produces results of e.g. 38.9999999999 vs 39.0
+    assert (
+        expected_data[data.continous] - detransformed_data[data.continous]
+    ).sum().sum() == pytest.approx(0.0, abs=1e-6)
+    assert detransformed_data[data.categoricals].equals(
+        expected_data[data.categoricals]
+    )
 
 
 @pytest.mark.parametrize("model_type", testmodel)
