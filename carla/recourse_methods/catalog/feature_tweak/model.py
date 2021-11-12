@@ -2,6 +2,9 @@
 Tolomei, G., Silvestri, F., Haines, A., & Lalmas, M. (2017, August).
 Interpretable predictions of tree-based ensembles via actionable feature tweaking.
 In Proceedings of the 23rd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 465-474).
+
+code from:
+https://github.com/upura/featureTweakPy
 """
 
 import copy
@@ -53,9 +56,16 @@ def search_path(tree, class_labels, cf_label):
             leaf_values = values[leaf_nodes].reshape(len(leaf_nodes), len(class_labels))
             leaf_classes = np.argmax(leaf_values, axis=-1)
             # select the leaf nodes whose outcome is aim_label
-            # TODO is this correct??? It's called leaf nodes but we select from all the nodes
-            # TODO leaf nodes contains values, not just class labels??? (probably should use argmax)
-            # leaf_nodes = np.where(leaf_values[:, cf_label] != 0)[0]
+
+            """
+            In the original code the line was as follows:
+
+            leaf_nodes = np.where(leaf_values[:, cf_label] != 0)[0]
+
+            However this seems wrong as we want to index the leaf_nodes with the above expression.
+            This also caused that sometimes 0 would be in the leaf_nodes, but as 0 is the root node this
+            should not happen.
+            """
             leaf_nodes = leaf_nodes[np.where(leaf_classes != 0)[0]]
 
             return children_left, children_right, feature, threshold, leaf_nodes
@@ -72,12 +82,6 @@ def search_path(tree, class_labels, cf_label):
         raise ValueError("tree is not of a supported Class")
 
     children_left, children_right, feature, threshold, leaf_nodes = parse_tree(tree)
-
-    # if the following is not done it creates an error. Also 0 should not be a leaf node, it is not part of the
-    # original leaf_nodes ID.
-    # TODO figure out why there even is a zero in there in the first place (related to above todo)
-    if 0 in leaf_nodes:
-        leaf_nodes = np.delete(leaf_nodes, 0)
 
     """ search the path to the selected leaf node """
     paths = {}

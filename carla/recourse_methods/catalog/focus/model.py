@@ -2,6 +2,9 @@
 Lucic, A., Oosterhuis, H., Haned, H., & de Rijke, M. (2019).
 FOCUS: Flexible optimizable counterfactual explanations for tree ensembles.
 arXiv preprint arXiv:1911.12199.
+
+code from:
+https://github.com/a-lucic/focus
 """
 
 from typing import Dict
@@ -17,8 +20,6 @@ from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.focus import trees
 from carla.recourse_methods.catalog.focus.distances import distance_func
-
-# tf.enable_eager_execution()
 
 
 def filter_hinge_loss(n_class, mask_vector, features, sigma, temperature, model_fn):
@@ -185,6 +186,7 @@ class FOCUS(RecourseMethod):
             return best_perturb
 
         # Little bit hacky, but needed as other tf code is graph based.
+        # Graph based tf and eager execution for tf don't work together nicely.
         with tf.Session() as sess:
             pf = tfe.py_func(f, [best_perturb], tf.float32)
             best_perturb = sess.run(pf)
