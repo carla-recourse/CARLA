@@ -175,8 +175,8 @@ def test_cem_vae(model_type):
     assert non_nan_cfs.shape[0] > 0
 
 
-@pytest.mark.parametrize("model_type", testmodel)
-def test_face_get_counterfactuals(model_type):
+# @pytest.mark.parametrize("model_type", testmodel)
+def test_face_get_counterfactuals(model_type="linear"):
     # Build data and mlmodel
     data_name = "adult"
     data = DataCatalog(data_name)
@@ -184,7 +184,7 @@ def test_face_get_counterfactuals(model_type):
     model_tf = MLModelCatalog(data, model_type)
     # get factuals
     factuals = predict_negative_instances(model_tf, data)
-    test_factual = factuals.iloc[:2]
+    test_factual = factuals.iloc[:5]
 
     # Test for knn mode
     hyperparams = {"mode": "knn", "fraction": 0.05}
