@@ -48,6 +48,9 @@ def test_feature_tweak_get_counterfactuals(model_type):
 
     assert test_factual[data.continous + [data.target]].shape == cfs.shape
 
+    non_nan_cfs = cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
 
 @pytest.mark.parametrize("model_type", ["xgboost", "sklearn"])
 def test_focus_get_counterfactuals(model_type):
@@ -81,6 +84,9 @@ def test_focus_get_counterfactuals(model_type):
     cfs = focus.get_counterfactuals(test_factual)
 
     assert test_factual[data.continous].shape == cfs.shape
+
+    non_nan_cfs = cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
 
 
 @pytest.mark.parametrize("model_type", testmodel)
