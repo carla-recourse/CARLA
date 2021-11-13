@@ -55,9 +55,9 @@ def search_path(tree, class_labels, cf_label):
             # outcomes of leaf nodes
             leaf_values = values[leaf_nodes].reshape(len(leaf_nodes), len(class_labels))
             leaf_classes = np.argmax(leaf_values, axis=-1)
-            # select the leaf nodes whose outcome is aim_label
 
             """
+            We want to find the leaf_nodes where the class is equal to the counterfactual label 1.
             In the original code the line was as follows:
 
             leaf_nodes = np.where(leaf_values[:, cf_label] != 0)[0]
@@ -66,16 +66,22 @@ def search_path(tree, class_labels, cf_label):
             This also caused that sometimes 0 would be in the leaf_nodes, but as 0 is the root node this
             should not happen.
             """
+            # select the leaf nodes whose outcome is aim_label
             leaf_nodes = leaf_nodes[np.where(leaf_classes != 0)[0]]
 
             return children_left, children_right, feature, threshold, leaf_nodes
         elif isinstance(tree, xgboost.core.Booster):
-            children_left, children_right, threshold, feature, classes = parse_booster(
+            children_left, children_right, threshold, feature, scores = parse_booster(
                 tree
             )
             # leaf nodes ID
             leaf_nodes = np.where(children_left == -1)[0]
-            leaf_nodes = np.where(classes[leaf_nodes] != 0)[0]
+
+            # outcome of leaf nodes
+            leaf_classes = (
+                scores[leaf_nodes] > 0.5
+            )  # threshold of 0.5 because of logistic function
+            leaf_nodes = leaf_nodes[np.where(leaf_classes != 0)[0]]
 
             return children_left, children_right, feature, threshold, leaf_nodes
 
