@@ -17,7 +17,7 @@ class CausalModel:
 
     Attributes
     ----------
-    scm
+    scm: structural causal model definition
     cgm
     scm_class
     structural_equations_np
