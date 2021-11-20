@@ -337,6 +337,21 @@ class MLModelCatalog(MLModel):
         self._use_pipeline = use_pipe
 
     def train(self, learning_rate, epochs, batch_size):
+        """
+
+        Parameters
+        ----------
+        learning_rate: float
+            Learning rate for the training.
+        epochs: int
+            Number of epochs to train for.
+        batch_size: int
+            Number of samples in each batch
+
+        Returns
+        -------
+
+        """
 
         data_df = self.data.raw
         if self.use_pipeline:
