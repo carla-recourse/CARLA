@@ -3,7 +3,7 @@ Tolomei, G., Silvestri, F., Haines, A., & Lalmas, M. (2017, August).
 Interpretable predictions of tree-based ensembles via actionable feature tweaking.
 In Proceedings of the 23rd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 465-474).
 
-code from:
+code adapted from:
 https://github.com/upura/featureTweakPy
 """
 
@@ -16,26 +16,36 @@ import sklearn
 import xgboost
 import xgboost.core
 
-from carla.data.api import Data
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.focus.parse_xgboost import parse_booster
 from carla.recourse_methods.catalog.focus.tree_model import ForestModel, XGBoostModel
 from carla.recourse_methods.processing import check_counterfactuals
 
 
-def L1_cost_func(a, b):
-    """ ||a-b||_1 """
+def _L1_cost_func(a, b):
+    """  The 1-norm ||a-b||_1 """
     return np.linalg.norm(a - b, ord=1)
 
 
-def L2_cost_func(a, b):
-    """ ||a-b||_2 """
+def _L2_cost_func(a, b):
+    """ The 2-norm ||a-b||_2 """
     return np.linalg.norm(a - b, ord=2)
 
 
-def search_path(tree, class_labels, cf_label):
+def search_path(tree, class_labels):
     """
     return path index list containing [{leaf node id, inequality symbol, threshold, feature index}].
+
+    Parameters
+    ----------
+    tree: sklearn.tree.DecisionTreeClassifier or xgboost.core.Booster
+        The classification tree.
+    class_labels:
+        All the possible class labels.
+
+    Returns
+    -------
+    path_info
     """
 
     def parse_tree(tree):
@@ -44,7 +54,7 @@ def search_path(tree, class_labels, cf_label):
         Parameters
         ----------
         tree: sklearn.tree.DecisionTreeClassifier or xgboost.core.Booster
-            The classification tree we want to parse
+            The classification tree we want to parse.
 
         Returns
         -------
@@ -143,6 +153,24 @@ def search_path(tree, class_labels, cf_label):
 
 
 def get_path_info(paths, threshold, feature):
+    """
+    Extract the path info from the parameters
+
+    Parameters
+    ----------
+    paths:
+        Paths trough the tree from root to leaves.
+
+    threshold: array of double
+        threshold[i] holds the threshold for the internal node i.
+
+    feature: array of int
+        feature[i] holds the feature to split on, for the internal node i.
+
+    Returns
+    -------
+    dictionary where dict[i] contains node_id, inequality_symbol, threshold, and feature
+    """
     path_info = {}
     for i in paths:
         node_ids = []  # node ids used in the current node
@@ -180,26 +208,63 @@ def get_path_info(paths, threshold, feature):
 
 
 class FeatureTweak(RecourseMethod):
-    # TODO can this method actually work for a single TreeModel?
+    """
+    Implementation of FeatureTweak
+
+    Parameters
+    ----------
+    mlmodel: ForestModel or XGBoostModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    esatisfactory_instance:
+        Return the epsilon satisfactory instance of x.
+    feature_tweaking:
+        Generate a single counterfactual by FeatureTweaking.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "eps": float
+    """
+
     def __init__(
         self,
         mlmodel: Union[ForestModel, XGBoostModel],
-        data: Data,
         hyperparams: Dict,
-        cost_func=L2_cost_func,
+        cost_func=_L2_cost_func,
     ):
 
         super().__init__(mlmodel)
 
         self.model = mlmodel
-        self.data = data
+        self.data = mlmodel.data
         self.eps = hyperparams["eps"]
-        self.target_col = data.target
+        self.target_col = self.data.target
         self.cost_func = cost_func
 
-    def esatisfactory_instance(self, x, path_info):
+    def esatisfactory_instance(self, x: np.ndarray, path_info):
         """
         return the epsilon satisfactory instance of x.
+
+        Parameters
+        ----------
+        x: np.ndarray
+            A single factual example.
+        path_info:
+            One path from the result of search_path(tree, class_labels, cf_label)
+
+        Returns
+        -------
+        epsilon satisfactory instance
         """
         esatisfactory = copy.deepcopy(x)
         for i in range(len(path_info["feature"])):
@@ -222,6 +287,7 @@ class FeatureTweak(RecourseMethod):
 
     def feature_tweaking(self, x: np.ndarray, class_labels: List[int], cf_label: int):
         """
+        Perform feature tweaking on a single factual example.
 
         Parameters
         ----------
@@ -269,7 +335,7 @@ class FeatureTweak(RecourseMethod):
                 predict(self.model, x) == estimator_prediction
                 and estimator_prediction != cf_label
             ):
-                paths_info = search_path(tree, class_labels, cf_label)
+                paths_info = search_path(tree, class_labels)
                 for key in paths_info:
                     """ generate epsilon-satisfactory instance """
                     path_info = paths_info[key]
