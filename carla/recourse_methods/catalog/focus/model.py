@@ -1,9 +1,6 @@
 """
-Lucic, A., Oosterhuis, H., Haned, H., & de Rijke, M. (2019).
-FOCUS: Flexible optimizable counterfactual explanations for tree ensembles.
-arXiv preprint arXiv:1911.12199.
 
-code from:
+code adapted from:
 https://github.com/a-lucic/focus
 """
 
@@ -22,7 +19,7 @@ from carla.recourse_methods.catalog.focus import trees
 from carla.recourse_methods.catalog.focus.distances import distance_func
 
 
-def filter_hinge_loss(n_class, mask_vector, features, sigma, temperature, model_fn):
+def _filter_hinge_loss(n_class, mask_vector, features, sigma, temperature, model_fn):
     """
     This functions as the prediction loss
 
@@ -31,13 +28,13 @@ def filter_hinge_loss(n_class, mask_vector, features, sigma, temperature, model_
     n_class : number of classes
     mask_vector : 0 if prediction is flipped, 1 otherwise
     features : current (perturbed) input features
-    sigma
-    temperature
-    model_fn
+    sigma: float
+    temperature: float
+    model_fn: model function
 
     Returns
     -------
-
+    hinge loss
     """
     n_input = features.shape[0]
 
@@ -67,6 +64,41 @@ def filter_hinge_loss(n_class, mask_vector, features, sigma, temperature, model_
 
 
 class FOCUS(RecourseMethod):
+    """
+    Implementation of Focus [1]_.
+
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "optimizer": {"adam", "gd"}
+            Determines the optimizer.
+        * "n_class": int
+            Number of classes.
+        * "n_iter": int
+        * "sigma": float
+        * "temperature": float
+        * "distance_weight": float
+        " "distance_func": "l1" or "l2"
+
+    .. [1] Lucic, A., Oosterhuis, H., Haned, H., & de Rijke, M. (2018). FOCUS: Flexible optimizable counterfactual
+    explanations for tree ensembles. arXiv preprint arXiv:1910.12199.
+    """
+
     def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
 
         super().__init__(mlmodel)
@@ -128,13 +160,13 @@ class FOCUS(RecourseMethod):
 
             for i in range(self.n_iter):
                 with tf.GradientTape(persistent=True) as t:
-                    p_model = filter_hinge_loss(
+                    p_model = _filter_hinge_loss(
                         self.n_class,
                         indicator,
                         perturbed,
                         sigma,
                         temperature,
-                        self.prob_from_input,
+                        self._prob_from_input,
                     )
                     approx_prob = tf.gather_nd(p_model, example_class_index)
 
@@ -193,7 +225,7 @@ class FOCUS(RecourseMethod):
 
         return pd.DataFrame(best_perturb, columns=self.data.continous)
 
-    def prob_from_input(self, perturbed, sigma, temperature):
+    def _prob_from_input(self, perturbed, sigma, temperature):
         feat_columns = self.data.continous
         if not isinstance(self.model.raw_model, DecisionTreeClassifier):
             return trees.get_prob_classification_forest(

@@ -1,8 +1,4 @@
 """
-Tolomei, G., Silvestri, F., Haines, A., & Lalmas, M. (2017, August).
-Interpretable predictions of tree-based ensembles via actionable feature tweaking.
-In Proceedings of the 23rd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 465-474).
-
 code adapted from:
 https://github.com/upura/featureTweakPy
 """
@@ -209,7 +205,7 @@ def get_path_info(paths, threshold, feature):
 
 class FeatureTweak(RecourseMethod):
     """
-    Implementation of FeatureTweak
+    Implementation of FeatureTweak [1]_.
 
     Parameters
     ----------
@@ -234,6 +230,10 @@ class FeatureTweak(RecourseMethod):
         Please make sure to pass all values as dict with the following keys.
 
         * "eps": float
+
+    .. [1] Tolomei, G., Silvestri, F., Haines, A., & Lalmas, M. (2017, August). Interpretable predictions of tree-based
+    ensembles via actionable feature tweaking. In Proceedings of the 23rd ACM SIGKDD international conference on
+    knowledge discovery and data mining (pp. 465-474).
     """
 
     def __init__(
