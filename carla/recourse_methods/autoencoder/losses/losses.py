@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 import torch
 import torch.distributions as dists
 from keras import backend as K
@@ -7,6 +8,10 @@ from torch import nn
 
 def binary_crossentropy(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
     return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
+
+
+def mse(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+    return tf.keras.losses.mean_squared_error(y_true, y_pred)
 
 
 def csvae_loss(csvae, x_train, y_train):

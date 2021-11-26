@@ -11,6 +11,7 @@ from carla.models.api import MLModel
 from carla.models.pipelining import encode, order_data, scale
 
 from .load_model import load_model
+from .train_model import train_model
 
 
 class MLModelCatalog(MLModel):
@@ -34,6 +35,8 @@ class MLModelCatalog(MLModel):
         Additional keyword arguments are passed to passed through to the read model function
     use_pipeline : bool, default: False
         If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
+    load_pretrained: bool, default: True
+        If true, a pretrained model is loaded. If false, a model is trained.
 
     Methods
     -------
@@ -59,16 +62,18 @@ class MLModelCatalog(MLModel):
         cache: bool = True,
         models_home: str = None,
         use_pipeline: bool = False,
+        load_pretrained: bool = True,
         **kws
     ) -> None:
         """
         Constructor for pretrained ML models from the catalog.
 
         Possible backends are currently "pytorch" and "tensorflow".
-        Possible models are corrently "ann".
+        Possible models are corrently "ann" and "linear".
 
 
         """
+        self._model_type = model_type
         self._backend = backend
 
         if self._backend == "pytorch":
@@ -92,14 +97,17 @@ class MLModelCatalog(MLModel):
         self._catalog = catalog[model_type][self._backend]
         self._feature_input_order = self._catalog["feature_order"]
 
-        self._model = load_model(model_type, data.name, ext, cache, models_home, **kws)
-
         self._continuous = data.continous
         self._categoricals = data.categoricals
 
         # Preparing pipeline components
         self._use_pipeline = use_pipeline
         self._pipeline = self.__init_pipeline()
+
+        if load_pretrained:
+            self._model = load_model(
+                model_type, data.name, ext, cache, models_home, **kws
+            )
 
     def __init_pipeline(self) -> List[Tuple[str, Callable]]:
         return [
@@ -176,6 +184,20 @@ class MLModelCatalog(MLModel):
         return self._feature_input_order
 
     @property
+    def model_type(self) -> str:
+        """
+        Describes the model type
+
+        E.g., ann, linear
+
+        Returns
+        -------
+        backend : str
+            model type
+        """
+        return self._model_type
+
+    @property
     def backend(self) -> str:
         """
         Describes the type of backend which is used for the ml model.
@@ -223,12 +245,12 @@ class MLModelCatalog(MLModel):
         if len(x.shape) != 2:
             raise ValueError("Input shape has to be two-dimensional")
 
-        input = self.perform_pipeline(x) if self._use_pipeline else x
-
         if self._backend == "pytorch":
+            input = x
             return self.predict_proba(input)[:, 1].reshape((-1, 1))
         elif self._backend == "tensorflow":
             # keep output in shape N x 1
+            input = self.perform_pipeline(x) if self._use_pipeline else x
             return self._model.predict(input)[:, 1].reshape((-1, 1))
         else:
             raise ValueError(
@@ -313,3 +335,29 @@ class MLModelCatalog(MLModel):
 
         """
         self._use_pipeline = use_pipe
+
+    def train(self, learning_rate, epochs, batch_size):
+        """
+
+        Parameters
+        ----------
+        learning_rate: float
+            Learning rate for the training.
+        epochs: int
+            Number of epochs to train for.
+        batch_size: int
+            Number of samples in each batch
+
+        Returns
+        -------
+
+        """
+
+        data_df = self.data.raw
+        if self.use_pipeline:
+            x = self.perform_pipeline(data_df)
+        else:
+            x = data_df[list(set(data_df.columns) - set(self.data.target))]
+        y = data_df[self.data.target]
+
+        self._model = train_model(self, x, y, learning_rate, epochs, batch_size)
