@@ -43,7 +43,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
     factuals = predict_negative_instances(model, data)
     test_factual = factuals.iloc[:5]
 
-    feature_tweak = FeatureTweak(model, data, hyperparams)
+    feature_tweak = FeatureTweak(model, hyperparams)
     cfs = feature_tweak.get_counterfactuals(test_factual)
 
     assert test_factual[data.continous + [data.target]].shape == cfs.shape
