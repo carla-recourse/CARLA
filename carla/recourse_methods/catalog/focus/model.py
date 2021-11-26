@@ -90,10 +90,15 @@ class FOCUS(RecourseMethod):
         * "n_class": int
             Number of classes.
         * "n_iter": int
+            Number of iterations to run for.
         * "sigma": float
+            Parameter in sig(z) = (1 + exp(sigma * z)^-1, controls degree of approximation.
         * "temperature": float
+            Parameter in the softmax operation, also controls degreee of approximation.
         * "distance_weight": float
-        " "distance_func": "l1" or "l2"
+            Determines the weight of the counterfactual distance in the loss.
+        * "distance_func": "l1" or "l2"
+            Norm to be used.
 
     .. [1] Lucic, A., Oosterhuis, H., Haned, H., & de Rijke, M. (2018). FOCUS: Flexible optimizable counterfactual
     explanations for tree ensembles. arXiv preprint arXiv:1910.12199.
