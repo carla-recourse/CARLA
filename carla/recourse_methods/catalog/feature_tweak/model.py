@@ -36,12 +36,36 @@ def L2_cost_func(a, b):
 def search_path(tree, class_labels, cf_label):
     """
     return path index list containing [{leaf node id, inequality symbol, threshold, feature index}].
-    estimator: decision tree
-    maxj: the number of selected leaf nodes
     """
-    """ select leaf nodes whose outcome is aim_label """
 
     def parse_tree(tree):
+        """
+
+        Parameters
+        ----------
+        tree: sklearn.tree.DecisionTreeClassifier or xgboost.core.Booster
+            The classification tree we want to parse
+
+        Returns
+        -------
+        children_left: array of int
+            children_left[i] holds the node id of the left child of node i.
+            For leaves, children_left[i] == TREE_LEAF.
+
+        children_right: array of int
+            children_right[i] holds the node id of the right child of node i.
+            For leaves, children_right[i] == TREE_LEAF.
+
+        threshold: array of double
+            threshold[i] holds the threshold for the internal node i.
+
+        feature: array of int
+            feature[i] holds the feature to split on, for the internal node i.
+
+        leaf_nodes: array of int
+            leaf nodes with outcome aim label
+
+        """
         if isinstance(tree, sklearn.tree.DecisionTreeClassifier):
             children_left = tree.tree_.children_left
             children_right = tree.tree_.children_right
@@ -77,16 +101,16 @@ def search_path(tree, class_labels, cf_label):
             # leaf nodes ID
             leaf_nodes = np.where(children_left == -1)[0]
 
+            # TODO threshold of 0.5 because of logistic function, doesn't work for other xgboost objective functions
             # outcome of leaf nodes
-            leaf_classes = (
-                scores[leaf_nodes] > 0.5
-            )  # threshold of 0.5 because of logistic function
+            leaf_classes = scores[leaf_nodes] > 0.5
             leaf_nodes = leaf_nodes[np.where(leaf_classes != 0)[0]]
 
             return children_left, children_right, feature, threshold, leaf_nodes
+        else:
+            raise ValueError("tree is not of a supported Class")
 
-        raise ValueError("tree is not of a supported Class")
-
+    """ select leaf nodes whose outcome is aim_label """
     children_left, children_right, feature, threshold, leaf_nodes = parse_tree(tree)
 
     """ search the path to the selected leaf node """
@@ -201,9 +225,12 @@ class FeatureTweak(RecourseMethod):
 
         Parameters
         ----------
-        x: a single factual example
-        class_labels: list of possible class labels
-        cf_label: what label the counterfactual should have
+        x: np.ndarray
+            A single factual example.
+        class_labels:  List[int]
+            List of possible class labels.
+        cf_label: int
+            What label the counterfactual should have.
 
         Returns
         -------
