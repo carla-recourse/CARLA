@@ -95,20 +95,55 @@ class ScmDataset(Data):
 
     @property
     def categoricals(self) -> List[str]:
+        """
+        Provides the column names of the categorical data.
+
+        Returns
+        -------
+        List[str]
+        """
         return self.scm._categoricals
 
     @property
     def continous(self) -> List[str]:
+        """
+        Provides the column names of the continuous data.
+
+        Returns
+        -------
+        List[str]
+        """
         return self.scm._continous
 
     @property
     def immutables(self) -> List[str]:
+        """
+        Provides the column names of the immutable data.
+
+        Returns
+        -------
+        List[str]
+        """
         pass
 
     @property
     def target(self) -> str:
+        """
+        Provies the name of the label column.
+
+        Returns
+        -------
+        str
+        """
         return "label"
 
     @property
     def raw(self) -> pd.DataFrame:
+        """
+        The raw Dataframe without encoding or normalization
+
+        Returns
+        -------
+        pd.DataFrame
+        """
         return self._raw.copy()
