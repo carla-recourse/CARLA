@@ -1,36 +1,9 @@
 import numpy as np
 
-from .scm import (
-    adult,
-    bu_sanity_3_gen,
-    fair_cau_anm,
-    fair_cau_lin,
-    fair_imf_lin,
-    german_credit,
-    sanity_3_anm,
-    sanity_3_gen,
-    sanity_3_gen_new,
-    sanity_3_gen_old,
-    sanity_3_lin,
-    sanity_6_lin,
-)
+from .scm import sanity_3_lin
 
 scm_dict = {
-    "adult": adult,
-    "german-credit": german_credit,
-    "sanity-3-anm": sanity_3_anm,
     "sanity-3-lin": sanity_3_lin,
-    "sanity-6-lin": sanity_6_lin,
-    "sanity-3-gen": sanity_3_gen,
-    "sanity-3-gen-OLD": sanity_3_gen_old,
-    "sanity-3-gen-NEW": sanity_3_gen_new,
-    "_bu_sanity-3-gen": bu_sanity_3_gen,
-    "fair-IMF-LIN": fair_imf_lin,
-    "fair-CAU-LIN": fair_cau_lin,
-    "fair-CAU-ANM": fair_cau_anm,
-    "fair-IMF-LIN-radial": fair_imf_lin,
-    "fair-CAU-LIN-radial": fair_cau_lin,
-    "fair-CAU-ANM-radial": fair_cau_anm,
 }
 
 
