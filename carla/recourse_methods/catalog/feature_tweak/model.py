@@ -232,8 +232,8 @@ class FeatureTweak(RecourseMethod):
         * "eps": float
 
     .. [1] Tolomei, G., Silvestri, F., Haines, A., & Lalmas, M. (2017, August). Interpretable predictions of tree-based
-    ensembles via actionable feature tweaking. In Proceedings of the 23rd ACM SIGKDD international conference on
-    knowledge discovery and data mining (pp. 465-474).
+            ensembles via actionable feature tweaking. In Proceedings of the 23rd ACM SIGKDD international conference on
+            knowledge discovery and data mining (pp. 465-474).
     """
 
     def __init__(

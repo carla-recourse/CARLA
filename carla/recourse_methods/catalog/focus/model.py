@@ -101,7 +101,7 @@ class FOCUS(RecourseMethod):
             Norm to be used.
 
     .. [1] Lucic, A., Oosterhuis, H., Haned, H., & de Rijke, M. (2018). FOCUS: Flexible optimizable counterfactual
-    explanations for tree ensembles. arXiv preprint arXiv:1910.12199.
+            explanations for tree ensembles. arXiv preprint arXiv:1910.12199.
     """
 
     def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
