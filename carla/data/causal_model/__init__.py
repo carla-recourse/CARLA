@@ -1,5 +1,5 @@
 # flake8: noqa
 
 # from .sample import sample
-from .causalmodel import CausalModel
+from .causal_model import CausalModel
 from .synthethic_data import ScmDataset
