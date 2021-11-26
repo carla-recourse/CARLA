@@ -29,6 +29,6 @@ Catalog
 
 Causal Model
 ------------------
-.. automodule:: data.catalog.causal_model
+.. automodule:: data.causal_model.causal_model
    :members:
    :undoc-members:
