@@ -8,7 +8,8 @@ from .synthethic_data import ScmDataset
 
 class CausalModel:
     """
-    Class with topological methods given a structural causal model.
+    Class with topological methods given a structural causal model. Uses the StructuralCausalModel and
+    CausalGraphicalModel from https://github.com/ijmbarr/causalgraphicalmodels
 
     Parameters
     ----------
@@ -22,9 +23,9 @@ class CausalModel:
     scm_class: str
         Name of the structural causal model
     structural_equations_np: dict
-        Contains the equations for the features in numpy format.
+        Contains the equations for the features in Numpy format.
     structural_equations_ts: dict
-        Contains the equations for the features in tensorflow format.
+        Contains the equations for the features in Tensorflow format.
     noise_distributions: dict
         Defines the noise variables.
 
@@ -166,6 +167,18 @@ class CausalModel:
         return ScmDataset(self, size)
 
     def visualize_graph(self, experiment_folder_name=None):
+        """
+        Visualize the causal graph.
+
+        Parameters
+        ----------
+        experiment_folder_name: str
+            Where to save figure.
+
+        Returns
+        -------
+
+        """
         if experiment_folder_name:
             save_path = f"{experiment_folder_name}/_causal_graph"
             view_flag = False
@@ -176,24 +189,64 @@ class CausalModel:
 
     @property
     def scm(self) -> StructuralCausalModel:
+        """
+
+        Returns
+        -------
+        StructuralCausalModel
+        """
         return self._scm
 
     @property
     def cgm(self) -> CausalGraphicalModel:
+        """
+
+        Returns
+        -------
+        CausalGraphicalModel
+        """
         return self._cgm
 
     @property
     def scm_class(self) -> str:
+        """
+        Name of the structural causal model used to define the CausalModel
+
+        Returns
+        -------
+        str
+        """
         return self._scm_class
 
     @property
     def structural_equations_np(self) -> dict:
+        """
+        Contains the equations for the features in Numpy format.
+
+        Returns
+        -------
+        dict
+        """
         return self._structural_equations_np
 
     @property
     def structural_equations_ts(self) -> dict:
+        """
+        Contains the equations for the features in Tensorflow format.
+
+        Returns
+        -------
+        dict
+        """
         return self._structural_equations_ts
 
     @property
     def noise_distributions(self) -> dict:
+        """
+        Defines the noise variables.
+
+        Returns
+        -------
+        dict
+        """
         return self._noise_distributions
