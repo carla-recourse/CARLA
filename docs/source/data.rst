@@ -26,3 +26,15 @@ Catalog
 .. automodule:: data.catalog.catalog
    :members:
    :undoc-members:
+
+Causal Model
+------------------
+.. automodule:: data.causal_model.causal_model
+   :members:
+   :undoc-members:
+
+Synthetic Data
+------------------
+.. automodule:: data.causal_model.synthethic_data
+   :members:
+   :undoc-members:

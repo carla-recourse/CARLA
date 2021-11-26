@@ -49,5 +49,6 @@ setup(
         "dice-ml==0.5",
         "ipython",
         "keras==2.3.0",
+        "causalgraphicalmodels==0.0.4",
     ],
 )
