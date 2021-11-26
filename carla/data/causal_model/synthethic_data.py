@@ -86,7 +86,6 @@ class ScmDataset(Data):
         Structural causal model
     size : int
         Number of samples in the dataset
-
     """
 
     def __init__(self, scm, size: int):

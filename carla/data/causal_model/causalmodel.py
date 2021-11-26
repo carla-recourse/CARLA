@@ -17,12 +17,16 @@ class CausalModel:
 
     Attributes
     ----------
-    scm
-    cgm
-    scm_class
-    structural_equations_np
-    structural_equations_ts
-    noise_distributions
+    scm: StructuralCausalModel
+    cgm: CausalGraphicalModel
+    scm_class: str
+        Name of the structural causal model
+    structural_equations_np: dict
+        Contains the equations for the features in numpy format.
+    structural_equations_ts: dict
+        Contains the equations for the features in tensorflow format.
+    noise_distributions: dict
+        Defines the noise variables.
 
     """
 
