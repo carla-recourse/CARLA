@@ -64,8 +64,15 @@ def initialize_recourse_method(
         coeffs, intercepts = None, None
         if model_type == "linear":
             # get weights and bias of linear layer for negative class 0
-            coeffs = mlmodel.raw_model.layers[0].get_weights()[0][:, 0]
-            intercepts = np.array(mlmodel.raw_model.layers[0].get_weights()[1][0])
+            coeffs_neg = mlmodel.raw_model.layers[0].get_weights()[0][:, 0]
+            intercepts_neg = np.array(mlmodel.raw_model.layers[0].get_weights()[1][0])
+
+            # get weights and bias of linear layer for positive class 1
+            coeffs_pos = mlmodel.raw_model.layers[0].get_weights()[0][:, 1]
+            intercepts_pos = np.array(mlmodel.raw_model.layers[0].get_weights()[1][1])
+
+            coeffs = -(coeffs_neg - coeffs_pos)
+            intercepts = -(intercepts_neg - intercepts_pos)
 
         ar = ActionableRecourse(mlmodel, hyperparams, coeffs, intercepts)
         act_set = ar.action_set
@@ -80,12 +87,25 @@ def initialize_recourse_method(
         ar.action_set = act_set
 
         return ar
+    elif method == "cchvae":
+        hyperparams["data_name"] = data_name
+        hyperparams["vae_params"]["layers"] = [
+            len(mlmodel.feature_input_order)
+        ] + hyperparams["vae_params"]["layers"]
+        return CCHVAE(mlmodel, hyperparams)
     elif "cem" in method:
         hyperparams["data_name"] = data_name
         return CEM(sess, mlmodel, hyperparams)
     elif method == "clue":
         hyperparams["data_name"] = data_name
         return Clue(data, mlmodel, hyperparams)
+    elif method == "cruds":
+        hyperparams["data_name"] = data_name
+        # variable input layer dimension is first time here available
+        hyperparams["vae_params"]["layers"] = [
+            len(mlmodel.feature_input_order)
+        ] + hyperparams["vae_params"]["layers"]
+        return CRUD(mlmodel, hyperparams)
     elif method == "dice":
         return Dice(mlmodel, hyperparams)
     elif "face" in method:
@@ -129,9 +149,11 @@ parser.add_argument(
     default=[
         "dice",
         "ar",
+        "cchvae",
         "cem",
         "cem-vae",
         "clue",
+        "cruds",
         "face_knn",
         "face_epsilon",
         "gs",
@@ -141,9 +163,11 @@ parser.add_argument(
     choices=[
         "dice",
         "ar",
+        "cchvae",
         "cem",
         "cem-vae",
         "clue",
+        "cruds",
         "face_knn",
         "face_epsilon",
         "gs",
@@ -174,7 +198,7 @@ results = pd.DataFrame()
 path = args.path
 
 session_models = ["cem", "cem-vae"]
-torch_methods = ["clue", "wachter", "revise"]
+torch_methods = ["cchvae", "clue", "cruds", "wachter", "revise"]
 for rm in args.recourse_method:
     backend = "tensorflow"
     if rm in torch_methods:
