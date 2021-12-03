@@ -100,7 +100,10 @@ class MLModelCatalog(MLModel):
             self._feature_input_order = self._catalog["feature_order"]
         else:
             self._catalog = None
-            self._feature_input_order = data.raw.columns
+            # TODO is this the same as np.settdiff1d?
+            self._feature_input_order = list(
+                np.sort(data.continous + data.categoricals)
+            )
 
         self._continuous = data.continous
         self._categoricals = data.categoricals
