@@ -43,6 +43,7 @@ def train_model(
 
     """
     x_train, x_test, y_train, y_test = train_test_split(x, y)
+    print(f"balance on test set {y_train.mean()}, balance on test set {y_test.mean()}")
     if catalog_model.backend == "tensorflow":
         if catalog_model.model_type == "linear":
             model = linear_tf(

@@ -46,13 +46,17 @@ def predict_label(model: Any, data: Data, as_prob: bool = False) -> np.ndarray:
     predictions :  2d numpy array with predictions
     """
 
-    # normalize and encode data
-    norm_enc_data = scale(model.scaler, data.continous, data.raw)
-    norm_enc_data = encode(model.encoder, data.categoricals, norm_enc_data)
+    # avoid normalizing twice
+    if not model.use_pipeline:
+        # normalize and encode data
+        norm_enc_data = scale(model.scaler, data.continous, data.raw)
+        norm_enc_data = encode(model.encoder, data.categoricals, norm_enc_data)
 
-    # Keep correct feature order for prediction
-    norm_enc_data = norm_enc_data[model.feature_input_order]
-    predictions = model.predict(norm_enc_data)
+        # Keep correct feature order for prediction
+        norm_enc_data = norm_enc_data[model.feature_input_order]
+        predictions = model.predict(norm_enc_data)
+    else:
+        predictions = model.predict(data.raw)
 
     if not as_prob:
         predictions = predictions.round()
