@@ -18,6 +18,7 @@ def sanity_3_lin():
     }
     continous = list(structural_equations_np.keys()) + list(noises_distributions.keys())
     categoricals = []
+    immutables = []
 
     return (
         structural_equations_np,
@@ -25,4 +26,5 @@ def sanity_3_lin():
         noises_distributions,
         continous,
         categoricals,
+        immutables,
     )

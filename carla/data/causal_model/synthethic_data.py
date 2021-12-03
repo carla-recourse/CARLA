@@ -72,8 +72,9 @@ def _create_synthetic_data(scm, num_samples):
     labels = uniform_rv < predictions
     labels = pd.DataFrame(data=labels, columns={"label"})
 
-    df_non_hot = pd.concat([labels, endogenous_variables, exogenous_variables], axis=1)
-    return df_non_hot.astype("float64")
+    df_endogenous = pd.concat([labels, endogenous_variables], axis=1).astype("float64")
+    df_exogenous = pd.concat([exogenous_variables], axis=1).astype("float64")
+    return df_endogenous, df_exogenous
 
 
 class ScmDataset(Data):
@@ -91,7 +92,7 @@ class ScmDataset(Data):
     def __init__(self, scm, size: int):
         self.name = scm.scm_class
         self.scm = scm
-        self._raw = _create_synthetic_data(scm, num_samples=size)
+        self._raw, self._noise = _create_synthetic_data(scm, num_samples=size)
 
     @property
     def categoricals(self) -> List[str]:
@@ -116,6 +117,28 @@ class ScmDataset(Data):
         return self.scm._continous
 
     @property
+    def categoricals_noise(self) -> List[str]:
+        """
+        Provides the column names of the categorical data.
+
+        Returns
+        -------
+        List[str]
+        """
+        return self.scm._categoricals_noise
+
+    @property
+    def continous_noise(self) -> List[str]:
+        """
+        Provides the column names of the continuous data.
+
+        Returns
+        -------
+        List[str]
+        """
+        return self.scm._continous_noise
+
+    @property
     def immutables(self) -> List[str]:
         """
         Provides the column names of the immutable data.
@@ -124,7 +147,7 @@ class ScmDataset(Data):
         -------
         List[str]
         """
-        pass
+        return self.scm._immutables
 
     @property
     def target(self) -> str:
@@ -147,3 +170,14 @@ class ScmDataset(Data):
         pd.DataFrame
         """
         return self._raw.copy()
+
+    @property
+    def noise(self) -> pd.DataFrame:
+        """
+        The noise Dataframe without encoding or normalization
+
+        Returns
+        -------
+        pd.DataFrame
+        """
+        return self._noise.copy()

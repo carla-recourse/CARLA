@@ -1,3 +1,5 @@
+from typing import List
+
 import networkx as nx
 from causalgraphicalmodels import CausalGraphicalModel, StructuralCausalModel
 
@@ -43,10 +45,20 @@ class CausalModel:
             self._noise_distributions,
             self._continous,
             self._categoricals,
+            self._immutables,
         ) = load_scm_equations(scm_class)
 
         self._scm = StructuralCausalModel(self._structural_equations_np)
         self._cgm = self._scm.cgm
+
+        self._endogenous = list(self._structural_equations_np.keys())
+        self._exogenous = list(self._noise_distributions.keys())
+
+        self._continous_noise = list(set(self._continous) - set(self.endogenous))
+        self._categoricals_noise = list(set(self._categoricals) - set(self.endogenous))
+
+        self._continous = list(set(self._continous) - set(self._exogenous))
+        self._categoricals = list(set(self._categoricals) - set(self._exogenous))
 
     def get_topological_ordering(self, node_type="endogenous"):
         """Returns a generator of nodes in topologically sorted order.
@@ -250,3 +262,25 @@ class CausalModel:
         dict
         """
         return self._noise_distributions
+
+    @property
+    def exogenous(self) -> List[str]:
+        """
+        Get the exogenous nodes, i.e. the noise nodes.
+
+        Returns
+        -------
+        List[str]
+        """
+        return self._exogenous
+
+    @property
+    def endogenous(self) -> List[str]:
+        """
+        Get the endogenous nodes, i.e. the signal nodes.
+
+        Returns
+        -------
+        List[str]
+        """
+        return self._endogenous

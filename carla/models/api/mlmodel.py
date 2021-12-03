@@ -46,6 +46,8 @@ class MLModel(ABC):
         if scaling_method == "MinMax":
             fitted_scaler = preprocessing.MinMaxScaler().fit(data.raw[data.continous])
             self.scaler: BaseEstimator = fitted_scaler
+        else:
+            raise NotImplementedError("Scaling Method not implemented")
 
         if encoding_method == "OneHot":
             fitted_encoder = preprocessing.OneHotEncoder(

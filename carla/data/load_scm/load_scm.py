@@ -23,6 +23,7 @@ def load_scm_equations(scm_class: str):
         noise_distributions,
         continous,
         categoricals,
+        immutables,
     ) = scm_dict[scm_class]()
 
     ###########################
@@ -50,4 +51,5 @@ def load_scm_equations(scm_class: str):
         noise_distributions,
         continous,
         categoricals,
+        immutables,
     )
