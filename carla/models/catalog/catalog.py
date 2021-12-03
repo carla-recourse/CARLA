@@ -6,6 +6,7 @@ import tensorflow as tf
 import torch
 
 from carla.data.catalog import DataCatalog
+from carla.data.causal_model.synthethic_data import ScmDataset
 from carla.data.load_catalog import load_catalog
 from carla.models.api import MLModel
 from carla.models.pipelining import encode, order_data, scale
@@ -88,14 +89,18 @@ class MLModelCatalog(MLModel):
             )
         super().__init__(data, encoding_method=encoding_method)
 
-        # Load catalog
-        catalog_content = ["ann", "linear"]
-        catalog = load_catalog("mlmodel_catalog.yaml", data.name, catalog_content)  # type: ignore
+        if not isinstance(data, ScmDataset):
+            # Load catalog
+            catalog_content = ["ann", "linear"]
+            catalog = load_catalog("mlmodel_catalog.yaml", data.name, catalog_content)  # type: ignore
 
-        if model_type not in catalog:
-            raise ValueError("Model type not in model catalog")
-        self._catalog = catalog[model_type][self._backend]
-        self._feature_input_order = self._catalog["feature_order"]
+            if model_type not in catalog:
+                raise ValueError("Model type not in model catalog")
+            self._catalog = catalog[model_type][self._backend]
+            self._feature_input_order = self._catalog["feature_order"]
+        else:
+            self._catalog = None
+            self._feature_input_order = data.raw.columns
 
         self._continuous = data.continous
         self._categoricals = data.categoricals
