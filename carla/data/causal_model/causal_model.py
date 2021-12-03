@@ -54,6 +54,12 @@ class CausalModel:
         self._endogenous = list(self._structural_equations_np.keys())
         self._exogenous = list(self._noise_distributions.keys())
 
+        self._continous_noise = list(set(self._continous) - set(self.endogenous))
+        self._categoricals_noise = list(set(self._categoricals) - set(self.endogenous))
+
+        self._continous = list(set(self._continous) - set(self._exogenous))
+        self._categoricals = list(set(self._categoricals) - set(self._exogenous))
+
     def get_topological_ordering(self, node_type="endogenous"):
         """Returns a generator of nodes in topologically sorted order.
 
