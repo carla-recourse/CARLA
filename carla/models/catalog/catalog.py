@@ -9,7 +9,7 @@ from carla.data.catalog import DataCatalog
 from carla.data.causal_model.synthethic_data import ScmDataset
 from carla.data.load_catalog import load_catalog
 from carla.models.api import MLModel
-from carla.models.pipelining import encode, order_data, scale
+from carla.models.pipelining import decode, descale, encode, order_data, scale
 
 from .load_model import load_model
 from .train_model import train_model
@@ -100,6 +100,7 @@ class MLModelCatalog(MLModel):
             self._feature_input_order = self._catalog["feature_order"]
         else:
             self._catalog = None
+            # TODO is this the same as np.settdiff1d?
             self._feature_input_order = list(
                 np.sort(data.continous + data.categoricals)
             )
@@ -110,6 +111,7 @@ class MLModelCatalog(MLModel):
         # Preparing pipeline components
         self._use_pipeline = use_pipeline
         self._pipeline = self.__init_pipeline()
+        self._inverse_pipeline = self.__init_inverse_pipeline()
 
         if load_pretrained:
             self._model = load_model(
@@ -121,6 +123,12 @@ class MLModelCatalog(MLModel):
             ("scaler", lambda x: scale(self.scaler, self._continuous, x)),
             ("encoder", lambda x: encode(self.encoder, self._categoricals, x)),
             ("order", lambda x: order_data(self._feature_input_order, x)),
+        ]
+
+    def __init_inverse_pipeline(self) -> List[Tuple[str, Callable]]:
+        return [
+            ("encoder", lambda x: decode(self.encoder, self._categoricals, x)),
+            ("scaler", lambda x: descale(self.scaler, self._continuous, x)),
         ]
 
     def get_pipeline_element(self, key: str) -> Callable:
@@ -151,6 +159,18 @@ class MLModelCatalog(MLModel):
         """
         return self._pipeline
 
+    @property
+    def inverse_pipeline(self) -> List[Tuple[str, Callable]]:
+        """
+        Returns transformations steps for output after predictions.
+
+        Returns
+        -------
+        pipeline : list
+            List of (name, transform) tuples that are chained in the order in which they are preformed.
+        """
+        return self._inverse_pipeline
+
     def perform_pipeline(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Transforms input for prediction into correct form.
@@ -172,6 +192,29 @@ class MLModelCatalog(MLModel):
         output = df.copy()
 
         for trans_name, trans_function in self._pipeline:
+            output = trans_function(output)
+
+        return output
+
+    def perform_inverse_pipeline(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Transforms output after prediction back into original form.
+        Only possible for DataFrames with preprocessing steps.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Contains normalized and encoded data.
+
+        Returns
+        -------
+        output : pd.DataFrame
+            Prediction output denormalized and decoded
+
+        """
+        output = df.copy()
+
+        for trans_name, trans_function in self._inverse_pipeline:
             output = trans_function(output)
 
         return output

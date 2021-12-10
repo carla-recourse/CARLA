@@ -13,9 +13,3 @@ def point_constraint(scm, factual_instance, action_set, sampling_handle, mlmodel
     # TODO crop samples to fall within [0, 1] for MinMaxScaler
     prediction = mlmodel.predict(cf_instance)
     return prediction.round() == 1
-
-
-def dist_constraint(
-    scm, factual_instance, action_set, dataset, num_samples, sampling_handle, mlmodel
-):
-    raise NotImplementedError
