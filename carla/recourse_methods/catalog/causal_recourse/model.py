@@ -138,18 +138,10 @@ class CausalRecourse(RecourseMethod):
 
         elif self._optimization_approach == "gradient_descent":
             raise NotImplementedError
-            #
-            # for i, intervention_set in enumerate(valid_intervention_sets):
-            #     action_set, cost = self.perform_gradient_descent(
-            #         factual_instance, intervention_set
-            #     )
-            #
-            #     if self.constraint(action_set, factual_instance):
-            #         if cost < min_cost:
-            #             min_cost = cost
-            #             min_action_set = action_set
         else:
             raise ValueError("optimization approach not recognized")
+
+        print("MIN COST", min_cost, "ACTION SET", min_action_set)
 
         return min_action_set
 

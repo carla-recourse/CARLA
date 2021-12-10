@@ -13,16 +13,14 @@ from carla.recourse_methods.catalog.causal_recourse import (
 def test_action_set():
 
     scm = CausalModel("sanity-3-lin")
-    data = scm.generate_dataset(10000)
+    data = scm.generate_dataset(1000)
 
     print(f"/n class balance: {np.mean(data.raw[data.target])}")
 
-    training_params = {"lr": 0.002, "epochs": 10, "batch_size": 128}
+    training_params = {"lr": 0.8, "epochs": 500, "batch_size": 16}
 
     model_type = "linear"
-    model = MLModelCatalog(
-        data, model_type, load_pretrained=False, use_pipeline=True, backend="pytorch"
-    )
+    model = MLModelCatalog(data, model_type, load_pretrained=False, use_pipeline=True)
     model.train(
         learning_rate=training_params["lr"],
         epochs=training_params["epochs"],
@@ -42,6 +40,6 @@ def test_action_set():
     }
     cfs = CausalRecourse(model, hyperparams).get_counterfactuals(factuals)
 
-    model.predict(cfs)
+    cfs = model.perform_inverse_pipeline(cfs)
 
     print(cfs)

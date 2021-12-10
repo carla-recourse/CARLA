@@ -152,8 +152,6 @@ def _training_torch(
                 if trace_input:
                     x_for_trace = inputs
                     trace_input = False
-                labels = labels.to(device)
-
                 labels = labels.to(device).type(torch.int64)
                 labels = torch.nn.functional.one_hot(labels)
 
