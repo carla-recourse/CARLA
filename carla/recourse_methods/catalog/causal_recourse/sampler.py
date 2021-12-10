@@ -15,13 +15,6 @@ class Sampler:
 
     def _create_counterfactual_template(self, action_set: dict, factual_instance: dict):
 
-        # # TODO (medpri): this function is called using both brute-force and grad-descent
-        # # approach (where the former/latter uses Instance/dict)
-        # if isinstance(factual_instance_obj_or_ts, Instance):
-        #     factual_instance = factual_instance_obj_or_ts.dict()
-        # else:
-        #     factual_instance = factual_instance_obj_or_ts
-
         counterfactual_template = dict.fromkeys(self.input_attributes, np.NaN)
 
         # get intervention and conditioning sets
@@ -88,15 +81,11 @@ class Sampler:
         for node in self._scm.get_topological_ordering():
             # set variable if value not yet set through either intervention or conditioning
             if samples_df[node].isnull().values.any():
-                # parents = self._scm.get_parents(node)
-                # if len(tmp) == 0:
-                #     raise ValueError(
-                #         "root nodes must be set trough intervention or conditioning"
-                #     )
-                # if samples_df.loc[:, list(parents)].isnull().values.any():
-                #     raise ValueError(
-                #         "parent columns are not present or have no assigned values"
-                #     )
+
+                parents = self._scm.get_parents(node)
+                assert len(parents) > 0
+                assert not samples_df.loc[:, list(parents)].isnull().values.any()
+
                 samples_df[node] = sampling_handle(
                     node, self._scm, samples_df, factual_instance
                 )

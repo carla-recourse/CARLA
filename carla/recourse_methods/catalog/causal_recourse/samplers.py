@@ -34,17 +34,7 @@ def sample_true_m0(
         node, parents, structural_equation, factual_instance
     )
 
-    # # TODO why is this check here? Can it be moved to a test case
-    # # TODO this can fail if data has no noise variables
-    # true_noise = factual_instance("endogenous_and_exogenous")[f"u{node[1:]}"]
-    # if (
-    #     not scm.scm_class == "sanity-3-gen"
-    # ):  # this scm uses multiplicative, rather then additive, noise
-    #     if not np.abs(predicted_noise - true_noise) < 1e-5:
-    #         raise ValueError("Noise{pred, true} are expected to be similiar")
-
     noise = np.array(predicted_noise)
-
     node_sample = structural_equation(noise, *[samples_df[p] for p in parents])
     return node_sample
 
