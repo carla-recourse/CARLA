@@ -1,7 +1,6 @@
 import itertools
 
 import numpy as np
-from sklearn import preprocessing
 
 from .sampler import Sampler
 
@@ -51,7 +50,9 @@ def initialize_non_saturated_action_set(
 
 def get_discretized_action_sets(
     intervenable_nodes,
-    scaler,
+    min_values,
+    max_values,
+    mean_values,
     decimals=5,
     grid_search_bins=10,
     max_intervention_cardinality=100,
@@ -63,8 +64,12 @@ def get_discretized_action_sets(
     ----------
     intervenable_nodes: dict
         Contains nodes that are not immutable {"continous": [continous nodes], "categorical": [categical nodes].
-    scaler: either sklearn.preprocessing.MinMaxScaler or sklearn.preprocessing.StandardScaler
-        Needed to find what values to search over.
+    min_values: pd.Series
+        min_values[node] contains the minimum feature value that node takes.
+    max_values: pd.Series
+        max_values[node] contains the maximum feature value that node takes.
+    mean_values: pd.Series
+        mean_values[node] contains the average feature value that node takes.
     decimals: int
         Determines the precision of the values to search over, in the case of continuous variables.
     grid_search_bins: int
@@ -77,27 +82,13 @@ def get_discretized_action_sets(
     dict containing the valid action sets.
     """
 
-    # TODO are we using normalized or non-normalized data? (assuming normalized now)
+    # list that collects actions
     possible_actions_per_node = []
 
-    for i, _ in enumerate(intervenable_nodes["continuous"]):
-        if isinstance(scaler, preprocessing.MinMaxScaler):
-            # search over [0, 1]
-            # TODO is this index corresponding to same variable as in ["continous"]
-            # min_value = scaler.data_min_[i]
-            # max_value = scaler.data_max_[i]
-            min_value = 0
-            max_value = 1
-        elif isinstance(scaler, preprocessing.StandardScaler):
-            # search over mean +- 2 * std
-            # mean_value = scaler.mean_[i]
-            # std_value = scaler.scale_[i]
-            mean_value = 0
-            std_value = 1
-            min_value = mean_value - 2 * std_value
-            max_value = mean_value + 2 * std_value
-        else:
-            raise ValueError(f"scaler: {scaler} not recognized!")
+    # create grid for continuous variables
+    for i, node in enumerate(intervenable_nodes["continuous"]):
+        min_value = mean_values[node] - 2 * (mean_values[node] - min_values[node])
+        max_value = mean_values[node] + 2 * (max_values[node] - mean_values[node])
         grid = list(
             np.around(np.linspace(min_value, max_value, grid_search_bins), decimals)
         )
@@ -105,7 +96,8 @@ def get_discretized_action_sets(
         grid = list(dict.fromkeys(grid))
         possible_actions_per_node.append(grid)
 
-    for _ in intervenable_nodes["categorical"]:
+    # create grid for categorical variables
+    for node in intervenable_nodes["categorical"]:
         # TODO only binary categories supported right now
         grid = list(np.around(np.linspace(0, 1, grid_search_bins), decimals=0))
         grid.append(None)

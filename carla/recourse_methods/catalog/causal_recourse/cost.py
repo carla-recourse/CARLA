@@ -36,4 +36,4 @@ def action_set_cost(
     elif factual_torch and action_torch:
         return torch.norm(torch.stack(deltas), p=norm_type)
     else:
-        raise Exception("Mismatching or unsupport datatypes.")
+        raise Exception("Mismatching or unsupported datatypes.")

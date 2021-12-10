@@ -3,13 +3,35 @@ from typing import Dict
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
+from sklearn import preprocessing
 
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.api import RecourseMethod
 
 from .action_set import get_discretized_action_sets
 from .cost import action_set_cost
+
+
+def _series_plus_dict(x: pd.Series, y: dict):
+    """Helper function to implemention addition for a Series object and a dict with overlapping keys
+
+    Parameters
+    ----------
+    x: pd.Series
+    y: dict
+
+    Returns
+    -------
+    pd.Series analogous to x + y
+    """
+    y = pd.Series(y)
+
+    result = x + y
+    nan_cols = result.index[result.isna()].tolist()
+    result = result.drop(index=nan_cols)
+    result = pd.concat([result, x[nan_cols]])
+
+    return result
 
 
 # https://stackoverflow.com/a/1482316/2759976
@@ -48,7 +70,7 @@ class CausalRecourse(RecourseMethod):
 
         return intervenable_nodes
 
-    def _get_ranges(self):
+    def _get_range_values(self):
         normalized = self._mlmodel.use_pipeline
         if normalized:
             data_df = self.encode_normalize_order_factuals(self._dataset.raw)
@@ -58,24 +80,48 @@ class CausalRecourse(RecourseMethod):
         min_values = data_df.min()
         max_values = data_df.max()
 
-        # ranges = pd.concat([min_values, max_values], axis=1)
-        ranges = max_values - min_values
-        return ranges
+        return min_values, max_values
+
+    def _get_mean_values(self):
+        normalized = self._mlmodel.use_pipeline
+        if normalized:
+            data_df = self.encode_normalize_order_factuals(self._dataset.raw)
+        else:
+            data_df = self._dataset.raw
+
+        mean_values = data_df.mean()
+
+        return mean_values
 
     def compute_optimal_action_set(
         self, factual_instance, constraint_handle, sampling_handle
     ):
 
         intervenables_nodes = self.get_intervenable_nodes()
-        ranges = self._get_ranges()
+        min_values, max_values = self._get_range_values()
+        mean_values = self._get_mean_values()
 
         min_cost = np.infty
         min_action_set = {}
         if self._optimization_approach == "brute_force":
             valid_action_sets = get_discretized_action_sets(
-                intervenables_nodes, self._mlmodel.scaler
+                intervenables_nodes, min_values, max_values, mean_values
             )
-            for action_set in tqdm(valid_action_sets):
+
+            # we need to make sure that actions don't go out of bounds [0, 1]
+            if isinstance(self._mlmodel.scaler, preprocessing.MinMaxScaler):
+                out_of_bounds_idx = []
+                for i, action_set in enumerate(valid_action_sets):
+                    instance = _series_plus_dict(factual_instance, action_set)
+                    if not np.all((1 > instance.values) & (instance.values > 0)):
+                        out_of_bounds_idx.append(i)
+                valid_action_sets = [
+                    action_set
+                    for i, action_set in enumerate(valid_action_sets)
+                    if i not in set(out_of_bounds_idx)
+                ]
+
+            for action_set in valid_action_sets:
                 if constraint_handle(
                     self._scm,
                     factual_instance,
@@ -83,7 +129,9 @@ class CausalRecourse(RecourseMethod):
                     sampling_handle,
                     self._mlmodel,
                 ):
-                    cost = action_set_cost(factual_instance, action_set, ranges)
+                    cost = action_set_cost(
+                        factual_instance, action_set, max_values - min_values
+                    )
                     if cost < min_cost:
                         min_cost = cost
                         min_action_set = action_set
@@ -107,10 +155,20 @@ class CausalRecourse(RecourseMethod):
 
     def get_counterfactuals(self, factuals: pd.DataFrame):
 
+        normalized = self._mlmodel.use_pipeline
+        if normalized:
+            factual_df = self.encode_normalize_order_factuals(factuals)
+        else:
+            factual_df = factuals.drop(columns=self._dataset.target)
+
         cfs = []
-        for index, factual_instance in factuals.iterrows():
+        for index, factual_instance in factual_df.iterrows():
             min_action_set = self.compute_optimal_action_set(
                 factual_instance, self._constraint_handle, self._sampler_handle
             )
-            cfs.append(min_action_set)
+            cf = _series_plus_dict(factual_instance, min_action_set)
+            cfs.append(cf)
+
+        # convert to dataframe
+        cfs = pd.DataFrame(cfs)
         return cfs

@@ -42,4 +42,6 @@ def test_action_set():
     }
     cfs = CausalRecourse(model, hyperparams).get_counterfactuals(factuals)
 
+    model.predict(cfs)
+
     print(cfs)
