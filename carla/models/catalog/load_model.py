@@ -18,7 +18,7 @@ def load_model(
     """Load an pretrained model from the online repository (requires internet).
 
     This function provides quick access to a number of models trained on example
-    datasets that are commonly useful for evaluating counterfatual methods.
+    datasets that are commonly useful for evaluating counterfactual methods.
 
     Note that the models have been trained on the example datasets hosted on
     https://github.com/carla-recourse/cf-models.

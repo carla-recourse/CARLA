@@ -106,11 +106,7 @@ class CEM(RecourseMethod):
         "gamma": 0.0,
         "mode": "PN",
         "num_classes": 2,
-        "ae_params": {
-            "hidden_layer": None,
-            "train_ae": True,
-            "epochs": 5,
-        },
+        "ae_params": {"hidden_layer": None, "train_ae": True, "epochs": 5},
     }
 
     def __init__(self, sess, mlmodel: MLModel, hyperparams):
