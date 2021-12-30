@@ -49,7 +49,7 @@ setup(
         "dice-ml==0.5",
         "ipython",
         "keras==2.3.0",
-        # "xgboost==1.4.2",
+        "xgboost==1.4.2",
         "causalgraphicalmodels==0.0.4",
     ],
 )
