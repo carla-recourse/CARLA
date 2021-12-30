@@ -36,7 +36,6 @@ setup(
     packages=find_packages(exclude=("test",)),
     include_package_data=True,
     install_requires=[
-        "scipy==1.6.2",
         "lime==0.2.0.1",
         "mip==1.12.0",
         "numpy==1.19.4",
