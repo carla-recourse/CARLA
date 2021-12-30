@@ -109,7 +109,10 @@ class CausalRecourse(RecourseMethod):
             )
 
             # we need to make sure that actions don't go out of bounds [0, 1]
-            if isinstance(self._mlmodel.scaler, preprocessing.MinMaxScaler):
+            if (
+                isinstance(self._mlmodel.scaler, preprocessing.MinMaxScaler)
+                and self._mlmodel.use_pipeline
+            ):
                 out_of_bounds_idx = []
                 for i, action_set in enumerate(valid_action_sets):
                     instance = _series_plus_dict(factual_instance, action_set)
@@ -141,9 +144,9 @@ class CausalRecourse(RecourseMethod):
         else:
             raise ValueError("optimization approach not recognized")
 
-        print("MIN COST", min_cost, "ACTION SET", min_action_set)
+        # print("MIN COST", min_cost, "ACTION SET", min_action_set)
 
-        return min_action_set
+        return min_action_set, min_cost
 
     def get_counterfactuals(self, factuals: pd.DataFrame):
 
@@ -154,13 +157,17 @@ class CausalRecourse(RecourseMethod):
             factual_df = factuals.drop(columns=self._dataset.target)
 
         cfs = []
+        # actions = []
         for index, factual_instance in factual_df.iterrows():
-            min_action_set = self.compute_optimal_action_set(
+            min_action_set, _ = self.compute_optimal_action_set(
                 factual_instance, self._constraint_handle, self._sampler_handle
             )
             cf = _series_plus_dict(factual_instance, min_action_set)
+            # min_action_set["cost"] = min_cost
+            # actions.append(min_action_set)
             cfs.append(cf)
 
         # convert to dataframe
         cfs = pd.DataFrame(cfs)
+        # action_df = pd.DataFrame(actions)
         return cfs

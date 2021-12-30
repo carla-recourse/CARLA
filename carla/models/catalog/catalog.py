@@ -407,7 +407,7 @@ class MLModelCatalog(MLModel):
         if self.use_pipeline:
             x = self.perform_pipeline(data_df)
         else:
-            x = data_df[list(set(data_df.columns) - set(self.data.target))]
+            x = data_df[list(set(data_df.columns) - {self.data.target})]
         y = data_df[self.data.target]
 
         self._model = train_model(self, x, y, learning_rate, epochs, batch_size)
