@@ -25,7 +25,7 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/indyfree/CARLA",
-    author="Martin Pawelczyk, Sascha Bielawski, Joannes van den Heuvel, Tobias Richter and Gjergji Kasneci",
+    author="Martin Pawelczyk, Sascha Bielawski, Johannes van den Heuvel, Tobias Richter and Gjergji Kasneci",
     author_email="martin.pawelczyk@uni-tuebingen.de",
     license="MIT",
     classifiers=[
@@ -36,6 +36,7 @@ setup(
     packages=find_packages(exclude=("test",)),
     include_package_data=True,
     install_requires=[
+        "scipy==1.6.2",
         "lime==0.2.0.1",
         "mip==1.12.0",
         "numpy==1.19.4",
@@ -49,7 +50,6 @@ setup(
         "dice-ml==0.5",
         "ipython",
         "keras==2.3.0",
-        "scipy==1.6.2",
         "xgboost==1.4.2",
         "causalgraphicalmodels==0.0.4",
     ],
