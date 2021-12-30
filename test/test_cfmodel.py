@@ -12,11 +12,81 @@ from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.crud import CRUD
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
+from carla.recourse_methods.catalog.feature_tweak import FeatureTweak
+from carla.recourse_methods.catalog.focus import FOCUS
+from carla.recourse_methods.catalog.focus.tree_model import ForestModel, XGBoostModel
 from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
 from carla.recourse_methods.catalog.revise import Revise
 from carla.recourse_methods.catalog.wachter import Wachter
 
 testmodel = ["ann", "linear"]
+
+
+@pytest.mark.parametrize("model_type", ["xgboost", "sklearn"])
+def test_feature_tweak_get_counterfactuals(model_type):
+
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    if model_type == "xgboost":
+        model = XGBoostModel(data)
+    elif model_type == "sklearn":
+        model = ForestModel(data)
+    else:
+        raise ValueError("model type not recognized")
+
+    hyperparams = {
+        "eps": 0.1,
+    }
+
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:5]
+
+    feature_tweak = FeatureTweak(model, hyperparams)
+    cfs = feature_tweak.get_counterfactuals(test_factual)
+
+    assert test_factual[data.continous + [data.target]].shape == cfs.shape
+
+    non_nan_cfs = cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
+
+
+@pytest.mark.parametrize("model_type", ["xgboost", "sklearn"])
+def test_focus_get_counterfactuals(model_type):
+
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    if model_type == "xgboost":
+        model = XGBoostModel(data)
+    elif model_type == "sklearn":
+        model = ForestModel(data)
+    else:
+        raise ValueError("model type not recognized")
+
+    hyperparams = {
+        "optimizer": "adam",
+        "lr": 0.001,
+        "n_class": 2,
+        "n_iter": 1000,
+        "sigma": 1.0,
+        "temperature": 1.0,
+        "distance_weight": 0.01,
+        "distance_func": "l1",
+    }
+
+    # get factuals
+    factuals = predict_negative_instances(model, data)
+    test_factual = factuals.iloc[:5]
+
+    focus = FOCUS(model, data, hyperparams)
+    cfs = focus.get_counterfactuals(test_factual)
+
+    assert test_factual[data.continous].shape == cfs.shape
+
+    non_nan_cfs = cfs.dropna()
+    assert non_nan_cfs.shape[0] > 0
 
 
 @pytest.mark.parametrize("model_type", testmodel)

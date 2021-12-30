@@ -25,7 +25,7 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/indyfree/CARLA",
-    author="Martin Pawelczyk, Sascha Bielawski, Joannes van den Heuvel, Tobias Richter and Gjergji Kasneci",
+    author="Martin Pawelczyk, Sascha Bielawski, Johannes van den Heuvel, Tobias Richter and Gjergji Kasneci",
     author_email="martin.pawelczyk@uni-tuebingen.de",
     license="MIT",
     classifiers=[
@@ -49,6 +49,7 @@ setup(
         "dice-ml==0.5",
         "ipython",
         "keras==2.3.0",
+        "xgboost==1.4.2",
         "causalgraphicalmodels==0.0.4",
     ],
 )

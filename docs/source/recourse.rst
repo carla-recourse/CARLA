@@ -98,3 +98,19 @@ Wachter
 .. automodule:: recourse_methods.catalog.wachter.model
    :members:
    :undoc-members:
+
+.. _focus:
+
+FOCUS
+^^^^^^^
+.. automodule:: recourse_methods.catalog.focus.model
+   :members:
+   :undoc-members:
+
+.. _featuretweak:
+
+FeatureTweak
+^^^^^^^
+.. automodule:: recourse_methods.catalog.feature_tweak.model
+   :members:
+   :undoc-members:
