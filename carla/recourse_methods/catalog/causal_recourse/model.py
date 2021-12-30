@@ -70,27 +70,23 @@ class CausalRecourse(RecourseMethod):
 
         return intervenable_nodes
 
-    def _get_range_values(self):
+    def _get_original_df(self):
         normalized = self._mlmodel.use_pipeline
         if normalized:
             data_df = self.encode_normalize_order_factuals(self._dataset.raw)
         else:
             data_df = self._dataset.raw
+        return data_df
 
+    def _get_range_values(self):
+        data_df = self._get_original_df()
         min_values = data_df.min()
         max_values = data_df.max()
-
         return min_values, max_values
 
     def _get_mean_values(self):
-        normalized = self._mlmodel.use_pipeline
-        if normalized:
-            data_df = self.encode_normalize_order_factuals(self._dataset.raw)
-        else:
-            data_df = self._dataset.raw
-
+        data_df = self._get_original_df()
         mean_values = data_df.mean()
-
         return mean_values
 
     def compute_optimal_action_set(
@@ -109,9 +105,8 @@ class CausalRecourse(RecourseMethod):
             )
 
             # we need to make sure that actions don't go out of bounds [0, 1]
-            if (
-                isinstance(self._mlmodel.scaler, preprocessing.MinMaxScaler)
-                and self._mlmodel.use_pipeline
+            if self._mlmodel.use_pipeline and isinstance(
+                self._mlmodel.scaler, preprocessing.MinMaxScaler
             ):
                 out_of_bounds_idx = []
                 for i, action_set in enumerate(valid_action_sets):
