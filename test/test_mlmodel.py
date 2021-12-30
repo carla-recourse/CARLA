@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import torch
+from pandas._testing import assert_frame_equal
 
 from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
@@ -35,6 +36,22 @@ def test_properties():
 
     assert model_tf_adult.backend == exp_backend_tf
     assert model_tf_adult.feature_input_order == exp_feature_order_adult
+
+
+def test_inverse_pipeline():
+    data_name = "adult"
+    data = DataCatalog(data_name)
+
+    model_tf_adult = MLModelCatalog(data, "ann")
+
+    transformed_data = model_tf_adult.perform_pipeline(data.raw)
+    detransformed_data = model_tf_adult.perform_inverse_pipeline(transformed_data)
+
+    expected_data = data.raw[detransformed_data.columns]
+    expected_data[data.continous] = expected_data[data.continous].astype("float")
+    expected_data.columns = detransformed_data.columns
+
+    assert_frame_equal(expected_data, detransformed_data)
 
 
 @pytest.mark.parametrize("model_type", testmodel)

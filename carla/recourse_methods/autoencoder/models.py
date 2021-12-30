@@ -13,7 +13,7 @@ from tqdm import trange
 
 from carla import log
 from carla.recourse_methods.autoencoder.dataloader import VAEDataset
-from carla.recourse_methods.autoencoder.losses import binary_crossentropy, csvae_loss
+from carla.recourse_methods.autoencoder.losses import csvae_loss, mse
 from carla.recourse_methods.autoencoder.save_load import get_home
 
 tf.compat.v1.disable_eager_execution()
@@ -50,7 +50,7 @@ class Autoencoder:
             )
 
         if loss is None:
-            self._loss = binary_crossentropy
+            self._loss = mse
         else:
             self._loss = loss
 
