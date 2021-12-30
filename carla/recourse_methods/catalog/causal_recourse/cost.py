@@ -1,13 +1,33 @@
 import numpy as np
+import pandas as pd
 import torch
 
 
 def action_set_cost(
-    factual_instance,
-    action_set,
-    ranges,
+    factual_instance: pd.Series,
+    action_set: dict,
+    ranges: pd.Series,
     norm_type=2,
-):
+) -> float:
+    """
+    Compute cost of action
+
+    Parameters
+    ----------
+    factual_instance: pd.Series
+        Contains a single factual instance, where each element corresponds to a feature.
+    action_set: dict
+        Contains perturbation of features.
+    ranges: pd.Series
+        Contains the feature ranges of the original dataset.
+    norm_type: int
+        Norm to be used, choose either 1 or 2.
+
+    Returns
+    -------
+    float
+
+    """
 
     factual_instance = factual_instance.to_dict()
     ranges = ranges.to_dict()

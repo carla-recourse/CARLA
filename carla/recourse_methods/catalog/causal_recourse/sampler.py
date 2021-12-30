@@ -73,7 +73,31 @@ class Sampler:
         )
         return samples_df
 
-    def sample(self, num_samples, factual_instance, action_set, sampling_handle):
+    def sample(
+        self,
+        num_samples: int,
+        factual_instance: pd.Series,
+        action_set: dict,
+        sampling_handle,
+    ):
+        """
+        Get sample based on the factual instance and it's perturbation.
+
+        Parameters
+        ----------
+        num_samples: int
+            Number of samples to return.
+        factual_instance: pd.Series
+            Contains a single factual instance, where each element corresponds to a feature.
+        action_set: dict
+            Contains perturbation of features.
+        sampling_handle: function
+            Function that control the sampling.
+
+        Returns
+        -------
+        pd.DataFrame
+        """
 
         samples_df = self._create_samples_df(num_samples, factual_instance, action_set)
 

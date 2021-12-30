@@ -50,7 +50,6 @@ class CausalRecourse(RecourseMethod):
         self._dataset = mlmodel.data
 
         self._optimization_approach = hyperparams["optimization_approach"]
-        # self._recourse_type = hyperparams["recourse_type"]
         self._num_samples = hyperparams["num_samples"]
         self._scm = hyperparams["scm"]
 
@@ -58,7 +57,6 @@ class CausalRecourse(RecourseMethod):
         self._sampler_handle = hyperparams["sampler_handle"]
 
     def get_intervenable_nodes(self) -> dict:
-
         intervenable_nodes = {
             "continuous": np.setdiff1d(
                 self._dataset.continous, self._dataset.immutables
@@ -67,7 +65,6 @@ class CausalRecourse(RecourseMethod):
                 self._dataset.categoricals, self._dataset.immutables
             ),
         }
-
         return intervenable_nodes
 
     def _get_original_df(self):
