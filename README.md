@@ -25,6 +25,8 @@ Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 - Growing Sphere (GS): [Paper](https://arxiv.org/pdf/1910.09398.pdf)
 - Revise: [Paper](https://arxiv.org/pdf/1907.09615.pdf)
 - Wachter: [Paper](https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf)
+- FOCUS: [Paper](https://arxiv.org/pdf/1911.12199.pdf)
+- FeatureTweak: [Paper](https://arxiv.org/pdf/1706.06691.pdf)
 
 ### Provided Machine Learning Models
 
@@ -35,18 +37,20 @@ Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 The framework a counterfactual method currently works with is dependent on its underlying implementation.
 It is planned to make all recourse methods available for all ML frameworks . The latest state can be found here:
 
-| Recourse Method | Tensorflow | Pytorch |
-| --------------- | :--------: | :-----: |
-| Actionable Recourse | X | X |
-| CCHVAE |  | X |
-| CEM | X |  |
-| CLUE |  | X |
-| CRUDS |  | X |
-| DiCE | X | X |
-| FACE | X | X |
-| Growing Spheres | X | X |
-| Revise |  | X |
-| Wachter |  | X |
+| Recourse Method | Tensorflow | Pytorch | SKlearn | XGBoost |
+| --------------- | :--------: | :-----: | :-----: | :-----: |
+| Actionable Recourse |      X | X       |         |         |
+| CCHVAE |                     | X       |         |         |
+| CEM |                      X |         |         |         |
+| CLUE |                       | X       |         |         |
+| CRUDS |                      | X       |         |         |
+| DiCE |                     X | X       |         |         |
+| FACE |                     X | X       |         |         |
+| Growing Spheres |          X | X       |         |         |
+| Revise |                     | X       |         |         |
+| Wachter |                    | X       |         |         |
+| FOCUS |                      |         | X       |    X    |
+| FeatureTweak |               |         | X       |    X    |
 
 ## Installation
 
