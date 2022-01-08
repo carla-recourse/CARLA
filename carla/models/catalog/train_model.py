@@ -1,4 +1,3 @@
-import os
 from typing import Union
 
 import pandas as pd
@@ -20,6 +19,7 @@ def train_model(
     learning_rate: float,
     epochs: int,
     batch_size: int,
+    hidden_size: list,
 ):
     """
 
@@ -37,6 +37,8 @@ def train_model(
         Number of epochs to train on.
     batch_size: int
         Size of each batch
+    hidden_size: list[int]
+        hidden_size[i] contains the number of nodes in layer [i]
 
     Returns
     -------
@@ -54,14 +56,20 @@ def train_model(
         elif catalog_model.model_type == "ann":
             model = ann_tf(
                 dim_input=x.shape[1],
-                dim_hidden_layers=[18, 9, 3],
+                dim_hidden_layers=hidden_size,
                 num_of_classes=len(pd.unique(y)),
                 data_name=catalog_model.data.name,
             )
         else:
             raise ValueError("model type not recognized")
         model.build_train_save_model(
-            x_train, y_train, x_test, y_test, epochs, batch_size
+            x_train,
+            y_train,
+            x_test,
+            y_test,
+            epochs,
+            batch_size,
+            model_name=catalog_model.model_type,
         )
         model = model.model
     elif catalog_model.backend == "pytorch":
@@ -74,7 +82,7 @@ def train_model(
         elif catalog_model.model_type == "ann":
             model = ann_torch(
                 input_layer=x.shape[1],
-                hidden_layers=[18, 9, 3],
+                hidden_layers=hidden_size,
                 num_of_classes=len(pd.unique(y)),
             )
         else:
@@ -85,8 +93,6 @@ def train_model(
             test_loader,
             learning_rate,
             epochs,
-            catalog_model.data.name,
-            catalog_model.model_type,
         )
     else:
         raise ValueError("model backend not recognized")
@@ -114,9 +120,6 @@ def _training_torch(
     test_loader,
     learning_rate,
     epochs,
-    data_name,
-    model_name,
-    model_directory="saved_models",
 ):
     loaders = {"train": train_loader, "test": test_loader}
 
@@ -131,7 +134,6 @@ def _training_torch(
     optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
 
     # training
-    trace_input = True
     for e in range(epochs):
         print("Epoch {}/{}".format(e, epochs - 1))
         print("-" * 10)
@@ -149,9 +151,6 @@ def _training_torch(
 
             for i, (inputs, labels) in enumerate(loaders[phase]):
                 inputs = inputs.to(device)
-                if trace_input:
-                    x_for_trace = inputs
-                    trace_input = False
                 labels = labels.to(device).type(torch.int64)
                 labels = torch.nn.functional.one_hot(labels)
 
@@ -178,12 +177,3 @@ def _training_torch(
 
             print("{} Loss: {:.4f} Acc: {:.4f}".format(phase, epoch_loss, epoch_acc))
             print()
-
-    # save model
-    if not os.path.exists(model_directory):
-        os.mkdir(model_directory)
-    model_to_trace = model.to("cpu")
-    traced = torch.jit.trace(model_to_trace, (x_for_trace.cpu().float()))
-    traced.save(
-        f"{model_directory}/{model_name}_{data_name}_input_{model.input_neurons}.pt",
-    )
