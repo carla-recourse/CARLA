@@ -1,5 +1,3 @@
-import os
-
 from keras.layers import Dense
 from keras.models import Sequential
 from keras.utils import to_categorical
@@ -46,7 +44,6 @@ class LinearModel:
         epochs,
         batch_size,
         model_name="linear_tf",
-        model_directory="saved_models",
     ):
         model = self.model
 
@@ -70,13 +67,5 @@ class LinearModel:
         hist = model
         test_error = 1 - hist.history.history["val_accuracy"][-1]
         print(f"Test {model_name} on {self.data_name}:", test_error)
-
-        # save model
-        if not os.path.exists(model_directory):
-            os.mkdir(model_directory)
-
-        model.save(
-            f"{model_directory}/{model_name}_{self.data_name}_input_{self.dim_input:.0f}.h5"
-        )
 
         self.model = model

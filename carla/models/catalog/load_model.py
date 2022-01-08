@@ -6,8 +6,11 @@ from urllib.request import urlretrieve
 import tensorflow as tf
 import torch
 
+PYTORCH_EXT = "pt"
+TENSORFLOW_EXT = "h5"
 
-def load_model(
+
+def load_online_model(
     name: str,
     dataset: str,
     ext: str = "h5",
@@ -65,19 +68,117 @@ def load_model(
 
         full_path = cache_path
 
-    if ext == "pt":
+    if ext == PYTORCH_EXT:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model = torch.jit.load(
             full_path,
             map_location=device,
         )
         model = model.eval()
-    elif ext == "h5":
+    elif ext == TENSORFLOW_EXT:
         model = tf.keras.models.load_model(full_path, compile=False)
     else:
         raise NotImplementedError("Extension not supported:", ext)
 
     return model
+
+
+def load_trained_model(
+    save_name: str,
+    data_name: str,
+    backend: str,
+    models_home: Optional[str] = None,
+):
+    """
+    Try to load a trained model from disk, else return None.
+
+    Parameters
+    ----------
+    save_name: str
+        The filename which is used for the saved model.
+    data_name: str
+        The subfolder which the model is saved in, corresponding to the dataset.
+    backend : {'tensorflow', 'pytorch'}
+        Specifies the used framework.
+    models_home : string, optional
+        The directory in which to cache data; see :func:`get_models_home`.
+
+    Returns
+    -------
+    None if not able to load model, else returns loaded model.
+    """
+    # set model extension
+    if backend == "pytorch":
+        ext = PYTORCH_EXT
+    elif backend == "tensorflow":
+        ext = TENSORFLOW_EXT
+    else:
+        raise NotImplementedError("Backend not supported:", backend)
+
+    # save location
+    cache_path = os.path.join(
+        get_models_home(models_home), data_name, f"{save_name}.{ext}"
+    )
+
+    if os.path.exists(cache_path):
+        # load the model
+        if backend == "pytorch":
+            model = torch.load(cache_path)
+        elif backend == "tensorflow":
+            model = tf.keras.models.load_model(cache_path, compile=False)
+        else:
+            raise NotImplementedError("Backend not supported:", backend)
+        print(f"Loaded model from {cache_path}")
+        return model
+
+
+def save_model(
+    model,
+    save_name: str,
+    data_name: str,
+    backend: str,
+    models_home: Optional[str] = None,
+):
+    """
+    Save a model to disk.
+
+    Parameters
+    ----------
+    model: Tensorflow or PyTorch model
+        Model that we want to save to disk.
+    save_name: str
+        The filename which is used for the saved model.
+    data_name: str
+        The subfolder which the model is saved in, corresponding to the dataset.
+    backend : {'tensorflow', 'pytorch'}
+        Specifies the used framework.
+    models_home : string, optional
+        The directory in which to cache data; see :func:`get_models_home`.
+
+    Returns
+    -------
+    None
+    """
+    # set model extension
+    if backend == "pytorch":
+        ext = PYTORCH_EXT
+    elif backend == "tensorflow":
+        ext = TENSORFLOW_EXT
+    else:
+        raise NotImplementedError("Backend not supported:", backend)
+
+    # save location
+    cache_path = os.path.join(
+        get_models_home(models_home), data_name, f"{save_name}.{ext}"
+    )
+    if not os.path.exists(cache_path):
+        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+
+    # save the model
+    if backend == "pytorch":
+        torch.save(model, cache_path)
+    elif backend == "tensorflow":
+        model.save(cache_path)
 
 
 def get_models_home(models_home=None):

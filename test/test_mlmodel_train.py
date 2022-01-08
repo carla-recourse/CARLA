@@ -26,7 +26,7 @@ def test_properties():
 
     model_type = "linear"
     model_tf_adult = MLModelCatalog(
-        data, model_type, load_pretrained=False, use_pipeline=True
+        data, model_type, load_online=False, use_pipeline=True
     )
     params = training_params[model_type][data_name]
     model_tf_adult.train(
@@ -63,7 +63,7 @@ def test_predictions_tf(model_type, data_name):
     data = DataCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(
-        data, model_type, load_pretrained=False, use_pipeline=True
+        data, model_type, load_online=False, use_pipeline=True
     )
     params = training_params[model_type][data_name]
     model_tf_adult.train(
@@ -99,7 +99,7 @@ def test_predictions_tf(model_type, data_name):
 def test_predictions_pt(model_type, data_name):
     data = DataCatalog(data_name)
     model = MLModelCatalog(
-        data, model_type, load_pretrained=False, use_pipeline=True, backend="pytorch"
+        data, model_type, load_online=False, use_pipeline=True, backend="pytorch"
     )
     params = training_params[model_type][data_name]
     model.train(

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import torch
+from sklearn.model_selection import train_test_split
 
 from carla.data.catalog import DataCatalog
 from carla.data.causal_model.synthethic_data import ScmDataset
@@ -11,7 +12,7 @@ from carla.data.load_catalog import load_catalog
 from carla.models.api import MLModel
 from carla.models.pipelining import decode, descale, encode, order_data, scale
 
-from .load_model import load_model
+from .load_model import load_online_model, load_trained_model, save_model
 from .train_model import train_model
 
 
@@ -36,7 +37,7 @@ class MLModelCatalog(MLModel):
         Additional keyword arguments are passed to passed through to the read model function
     use_pipeline : bool, default: False
         If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
-    load_pretrained: bool, default: True
+    load_online: bool, default: True
         If true, a pretrained model is loaded. If false, a model is trained.
 
     Methods
@@ -63,8 +64,8 @@ class MLModelCatalog(MLModel):
         cache: bool = True,
         models_home: str = None,
         use_pipeline: bool = False,
-        load_pretrained: bool = True,
-        **kws
+        load_online: bool = True,
+        **kws,
     ) -> None:
         """
         Constructor for pretrained ML models from the catalog.
@@ -113,8 +114,8 @@ class MLModelCatalog(MLModel):
         self._pipeline = self.__init_pipeline()
         self._inverse_pipeline = self.__init_inverse_pipeline()
 
-        if load_pretrained:
-            self._model = load_model(
+        if load_online:
+            self._model = load_online_model(
                 model_type, data.name, ext, cache, models_home, **kws
             )
 
@@ -386,7 +387,14 @@ class MLModelCatalog(MLModel):
         """
         self._use_pipeline = use_pipe
 
-    def train(self, learning_rate, epochs, batch_size):
+    def train(
+        self,
+        learning_rate,
+        epochs,
+        batch_size,
+        force_train=False,
+        hidden_size=[18, 9, 3],
+    ):
         """
 
         Parameters
@@ -397,17 +405,58 @@ class MLModelCatalog(MLModel):
             Number of epochs to train for.
         batch_size: int
             Number of samples in each batch
+        force_train: bool
+            Force training, even if model already exists in cache.
+        hidden_size: list[int]
+            hidden_size[i] contains the number of nodes in layer [i]
 
         Returns
         -------
 
         """
-
-        data_df = self.data.raw
-        if self.use_pipeline:
-            x = self.perform_pipeline(data_df)
+        layer_string = "_".join([str(size) for size in hidden_size])
+        if self.model_type == "linear":
+            save_name = f"{self.model_type}"
+        elif self.model_type == "ann":
+            save_name = f"{self.model_type}_layers_{layer_string}"
         else:
-            x = data_df[list(set(data_df.columns) - {self.data.target})]
-        y = data_df[self.data.target]
+            raise NotImplementedError("Model type not supported:", self.model_type)
 
-        self._model = train_model(self, x, y, learning_rate, epochs, batch_size)
+        # try to load the model from disk, if that fails train the model instead.
+        self._model = None
+        if not force_train:
+            self._model = load_trained_model(
+                save_name=save_name, data_name=self.data.name, backend=self.backend
+            )
+
+            # sanity check to see if loaded model accuracy makes sense
+            if self._model is not None:
+                # preprocess data
+                data_df = self.data.raw
+                x = data_df[list(set(data_df.columns) - {self.data.target})]
+                y = data_df[self.data.target]
+                x_train, x_test, y_train, y_test = train_test_split(x, y)
+
+                prediction = (self.predict(x_test) > 0.5).flatten()
+                correct = prediction == y_test
+                print(f"approx. acc: {correct.mean()}")
+
+        if self._model is None or force_train:
+            # preprocess data
+            data_df = self.data.raw
+            if self.use_pipeline:
+                x = self.perform_pipeline(data_df)
+            else:
+                x = data_df[list(set(data_df.columns) - {self.data.target})]
+            y = data_df[self.data.target]
+
+            self._model = train_model(
+                self, x, y, learning_rate, epochs, batch_size, hidden_size
+            )
+
+            save_model(
+                model=self._model,
+                save_name=save_name,
+                data_name=self.data.name,
+                backend=self.backend,
+            )
