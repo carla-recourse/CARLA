@@ -119,6 +119,16 @@ class MLModelCatalog(MLModel):
                 model_type, data.name, ext, cache, models_home, **kws
             )
 
+    def _test_accuracy(self):
+        data_df = self.data.raw
+        x = data_df[list(set(data_df.columns) - {self.data.target})]
+        y = data_df[self.data.target]
+        x_train, x_test, y_train, y_test = train_test_split(x, y)
+
+        prediction = (self.predict(x_test) > 0.5).flatten()
+        correct = prediction == y_test
+        print(f"approx. acc for model: {correct.mean()}")
+
     def __init_pipeline(self) -> List[Tuple[str, Callable]]:
         return [
             ("scaler", lambda x: scale(self.scaler, self._continuous, x)),
@@ -431,15 +441,7 @@ class MLModelCatalog(MLModel):
 
             # sanity check to see if loaded model accuracy makes sense
             if self._model is not None:
-                # preprocess data
-                data_df = self.data.raw
-                x = data_df[list(set(data_df.columns) - {self.data.target})]
-                y = data_df[self.data.target]
-                x_train, x_test, y_train, y_test = train_test_split(x, y)
-
-                prediction = (self.predict(x_test) > 0.5).flatten()
-                correct = prediction == y_test
-                print(f"approx. acc: {correct.mean()}")
+                self._test_accuracy()
 
         if self._model is None or force_train:
             # preprocess data
