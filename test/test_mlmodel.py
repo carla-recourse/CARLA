@@ -8,7 +8,7 @@ from carla.models.catalog import MLModelCatalog
 from carla.models.pipelining import encode, scale
 
 testmodel = ["ann", "linear"]
-test_data = ["adult", "give_me_some_credit", "compas"]
+test_data = ["adult", "give_me_some_credit", "compas", "heloc"]
 
 
 def test_properties():

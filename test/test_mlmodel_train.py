@@ -5,17 +5,19 @@ from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 
 testmodel = ["ann", "linear"]
-test_data = ["adult", "give_me_some_credit", "compas"]
+test_data = ["adult", "give_me_some_credit", "compas", "heloc"]
 
 training_params_linear = {
     "adult": {"lr": 0.002, "epochs": 100, "batch_size": 2048},
     "compas": {"lr": 0.002, "epochs": 25, "batch_size": 128},
     "give_me_some_credit": {"lr": 0.002, "epochs": 10, "batch_size": 2048},
+    "heloc": {"lr": 0.002, "epochs": 25, "batch_size": 128},
 }
 training_params_ann = {
     "adult": {"lr": 0.002, "epochs": 10, "batch_size": 1024},
     "compas": {"lr": 0.002, "epochs": 25, "batch_size": 25},
     "give_me_some_credit": {"lr": 0.002, "epochs": 10, "batch_size": 2048},
+    "heloc": {"lr": 0.002, "epochs": 25, "batch_size": 25},
 }
 training_params = {"linear": training_params_linear, "ann": training_params_ann}
 

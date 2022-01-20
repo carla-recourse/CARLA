@@ -5,7 +5,7 @@ from carla.data.catalog import DataCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.pipelining import encode
 
-testdata = ["adult", "give_me_some_credit", "compas"]
+testdata = ["adult", "give_me_some_credit", "compas", "heloc"]
 
 
 @pytest.mark.parametrize("data_name", testdata)
