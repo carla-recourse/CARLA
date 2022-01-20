@@ -152,7 +152,7 @@ def _training_torch(
             for i, (inputs, labels) in enumerate(loaders[phase]):
                 inputs = inputs.to(device)
                 labels = labels.to(device).type(torch.int64)
-                labels = torch.nn.functional.one_hot(labels)
+                labels = torch.nn.functional.one_hot(labels, num_classes=2)
 
                 optimizer.zero_grad()
 
