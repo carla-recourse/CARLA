@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from carla.data.api import Data
 
@@ -93,6 +94,7 @@ class ScmDataset(Data):
         self.name = scm.scm_class
         self.scm = scm
         self._raw, self._noise = _create_synthetic_data(scm, num_samples=size)
+        self._train_raw, self._test_raw = train_test_split(self._raw)
 
     @property
     def categoricals(self) -> List[str]:
@@ -181,3 +183,11 @@ class ScmDataset(Data):
         pd.DataFrame
         """
         return self._noise.copy()
+
+    @property
+    def train_raw(self) -> pd.DataFrame:
+        return self._train_raw.copy()
+
+    @property
+    def test_raw(self) -> pd.DataFrame:
+        return self._test_raw.copy()
