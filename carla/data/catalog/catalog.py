@@ -34,7 +34,10 @@ class DataCatalog(Data):
             if self.catalog[key] is None:
                 self.catalog[key] = []
 
-        self._raw: pd.DataFrame = load_dataset(data_name)
+        raw, train, test = load_dataset(data_name)
+        self._raw: pd.DataFrame = raw
+        self._train: pd.DataFrame = train
+        self._test: pd.DataFrame = test
 
     @property
     def categoricals(self) -> List[str]:

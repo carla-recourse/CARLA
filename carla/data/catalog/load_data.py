@@ -39,17 +39,27 @@ def load_dataset(
 
     path = "https://raw.githubusercontent.com/carla-recourse/cf-data/master/{}.csv"
     full_path = path.format(name)
+    train_path = path.format(name)[:-4] + "_train.csv"  # remove .csv and add new suffix
+    test_path = path.format(name)[:-4] + "_test.csv"  # remove .csv and add new suffix
 
-    if cache:
+    def check_cache(full_path):
+
         cache_path = os.path.join(get_data_home(data_home), os.path.basename(full_path))
 
         if not os.path.exists(cache_path):
             if name not in get_dataset_names():
                 raise ValueError(f"'{name}' is not an available dataset.")
             urlretrieve(full_path, cache_path)
-        full_path = cache_path
+        return cache_path
+
+    if cache:
+        full_path = check_cache(full_path)
+        train_path = check_cache(train_path)
+        test_path = check_cache(test_path)
 
     df = pd.read_csv(full_path, **kws)
+    df_train = pd.read_csv(train_path, **kws)
+    df_test = pd.read_csv(test_path, **kws)
 
     if df.iloc[-1].isnull().all():
         df = df.iloc[:-1]
@@ -57,7 +67,7 @@ def load_dataset(
     # TODO: Only until NANs are not longer in the dataset (issue #28)
     df = df.dropna()
 
-    return df
+    return df, df_train, df_test
 
 
 def get_dataset_names() -> List[Any]:
