@@ -2,7 +2,6 @@ from typing import Union
 
 import pandas as pd
 import torch
-from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
@@ -14,8 +13,10 @@ from carla.models.catalog.Linear_TORCH import LinearModel as linear_torch
 
 def train_model(
     catalog_model,
-    x: pd.DataFrame,
-    y: pd.DataFrame,
+    x_train: pd.DataFrame,
+    y_train: pd.DataFrame,
+    x_test: pd.DataFrame,
+    y_test: pd.DataFrame,
     learning_rate: float,
     epochs: int,
     batch_size: int,
@@ -27,10 +28,14 @@ def train_model(
     ----------
     catalog_model: MLModelCatalog
         API for classifier
-    x: pd.DataFrame
-        features
-    y: pd.DataFrame
-        labels
+    x_train: pd.DataFrame
+        training features
+    y_train: pd.DataFrame
+        training labels
+    x_test: pd.DataFrame
+        test features
+    y_test: pd.DataFrame
+        test labels
     learning_rate: float
         Learning rate for the training.
     epochs: int
@@ -44,20 +49,19 @@ def train_model(
     -------
 
     """
-    x_train, x_test, y_train, y_test = train_test_split(x, y)
     print(f"balance on test set {y_train.mean()}, balance on test set {y_test.mean()}")
     if catalog_model.backend == "tensorflow":
         if catalog_model.model_type == "linear":
             model = linear_tf(
-                dim_input=x.shape[1],
-                num_of_classes=len(pd.unique(y)),
+                dim_input=x_train.shape[1],
+                num_of_classes=len(pd.unique(y_train)),
                 data_name=catalog_model.data.name,
             )  # type: Union[linear_tf, ann_tf]
         elif catalog_model.model_type == "ann":
             model = ann_tf(
-                dim_input=x.shape[1],
+                dim_input=x_train.shape[1],
                 dim_hidden_layers=hidden_size,
-                num_of_classes=len(pd.unique(y)),
+                num_of_classes=len(pd.unique(y_train)),
                 data_name=catalog_model.data.name,
             )
         else:
@@ -78,12 +82,14 @@ def train_model(
         test_dataset = DataFrameDataset(x_test, y_test)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
         if catalog_model.model_type == "linear":
-            model = linear_torch(dim_input=x.shape[1], num_of_classes=len(pd.unique(y)))
+            model = linear_torch(
+                dim_input=x_train.shape[1], num_of_classes=len(pd.unique(y_train))
+            )
         elif catalog_model.model_type == "ann":
             model = ann_torch(
-                input_layer=x.shape[1],
+                input_layer=x_train.shape[1],
                 hidden_layers=hidden_size,
-                num_of_classes=len(pd.unique(y)),
+                num_of_classes=len(pd.unique(y_train)),
             )
         else:
             raise ValueError("model type not recognized")

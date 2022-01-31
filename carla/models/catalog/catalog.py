@@ -445,15 +445,27 @@ class MLModelCatalog(MLModel):
 
         if self._model is None or force_train:
             # preprocess data
-            data_df = self.data.raw
+            df_train = self.data.train_raw
+            df_test = self.data.test_raw
             if self.use_pipeline:
-                x = self.perform_pipeline(data_df)
+                x_train = self.perform_pipeline(df_train)
+                x_test = self.perform_pipeline(df_test)
             else:
-                x = data_df[list(set(data_df.columns) - {self.data.target})]
-            y = data_df[self.data.target]
+                x_train = df_train[list(set(df_train.columns) - {self.data.target})]
+                x_test = df_test[list(set(df_test.columns) - {self.data.target})]
+            y_train = df_train[self.data.target]
+            y_test = df_test[self.data.target]
 
             self._model = train_model(
-                self, x, y, learning_rate, epochs, batch_size, hidden_size
+                self,
+                x_train,
+                y_train,
+                x_test,
+                y_test,
+                learning_rate,
+                epochs,
+                batch_size,
+                hidden_size,
             )
 
             save_model(
