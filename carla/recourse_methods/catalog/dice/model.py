@@ -59,9 +59,12 @@ class Dice(RecourseMethod):
         checked_hyperparams = merge_default_parameters(
             hyperparams, self._DEFAULT_HYPERPARAMS
         )
+
+        df = self.encode_normalize_order_factuals(mlmodel.data.raw)
+        df[mlmodel.data.target] = mlmodel.data.raw[mlmodel.data.target]
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
-            dataframe=mlmodel.data.raw,
+            dataframe=df,
             continuous_features=self._continous,
             outcome_name=self._target,
         )
@@ -81,6 +84,7 @@ class Dice(RecourseMethod):
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         # Prepare factuals
         querry_instances = factuals.copy()
+        querry_instances = self.encode_normalize_order_factuals(querry_instances)
 
         # check if querry_instances are not empty
         if not querry_instances.shape[0] > 0:
@@ -96,9 +100,9 @@ class Dice(RecourseMethod):
 
         list_cfs = dice_exp.cf_examples_list
         df_cfs = pd.concat([cf.final_cfs_df for cf in list_cfs], ignore_index=True)
-        df_cfs[self._continous] = self._scaler.transform(df_cfs[self._continous])
-        encoded_features = self._encoder.get_feature_names(self._categoricals)
-        df_cfs[encoded_features] = self._encoder.transform(df_cfs[self._categoricals])
+        # df_cfs[self._continous] = self._scaler.transform(df_cfs[self._continous])
+        # encoded_features = self._encoder.get_feature_names(self._categoricals)
+        # df_cfs[encoded_features] = self._encoder.transform(df_cfs[self._categoricals])
         df_cfs = df_cfs[self._feature_order + [self._target]]
 
         return df_cfs

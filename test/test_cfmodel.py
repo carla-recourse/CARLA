@@ -105,7 +105,7 @@ def test_dice_get_counterfactuals(model_type):
         "posthoc_sparsity_param": 0.1,
     }
     # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
+    # model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]
 
     cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
