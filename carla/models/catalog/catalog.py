@@ -90,7 +90,7 @@ class MLModelCatalog(MLModel):
             )
         super().__init__(data, encoding_method=encoding_method)
 
-        if not isinstance(data, ScmDataset):
+        if not isinstance(data, ScmDataset) and data.name != "custom":
             # Load catalog
             catalog_content = ["ann", "linear"]
             catalog = load_catalog("mlmodel_catalog.yaml", data.name, catalog_content)  # type: ignore
@@ -101,10 +101,8 @@ class MLModelCatalog(MLModel):
             self._feature_input_order = self._catalog["feature_order"]
         else:
             self._catalog = None
-            # TODO is this the same as np.settdiff1d?
-            self._feature_input_order = list(
-                np.sort(data.continous + data.categoricals)
-            )
+            encoded_features = list(self.encoder.get_feature_names(data.categoricals))
+            self._feature_input_order = list(np.sort(data.continous + encoded_features))
 
         self._continuous = data.continous
         self._categoricals = data.categoricals
