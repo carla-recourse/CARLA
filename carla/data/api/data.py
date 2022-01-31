@@ -77,3 +77,29 @@ class Data(ABC):
             Tabular data with raw information
         """
         pass
+
+    @property
+    @abstractmethod
+    def train_raw(self):
+        """
+        The raw training split Dataframe without encoding or normalization
+
+        Returns
+        -------
+        pd.DataFrame
+            Tabular data with raw information
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def test_raw(self):
+        """
+        The raw testing split Dataframe without encoding or normalization
+
+        Returns
+        -------
+        pd.DataFrame
+            Tabular data with raw information
+        """
+        pass
