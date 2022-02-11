@@ -59,10 +59,10 @@ class CausalRecourse(RecourseMethod):
     def get_intervenable_nodes(self) -> dict:
         intervenable_nodes = {
             "continuous": np.setdiff1d(
-                self._dataset.continous, self._dataset.immutables
+                self._dataset.continuous, self._dataset.immutables
             ),
             "categorical": np.setdiff1d(
-                self._dataset.categoricals, self._dataset.immutables
+                self._dataset.categorical, self._dataset.immutables
             ),
         }
         return intervenable_nodes

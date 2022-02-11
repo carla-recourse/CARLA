@@ -50,9 +50,9 @@ class GrowingSpheres(RecourseMethod):
             for feature in self._mlmodel.feature_input_order
             if feature not in self._immutables
         ]
-        self._continuous = self._mlmodel.data.continous
-        self._categoricals_enc = encode_feature_names(
-            self._mlmodel.data.categoricals, self._mlmodel.feature_input_order
+        self._continuous = self._mlmodel.data.continuous
+        self._categorical_enc = encode_feature_names(
+            self._mlmodel.data.categorical, self._mlmodel.feature_input_order
         )
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
@@ -66,7 +66,7 @@ class GrowingSpheres(RecourseMethod):
                 self._mutables,
                 self._immutables,
                 self._continuous,
-                self._categoricals_enc,
+                self._categorical_enc,
                 self._mlmodel.feature_input_order,
                 self._mlmodel,
             )

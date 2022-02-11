@@ -54,8 +54,8 @@ def predict_label(
 
     if normalize:
         # normalize and encode data
-        norm_enc_data = scale(model.scaler, data.continous, data.raw)
-        norm_enc_data = encode(model.encoder, data.categoricals, norm_enc_data)
+        norm_enc_data = scale(model.scaler, data.continuous, data.raw)
+        norm_enc_data = encode(model.encoder, data.categorical, norm_enc_data)
 
         # Keep correct feature order for prediction
         norm_enc_data = norm_enc_data[model.feature_input_order]

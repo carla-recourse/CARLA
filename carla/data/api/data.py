@@ -8,7 +8,7 @@ class Data(ABC):
 
     @property
     @abstractmethod
-    def categoricals(self):
+    def categorical(self):
         """
         Provides the column names of categorical data.
         Column names do not contain encoded information as provided by a get_dummy() method (e.g., sex_female)
@@ -24,7 +24,7 @@ class Data(ABC):
 
     @property
     @abstractmethod
-    def continous(self):
+    def continuous(self):
         """
         Provides the column names of continuous data.
 

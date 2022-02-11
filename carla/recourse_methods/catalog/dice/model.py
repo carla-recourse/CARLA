@@ -52,8 +52,8 @@ class Dice(RecourseMethod):
 
     def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
         super().__init__(mlmodel)
-        self._continous = mlmodel.data.continous
-        self._categoricals = mlmodel.data.categoricals
+        self._continuous = mlmodel.data.continuous
+        self._categorical = mlmodel.data.categorical
         self._target = mlmodel.data.target
 
         checked_hyperparams = merge_default_parameters(
@@ -62,7 +62,7 @@ class Dice(RecourseMethod):
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
             dataframe=mlmodel.data.raw,
-            continuous_features=self._continous,
+            continuous_features=self._continuous,
             outcome_name=self._target,
         )
 
@@ -96,9 +96,9 @@ class Dice(RecourseMethod):
 
         list_cfs = dice_exp.cf_examples_list
         df_cfs = pd.concat([cf.final_cfs_df for cf in list_cfs], ignore_index=True)
-        df_cfs[self._continous] = self._scaler.transform(df_cfs[self._continous])
-        encoded_features = self._encoder.get_feature_names(self._categoricals)
-        df_cfs[encoded_features] = self._encoder.transform(df_cfs[self._categoricals])
+        df_cfs[self._continuous] = self._scaler.transform(df_cfs[self._continuous])
+        encoded_features = self._encoder.get_feature_names(self._categorical)
+        df_cfs[encoded_features] = self._encoder.transform(df_cfs[self._categorical])
         df_cfs = df_cfs[self._feature_order + [self._target]]
 
         return df_cfs

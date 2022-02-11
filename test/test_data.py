@@ -13,7 +13,7 @@ def test_adult_col(data_name):
     data_catalog = DataCatalog(data_name)
 
     actual_col = (
-        data_catalog.categoricals + data_catalog.continous + [data_catalog.target]
+        data_catalog.categorical + data_catalog.continuous + [data_catalog.target]
     )
     actual_col = actual_col.sort()
     expected_col = data_catalog.raw.columns.values
@@ -28,9 +28,9 @@ def test_adult_norm(data_name):
 
     mlmodel = MLModelCatalog(data, "ann")
     norm = data.raw
-    norm[data.continous] = mlmodel.scaler.transform(norm[data.continous])
+    norm[data.continuous] = mlmodel.scaler.transform(norm[data.continuous])
 
-    col = data.continous
+    col = data.continuous
 
     raw = data.raw[col]
     norm = norm[col]
@@ -44,7 +44,7 @@ def test_adult_enc(data_name):
 
     mlmodel = MLModelCatalog(data, "ann")
 
-    cat = encode(mlmodel.encoder, data.categoricals, data.raw)
+    cat = encode(mlmodel.encoder, data.categorical, data.raw)
     cat = cat[mlmodel.feature_input_order]
 
     assert cat.select_dtypes(exclude=[np.number]).empty

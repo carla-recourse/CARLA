@@ -358,7 +358,7 @@ class FeatureTweak(RecourseMethod):
 
         # normalize and one-hot-encoding
         instances = self.encode_normalize_order_factuals(instances, with_target=False)
-        instances = instances[self.data.continous]
+        instances = instances[self.data.continuous]
 
         # y = factuals[self.target_col]
         # y = self.model.predict(instances)

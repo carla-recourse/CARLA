@@ -134,7 +134,7 @@ class Benchmark:
         if self._mlmodel.encoder.drop is None:
             # To prevent double count of encoded features without drop if_binary
             binary_columns_to_drop = get_drop_columns_binary(
-                self._mlmodel.data.categoricals,
+                self._mlmodel.data.categorical,
                 counterfactuals_without_nans.columns.tolist(),
             )
             counterfactuals_without_nans = counterfactuals_without_nans.drop(

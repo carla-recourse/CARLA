@@ -16,15 +16,17 @@ def sanity_3_lin():
         "u2": Normal(0, 1),
         "u3": Normal(0, 1),
     }
-    continous = list(structural_equations_np.keys()) + list(noises_distributions.keys())
-    categoricals = []
+    continuous = list(structural_equations_np.keys()) + list(
+        noises_distributions.keys()
+    )
+    categorical = []
     immutables = []
 
     return (
         structural_equations_np,
         structural_equations_ts,
         noises_distributions,
-        continous,
-        categoricals,
+        continuous,
+        categorical,
         immutables,
     )

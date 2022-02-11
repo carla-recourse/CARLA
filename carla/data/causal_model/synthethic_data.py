@@ -97,7 +97,7 @@ class ScmDataset(Data):
         self._train_raw, self._test_raw = train_test_split(self._raw)
 
     @property
-    def categoricals(self) -> List[str]:
+    def categorical(self) -> List[str]:
         """
         Provides the column names of the categorical data.
 
@@ -105,10 +105,10 @@ class ScmDataset(Data):
         -------
         List[str]
         """
-        return self.scm._categoricals
+        return self.scm._categorical
 
     @property
-    def continous(self) -> List[str]:
+    def continuous(self) -> List[str]:
         """
         Provides the column names of the continuous data.
 
@@ -116,10 +116,10 @@ class ScmDataset(Data):
         -------
         List[str]
         """
-        return self.scm._continous
+        return self.scm._continuous
 
     @property
-    def categoricals_noise(self) -> List[str]:
+    def categorical_noise(self) -> List[str]:
         """
         Provides the column names of the categorical data.
 
@@ -127,10 +127,10 @@ class ScmDataset(Data):
         -------
         List[str]
         """
-        return self.scm._categoricals_noise
+        return self.scm._categorical_noise
 
     @property
-    def continous_noise(self) -> List[str]:
+    def continuous_noise(self) -> List[str]:
         """
         Provides the column names of the continuous data.
 
@@ -138,7 +138,7 @@ class ScmDataset(Data):
         -------
         List[str]
         """
-        return self.scm._continous_noise
+        return self.scm._continuous_noise
 
     @property
     def immutables(self) -> List[str]:
