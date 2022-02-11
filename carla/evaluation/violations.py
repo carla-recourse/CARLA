@@ -27,12 +27,14 @@ def constraint_violation(
 
     # Decode counterfactuals to compare immutables with not encoded factuals
     df_decoded_cfs = counterfactuals.copy()
-    df_decoded_cfs = decode(mlmodel.encoder, mlmodel.data.categoricals, df_decoded_cfs)
-    df_decoded_cfs[mlmodel.data.continous] = mlmodel.scaler.inverse_transform(
-        df_decoded_cfs[mlmodel.data.continous]
+    df_decoded_cfs = decode(
+        mlmodel.data.encoder, mlmodel.data.categorical, df_decoded_cfs
     )
-    df_decoded_cfs[mlmodel.data.continous] = df_decoded_cfs[
-        mlmodel.data.continous
+    df_decoded_cfs[mlmodel.data.continuous] = mlmodel.data.scaler.inverse_transform(
+        df_decoded_cfs[mlmodel.data.continuous]
+    )
+    df_decoded_cfs[mlmodel.data.continuous] = df_decoded_cfs[
+        mlmodel.data.continuous
     ].astype(
         "int64"
     )  # avoid precision error

@@ -1,6 +1,6 @@
 adult:
   target: income
-  continous:
+  continuous:
     - age
     - fnlwgt
     - education-num
@@ -20,7 +20,7 @@ adult:
     - sex
 give_me_some_credit:
   target: SeriousDlqin2yrs
-  continous:
+  continuous:
     - RevolvingUtilizationOfUnsecuredLines
     - age
     - NumberOfTime30-59DaysPastDueNotWorse
@@ -36,7 +36,7 @@ give_me_some_credit:
     - age
 compas:
   target: score
-  continous:
+  continuous:
     - age
     - two_year_recid
     - priors_count
@@ -51,7 +51,7 @@ compas:
     - sex
 heloc:
   target: RiskPerformance
-  continous:
+  continuous:
     - ExternalRiskEstimate
     - MSinceOldestTradeOpen
     - MSinceMostRecentTradeOpen

@@ -126,8 +126,8 @@ class CCHVAE(RecourseMethod):
             generative_model = train_variational_autoencoder(
                 generative_model,
                 mlmodel.data,
-                mlmodel.scaler,
-                mlmodel.encoder,
+                mlmodel.data.scaler,
+                mlmodel.data.encoder,
                 mlmodel.feature_input_order,
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
@@ -244,7 +244,7 @@ class CCHVAE(RecourseMethod):
         df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
 
         encoded_feature_names = self._mlmodel.encoder.get_feature_names(
-            self._mlmodel.data.categoricals
+            self._mlmodel.data.categorical
         )
         cat_features_indices = [
             df_enc_norm_fact.columns.get_loc(feature)

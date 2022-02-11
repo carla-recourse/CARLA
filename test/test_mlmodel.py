@@ -48,7 +48,7 @@ def test_inverse_pipeline():
     detransformed_data = model_tf_adult.perform_inverse_pipeline(transformed_data)
 
     expected_data = data.raw[detransformed_data.columns]
-    expected_data[data.continous] = expected_data[data.continous].astype("float")
+    expected_data[data.continuous] = expected_data[data.continuous].astype("float")
     expected_data.columns = detransformed_data.columns
 
     assert_frame_equal(expected_data, detransformed_data)
@@ -62,8 +62,8 @@ def test_predictions_tf(model_type, data_name):
     model_tf_adult = MLModelCatalog(data, model_type)
 
     # normalize and encode data
-    norm_enc_data = scale(model_tf_adult.scaler, data.continous, data.raw)
-    norm_enc_data = encode(model_tf_adult.encoder, data.categoricals, norm_enc_data)
+    norm_enc_data = scale(model_tf_adult.scaler, data.continuous, data.raw)
+    norm_enc_data = encode(model_tf_adult.encoder, data.categorical, norm_enc_data)
     norm_enc_data = norm_enc_data[model_tf_adult.feature_input_order]
 
     single_sample = norm_enc_data.iloc[22]
@@ -148,8 +148,8 @@ def test_predictions_pt(model_type, data_name):
     feature_input_order = model.feature_input_order
 
     # normalize and encode data
-    norm_enc_data = scale(model.scaler, data.continous, data.raw)
-    norm_enc_data = encode(model.encoder, data.categoricals, norm_enc_data)
+    norm_enc_data = scale(model.scaler, data.continuous, data.raw)
+    norm_enc_data = encode(model.encoder, data.categorical, norm_enc_data)
     norm_enc_data = norm_enc_data[feature_input_order]
 
     single_sample = norm_enc_data.iloc[22]

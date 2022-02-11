@@ -134,7 +134,7 @@ class FOCUS(RecourseMethod):
                 factuals, with_target=False
             )
             # doesn't work with categorical features, so they aren't used
-            original_input = original_input[self.data.continous]
+            original_input = original_input[self.data.continuous]
             original_input = original_input.to_numpy()
             ground_truth = self.model.predict(original_input)
 
@@ -228,10 +228,10 @@ class FOCUS(RecourseMethod):
             pf = tfe.py_func(f, [best_perturb], tf.float32)
             best_perturb = sess.run(pf)
 
-        return pd.DataFrame(best_perturb, columns=self.data.continous)
+        return pd.DataFrame(best_perturb, columns=self.data.continuous)
 
     def _prob_from_input(self, perturbed, sigma, temperature):
-        feat_columns = self.data.continous
+        feat_columns = self.data.continuous
         if not isinstance(self.model.raw_model, DecisionTreeClassifier):
             return trees.get_prob_classification_forest(
                 self.model,

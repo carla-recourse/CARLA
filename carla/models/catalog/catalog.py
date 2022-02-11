@@ -1,16 +1,15 @@
-from typing import Any, Callable, List, Tuple, Union
+from typing import Any, List, Union
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 import torch
-from sklearn.model_selection import train_test_split
 
-from carla.data.catalog import DataCatalog
+# from carla.data.catalog import DataCatalog
 from carla.data.causal_model.synthethic_data import ScmDataset
 from carla.data.load_catalog import load_catalog
 from carla.models.api import MLModel
-from carla.models.pipelining import decode, descale, encode, order_data, scale
+from carla.models.pipelining import order_data
 
 from .load_model import load_online_model, load_trained_model, save_model
 from .train_model import train_model
@@ -35,8 +34,6 @@ class MLModelCatalog(MLModel):
         The directory in which to cache data; see :func:`get_models_home`.
     kws : keys and values, optional
         Additional keyword arguments are passed to passed through to the read model function
-    use_pipeline : bool, default: False
-        If true, the model uses a pipeline before predict and predict_proba to preprocess the input data.
     load_online: bool, default: True
         If true, a pretrained model is loaded. If false, a model is trained.
 
@@ -58,12 +55,11 @@ class MLModelCatalog(MLModel):
 
     def __init__(
         self,
-        data: DataCatalog,
+        data,
         model_type: str,
         backend: str = "tensorflow",
         cache: bool = True,
         models_home: str = None,
-        use_pipeline: bool = False,
         load_online: bool = True,
         **kws,
     ) -> None:
@@ -75,21 +71,26 @@ class MLModelCatalog(MLModel):
 
 
         """
+        super().__init__(data)
+
         self._model_type = model_type
         self._backend = backend
+        self._continuous = data.continuous
+        self._categorical = data.categorical
 
+        # TODO fix different encodings for different backends
         if self._backend == "pytorch":
             ext = "pt"
-            encoding_method = "OneHot"
+            # encoding_method = "OneHot"
         elif self._backend == "tensorflow":
             ext = "h5"
-            encoding_method = "OneHot_drop_binary"
+            # encoding_method = "OneHot_drop_binary"
         else:
             raise ValueError(
-                "Backend not available, please choose between pytorch and tensorflow"
+                'Backend not available, please choose between "pytorch" and "tensorflow".'
             )
-        super().__init__(data, encoding_method=encoding_method)
 
+        # Datasets generated from a Structural Causal Model or a custom dataset do not have a saved .yaml
         if not isinstance(data, ScmDataset) and data.name != "custom":
             # Load catalog
             catalog_content = ["ann", "linear"]
@@ -97,20 +98,18 @@ class MLModelCatalog(MLModel):
 
             if model_type not in catalog:
                 raise ValueError("Model type not in model catalog")
+
             self._catalog = catalog[model_type][self._backend]
             self._feature_input_order = self._catalog["feature_order"]
         else:
+            encoded_features = list(
+                self.data.encoder.get_feature_names(data.categorical)
+            )
+
             self._catalog = None
-            encoded_features = list(self.encoder.get_feature_names(data.categoricals))
-            self._feature_input_order = list(np.sort(data.continous + encoded_features))
-
-        self._continuous = data.continous
-        self._categoricals = data.categoricals
-
-        # Preparing pipeline components
-        self._use_pipeline = use_pipeline
-        self._pipeline = self.__init_pipeline()
-        self._inverse_pipeline = self.__init_inverse_pipeline()
+            self._feature_input_order = list(
+                np.sort(data.continuous + encoded_features)
+            )
 
         if load_online:
             self._model = load_online_model(
@@ -118,115 +117,15 @@ class MLModelCatalog(MLModel):
             )
 
     def _test_accuracy(self):
-        data_df = self.data.raw
-        x = data_df[list(set(data_df.columns) - {self.data.target})]
-        y = data_df[self.data.target]
-        x_train, x_test, y_train, y_test = train_test_split(x, y)
+        # get preprocessed data
+        df_test = self.data.test_processed()
+
+        x_test = df_test[list(set(df_test.columns) - {self.data.target})]
+        y_test = df_test[self.data.target]
 
         prediction = (self.predict(x_test) > 0.5).flatten()
         correct = prediction == y_test
-        print(f"approx. acc for model: {correct.mean()}")
-
-    def __init_pipeline(self) -> List[Tuple[str, Callable]]:
-        return [
-            ("scaler", lambda x: scale(self.scaler, self._continuous, x)),
-            ("encoder", lambda x: encode(self.encoder, self._categoricals, x)),
-            ("order", lambda x: order_data(self._feature_input_order, x)),
-        ]
-
-    def __init_inverse_pipeline(self) -> List[Tuple[str, Callable]]:
-        return [
-            ("encoder", lambda x: decode(self.encoder, self._categoricals, x)),
-            ("scaler", lambda x: descale(self.scaler, self._continuous, x)),
-        ]
-
-    def get_pipeline_element(self, key: str) -> Callable:
-        """
-        Returns a specific element of the pipeline
-
-        Parameters
-        ----------
-        key : str
-            Element of the pipeline we want to return
-
-        Returns
-        -------
-        Pipeline element
-        """
-        key_idx = list(zip(*self._pipeline))[0].index(key)  # find key in pipeline
-        return self._pipeline[key_idx][1]
-
-    @property
-    def pipeline(self) -> List[Tuple[str, Callable]]:
-        """
-        Returns transformations steps for input before predictions.
-
-        Returns
-        -------
-        pipeline : list
-            List of (name, transform) tuples that are chained in the order in which they are preformed.
-        """
-        return self._pipeline
-
-    @property
-    def inverse_pipeline(self) -> List[Tuple[str, Callable]]:
-        """
-        Returns transformations steps for output after predictions.
-
-        Returns
-        -------
-        pipeline : list
-            List of (name, transform) tuples that are chained in the order in which they are preformed.
-        """
-        return self._inverse_pipeline
-
-    def perform_pipeline(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Transforms input for prediction into correct form.
-        Only possible for DataFrames without preprocessing steps.
-
-        Recommended to use to keep correct encodings, normalization and input order
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            Contains unnormalized and not encoded data.
-
-        Returns
-        -------
-        output : pd.DataFrame
-            Prediction input in correct order, normalized and encoded
-
-        """
-        output = df.copy()
-
-        for trans_name, trans_function in self._pipeline:
-            output = trans_function(output)
-
-        return output
-
-    def perform_inverse_pipeline(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Transforms output after prediction back into original form.
-        Only possible for DataFrames with preprocessing steps.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            Contains normalized and encoded data.
-
-        Returns
-        -------
-        output : pd.DataFrame
-            Prediction output denormalized and decoded
-
-        """
-        output = df.copy()
-
-        for trans_name, trans_function in self._inverse_pipeline:
-            output = trans_function(output)
-
-        return output
+        print(f"test accuracy for model: {correct.mean()}")
 
     @property
     def feature_input_order(self) -> List[str]:
@@ -282,6 +181,24 @@ class MLModelCatalog(MLModel):
         """
         return self._model
 
+    def order_features(self, x):
+        """
+        Restores the correct input feature order for the ML model
+
+        Only works for encoded data
+
+        Parameters
+        ----------
+        x : pd.DataFrame
+            Data we want to order
+
+        Returns
+        -------
+        output : pd.DataFrame
+            Whole DataFrame with ordered feature
+        """
+        return order_data(self._feature_input_order, x)
+
     def predict(
         self, x: Union[np.ndarray, pd.DataFrame, torch.Tensor, tf.Tensor]
     ) -> Union[np.ndarray, pd.DataFrame, torch.Tensor, tf.Tensor]:
@@ -301,16 +218,19 @@ class MLModelCatalog(MLModel):
             Ml model prediction for interval [0, 1] with shape N x 1
         """
 
+        # order data (column-wise) before prediction
+        x = self.order_features(x)
+
         if len(x.shape) != 2:
-            raise ValueError("Input shape has to be two-dimensional")
+            raise ValueError(
+                "Input shape has to be two-dimensional, (instances, features)."
+            )
 
         if self._backend == "pytorch":
-            input = x
-            return self.predict_proba(input)[:, 1].reshape((-1, 1))
+            return self.predict_proba(x)[:, 1].reshape((-1, 1))
         elif self._backend == "tensorflow":
             # keep output in shape N x 1
-            input = self.perform_pipeline(x) if self._use_pipeline else x
-            return self._model.predict(input)[:, 1].reshape((-1, 1))
+            return self._model.predict(x)[:, 1].reshape((-1, 1))
         else:
             raise ValueError(
                 'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
@@ -335,26 +255,34 @@ class MLModelCatalog(MLModel):
             Ml model prediction with shape N x 2
         """
 
+        # order data (column-wise) before prediction
+        x = self.order_features(x)
+
         if len(x.shape) != 2:
             raise ValueError("Input shape has to be two-dimensional")
 
-        input = self.perform_pipeline(x) if self._use_pipeline else x
-
         if self._backend == "pytorch":
+
             # Keep model and input on the same device
             device = "cuda" if torch.cuda.is_available() else "cpu"
             self._model = self._model.to(device)
 
-            if isinstance(input, pd.DataFrame):
-                input = input.values
-            input, tensor_output = (
-                (torch.Tensor(input), False)
-                if not torch.is_tensor(input)
-                else (input, True)
-            )
-            input = input.to(device)
+            if isinstance(x, pd.DataFrame):
+                _x = x.values
+            else:
+                _x = x.copy()
 
-            output = self._model(input)
+            # If the input was a tensor, return a tensor. Else return a np array.
+            tensor_output = torch.is_tensor(x)
+            if not tensor_output:
+                _x = torch.Tensor(_x)
+
+            # input, tensor_output = (
+            #     (torch.Tensor(x), False) if not torch.is_tensor(x) else (x, True)
+            # )
+
+            _x = _x.to(device)
+            output = self._model(_x)
 
             if tensor_output:
                 return output
@@ -362,38 +290,11 @@ class MLModelCatalog(MLModel):
                 return output.detach().cpu().numpy()
 
         elif self._backend == "tensorflow":
-            return self._model.predict(input)
+            return self._model.predict(x)
         else:
             raise ValueError(
-                'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
+                'Incorrect backend value. Please use only "pytorch" or "tensorflow".'
             )
-
-    @property
-    def use_pipeline(self) -> bool:
-        """
-        Returns if the ML model uses the pipeline for predictions
-
-        Returns
-        -------
-        bool
-        """
-        return self._use_pipeline
-
-    @use_pipeline.setter
-    def use_pipeline(self, use_pipe: bool) -> None:
-        """
-        Sets if the ML model should use the pipeline before prediction.
-
-        Parameters
-        ----------
-        use_pipe : bool
-            If true, the model uses a transformation pipeline before prediction.
-
-        Returns
-        -------
-
-        """
-        self._use_pipeline = use_pipe
 
     def train(
         self,
@@ -441,18 +342,20 @@ class MLModelCatalog(MLModel):
             if self._model is not None:
                 self._test_accuracy()
 
+        # if model loading failed or force_train flag set to true.
         if self._model is None or force_train:
-            # preprocess data
-            df_train = self.data.train_raw
-            df_test = self.data.test_raw
-            if self.use_pipeline:
-                x_train = self.perform_pipeline(df_train)
-                x_test = self.perform_pipeline(df_test)
-            else:
-                x_train = df_train[list(set(df_train.columns) - {self.data.target})]
-                x_test = df_test[list(set(df_test.columns) - {self.data.target})]
+            # get preprocessed data
+            df_train = self.data.train_processed()
+            df_test = self.data.test_processed()
+
+            x_train = df_train[list(set(df_train.columns) - {self.data.target})]
             y_train = df_train[self.data.target]
+            x_test = df_test[list(set(df_test.columns) - {self.data.target})]
             y_test = df_test[self.data.target]
+
+            # order data (column-wise) before training
+            x_train = self.order_features(x_train)
+            x_test = self.order_features(x_test)
 
             self._model = train_model(
                 self,

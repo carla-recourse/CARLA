@@ -46,7 +46,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
     feature_tweak = FeatureTweak(model, hyperparams)
     cfs = feature_tweak.get_counterfactuals(test_factual)
 
-    assert test_factual[data.continous + [data.target]].shape == cfs.shape
+    assert test_factual[data.continuous + [data.target]].shape == cfs.shape
 
     non_nan_cfs = cfs.dropna()
     assert non_nan_cfs.shape[0] > 0
@@ -83,7 +83,7 @@ def test_focus_get_counterfactuals(model_type):
     focus = FOCUS(model, data, hyperparams)
     cfs = focus.get_counterfactuals(test_factual)
 
-    assert test_factual[data.continous].shape == cfs.shape
+    assert test_factual[data.continuous].shape == cfs.shape
 
     non_nan_cfs = cfs.dropna()
     assert non_nan_cfs.shape[0] > 0
@@ -93,22 +93,25 @@ def test_focus_get_counterfactuals(model_type):
 def test_dice_get_counterfactuals(model_type):
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = DataCatalog(data_name, encoding_method="OneHot_drop_binary")
 
     model_tf = MLModelCatalog(data, model_type)
+
+    df = data.processed(with_target=False)
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, df)
 
     hyperparams = {
         "num": 1,
         "desired_class": 1,
         "posthoc_sparsity_param": 0.1,
     }
-    # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]
 
-    cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
+    df_cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
+
+    cfs = model_tf.order_features(df_cfs)
+    cfs[data.target] = df_cfs[data.target]
 
     assert test_factual.shape[0] == cfs.shape[0]
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()

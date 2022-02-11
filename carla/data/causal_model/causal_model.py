@@ -43,8 +43,8 @@ class CausalModel:
             self._structural_equations_np,
             self._structural_equations_ts,
             self._noise_distributions,
-            self._continous,
-            self._categoricals,
+            self._continuous,
+            self._categorical,
             self._immutables,
         ) = load_scm_equations(scm_class)
 
@@ -54,11 +54,11 @@ class CausalModel:
         self._endogenous = list(self._structural_equations_np.keys())
         self._exogenous = list(self._noise_distributions.keys())
 
-        self._continous_noise = list(set(self._continous) - set(self.endogenous))
-        self._categoricals_noise = list(set(self._categoricals) - set(self.endogenous))
+        self._continuous_noise = list(set(self._continuous) - set(self.endogenous))
+        self._categorical_noise = list(set(self._categorical) - set(self.endogenous))
 
-        self._continous = list(set(self._continous) - set(self._exogenous))
-        self._categoricals = list(set(self._categoricals) - set(self._exogenous))
+        self._continuous = list(set(self._continuous) - set(self._exogenous))
+        self._categorical = list(set(self._categorical) - set(self._exogenous))
 
     def get_topological_ordering(self, node_type="endogenous"):
         """Returns a generator of nodes in topologically sorted order.
