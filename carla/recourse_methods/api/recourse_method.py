@@ -72,10 +72,10 @@ class RecourseMethod(ABC):
             raise ValueError("Factuals should not be empty")
 
         factuals_enc_norm = scale(
-            self._mlmodel.scaler, self._mlmodel.data.continous, querry_instances
+            self._mlmodel.scaler, self._mlmodel.data.continuous, querry_instances
         )
         factuals_enc_norm = encode(
-            self._mlmodel.encoder, self._mlmodel.data.categoricals, factuals_enc_norm
+            self._mlmodel.encoder, self._mlmodel.data.categorical, factuals_enc_norm
         )
 
         label = [self._mlmodel.data.target] if with_target else []

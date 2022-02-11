@@ -17,7 +17,7 @@ class TreeModel(MLModel):
         self._mymodel = DecisionTreeClassifier(max_depth=4)
 
         # add support for methods that can also use categorical data
-        data_transformed = self.scaler.transform(data.raw[data.continous])
+        data_transformed = self.scaler.transform(data.raw[data.continuous])
         target = data.raw[data.target]
 
         X_train, X_test, y_train, y_test = train_test_split(
@@ -32,7 +32,7 @@ class TreeModel(MLModel):
             )
         )
 
-        self._feature_input_order = data.continous
+        self._feature_input_order = data.continuous
 
     @property
     def feature_input_order(self):
@@ -50,7 +50,7 @@ class TreeModel(MLModel):
         return self._mymodel
 
     # The predict function outputs
-    # the continous prediction of the model
+    # the continuous prediction of the model
     def predict(self, x):
         return self._mymodel.predict(x)
 
@@ -71,7 +71,7 @@ class ForestModel(MLModel):
             n_estimators=5,
             max_depth=2,
         )
-        data_transformed = self.scaler.transform(data.raw[data.continous])
+        data_transformed = self.scaler.transform(data.raw[data.continuous])
         target = data.raw[data.target]
 
         X_train, X_test, y_train, y_test = train_test_split(
@@ -86,7 +86,7 @@ class ForestModel(MLModel):
             )
         )
 
-        self._feature_input_order = data.continous
+        self._feature_input_order = data.continuous
 
     @property
     def feature_input_order(self):
@@ -108,7 +108,7 @@ class ForestModel(MLModel):
         return self.raw_model
 
     # The predict function outputs
-    # the continous prediction of the model
+    # the continuous prediction of the model
     def predict(self, x):
         return self._mymodel.predict(x)
 
@@ -124,10 +124,10 @@ class XGBoostModel(MLModel):
 
     def __init__(self, data):
         super().__init__(data)
-        self._feature_input_order = data.continous
+        self._feature_input_order = data.continuous
 
-        data_transformed = self.scaler.transform(data.raw[data.continous])
-        data_transformed = pd.DataFrame(data_transformed, columns=data.continous)
+        data_transformed = self.scaler.transform(data.raw[data.continuous])
+        data_transformed = pd.DataFrame(data_transformed, columns=data.continuous)
         target = data.raw[data.target]
 
         X_train, X_test, y_train, y_test = train_test_split(

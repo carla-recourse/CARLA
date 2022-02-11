@@ -203,10 +203,10 @@ def test_constraint_violations():
         columns=columns,
     )
     test_counterfactual = scale(
-        model_tf.scaler, model_tf.data.continous, test_counterfactual
+        model_tf.scaler, model_tf.data.continuous, test_counterfactual
     )
     test_counterfactual = encode(
-        model_tf.encoder, model_tf.data.categoricals, test_counterfactual
+        model_tf.encoder, model_tf.data.categorical, test_counterfactual
     )
 
     expected = [[2], [0], [1], [0], [1]]

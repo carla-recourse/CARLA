@@ -21,8 +21,8 @@ def load_scm_equations(scm_class: str):
         structural_equations_np,
         structural_equations_ts,
         noise_distributions,
-        continous,
-        categoricals,
+        continuous,
+        categorical,
         immutables,
     ) = scm_dict[scm_class]()
 
@@ -49,7 +49,7 @@ def load_scm_equations(scm_class: str):
         structural_equations_np,
         structural_equations_ts,
         noise_distributions,
-        continous,
-        categoricals,
+        continuous,
+        categorical,
         immutables,
     )

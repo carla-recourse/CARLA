@@ -101,11 +101,13 @@ class MLModelCatalog(MLModel):
             self._feature_input_order = self._catalog["feature_order"]
         else:
             self._catalog = None
-            encoded_features = list(self.encoder.get_feature_names(data.categoricals))
-            self._feature_input_order = list(np.sort(data.continous + encoded_features))
+            encoded_features = list(self.encoder.get_feature_names(data.categorical))
+            self._feature_input_order = list(
+                np.sort(data.continuous + encoded_features)
+            )
 
-        self._continuous = data.continous
-        self._categoricals = data.categoricals
+        self._continuous = data.continuous
+        self._categorical = data.categorical
 
         # Preparing pipeline components
         self._use_pipeline = use_pipeline
@@ -130,13 +132,13 @@ class MLModelCatalog(MLModel):
     def __init_pipeline(self) -> List[Tuple[str, Callable]]:
         return [
             ("scaler", lambda x: scale(self.scaler, self._continuous, x)),
-            ("encoder", lambda x: encode(self.encoder, self._categoricals, x)),
+            ("encoder", lambda x: encode(self.encoder, self._categorical, x)),
             ("order", lambda x: order_data(self._feature_input_order, x)),
         ]
 
     def __init_inverse_pipeline(self) -> List[Tuple[str, Callable]]:
         return [
-            ("encoder", lambda x: decode(self.encoder, self._categoricals, x)),
+            ("encoder", lambda x: decode(self.encoder, self._categorical, x)),
             ("scaler", lambda x: descale(self.scaler, self._continuous, x)),
         ]
 

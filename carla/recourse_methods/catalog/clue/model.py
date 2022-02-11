@@ -98,13 +98,13 @@ class Clue(RecourseMethod):
         self._epochs = checked_hyperparams["epochs"]
         self._lr = checked_hyperparams["lr"]
         self._early_stop = checked_hyperparams["early_stop"]
-        self._continous = self._mlmodel.data.continous
-        self._categorical = self._mlmodel.data.categoricals
+        self._continuous = self._mlmodel.data.continuous
+        self._categorical = self._mlmodel.data.categorical
 
         # get input dimension
         # indicate dimensions of inputs -- input_dim_vec: (if binary = 2; if continuous = 1)
-        input_dims_continuous = list(np.repeat(1, len(self._mlmodel.data.continous)))
-        input_dims_binary = list(np.repeat(2, len(self._mlmodel.data.categoricals)))
+        input_dims_continuous = list(np.repeat(1, len(self._mlmodel.data.continuous)))
+        input_dims_binary = list(np.repeat(2, len(self._mlmodel.data.categorical)))
         self._input_dimension = input_dims_continuous + input_dims_binary
 
         # normalize and encode data

@@ -63,7 +63,7 @@ def get_discretized_action_sets(
     Parameters
     ----------
     intervenable_nodes: dict
-        Contains nodes that are not immutable {"continous": [continous nodes], "categorical": [categical nodes].
+        Contains nodes that are not immutable {"continuous": [continuous nodes], "categorical": [categical nodes].
     min_values: pd.Series
         min_values[node] contains the minimum feature value that node takes.
     max_values: pd.Series

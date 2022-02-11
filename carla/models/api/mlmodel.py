@@ -44,7 +44,7 @@ class MLModel(ABC):
         self.data: Data = data
 
         if scaling_method == "MinMax":
-            fitted_scaler = preprocessing.MinMaxScaler().fit(data.raw[data.continous])
+            fitted_scaler = preprocessing.MinMaxScaler().fit(data.raw[data.continuous])
             self.scaler: BaseEstimator = fitted_scaler
         else:
             raise NotImplementedError("Scaling Method not implemented")
@@ -52,11 +52,11 @@ class MLModel(ABC):
         if encoding_method == "OneHot":
             fitted_encoder = preprocessing.OneHotEncoder(
                 handle_unknown="error", sparse=False
-            ).fit(data.raw[data.categoricals])
+            ).fit(data.raw[data.categorical])
         elif encoding_method == "OneHot_drop_binary":
             fitted_encoder = preprocessing.OneHotEncoder(
                 drop="if_binary", handle_unknown="error", sparse=False
-            ).fit(data.raw[data.categoricals])
+            ).fit(data.raw[data.categorical])
         else:
             raise ValueError("Encoding Method not known")
 

@@ -25,8 +25,8 @@ def test_redundancy():
     cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
     model_tf.use_pipeline = False
 
-    df_enc_norm_fact = scale(model_tf.scaler, data.continous, factuals)
-    df_enc_norm_fact = encode(model_tf.encoder, data.categoricals, df_enc_norm_fact)
+    df_enc_norm_fact = scale(model_tf.scaler, data.continuous, factuals)
+    df_enc_norm_fact = encode(model_tf.encoder, data.categorical, df_enc_norm_fact)
     df_enc_norm_fact = df_enc_norm_fact[model_tf.feature_input_order]
 
     red = redundancy(df_enc_norm_fact, cfs, model_tf)

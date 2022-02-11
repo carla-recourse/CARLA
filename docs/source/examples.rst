@@ -57,12 +57,12 @@ Data
 
        # List of all categorical features
        @property
-       def categoricals(self):
+       def categorical(self):
            return [...]
 
-       # List of all continous features
+       # List of all continuous features
        @property
-       def continous(self):
+       def continuous(self):
            return [...]
 
        # List of all immutable features which
@@ -121,7 +121,7 @@ Black-Box-Model
             return self._mymodel
 
         # The predict function outputs
-        # the continous prediction of the model
+        # the continuous prediction of the model
         def predict(self, x):
             return self._mymodel.predict(x)
 
