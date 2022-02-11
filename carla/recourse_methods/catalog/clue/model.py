@@ -108,7 +108,7 @@ class Clue(RecourseMethod):
         self._input_dimension = input_dims_continuous + input_dims_binary
 
         # normalize and encode data
-        self._df_norm_enc_data = self.encode_normalize_order_factuals(data.raw)
+        self._df_norm_enc_data = self.encode_normalize_order_factuals(data.df)
 
         # load autoencoder
         self._vae = self._load_vae()

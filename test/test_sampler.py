@@ -9,7 +9,7 @@ def test_abduction():
     scm = CausalModel("sanity-3-lin")
     data = scm.generate_dataset(100)
 
-    factual_instance = data.raw.iloc[0].to_dict()
+    factual_instance = data.df.iloc[0].to_dict()
     noise = data.noise.iloc[0].to_dict()
 
     # hard-coding the fact that we know variables have numbers as name and we have three of them

@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 
 from carla.data.catalog import DataCatalog
+from carla.data.pipelining import encode
 from carla.models.catalog import MLModelCatalog
-from carla.models.pipelining import encode
 
 testdata = ["adult", "give_me_some_credit", "compas", "heloc"]
 

@@ -1,11 +1,10 @@
-from typing import Callable, List
+from typing import List
 
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator
 from sklearn.model_selection import train_test_split
 
-from carla.data.api import Data
+from carla.data.catalog import DataCatalog
 
 
 def _get_noise_string(node):
@@ -79,7 +78,7 @@ def _create_synthetic_data(scm, num_samples):
     return df_endogenous, df_exogenous
 
 
-class ScmDataset(Data):
+class ScmDataset(DataCatalog):
     """
     Generate a dataset from structural equations
 
@@ -96,25 +95,15 @@ class ScmDataset(Data):
         scm,
         size: int,
         scaling_method: str = "MinMax",
-        encoding_method: str = "OneHot",
+        encoding_method: str = "OneHot_drop_binary",
     ):
-        self.name = scm.scm_class
         self.scm = scm
-        self._raw, self._noise = _create_synthetic_data(scm, num_samples=size)
-        self._train_raw, self._test_raw = train_test_split(self._raw)
+        raw, self._noise = _create_synthetic_data(scm, num_samples=size)
+        train_raw, test_raw = train_test_split(raw)
 
-        # Fit scaler and encoder
-        self.scaler: BaseEstimator = self.__fit_scaler(scaling_method)
-        self.encoder: BaseEstimator = self.__fit_encoder(encoding_method)
-
-        # Preparing pipeline components
-        self._pipeline = self.__init_pipeline()
-        self._inverse_pipeline = self.__init_inverse_pipeline()
-
-        # Process the data
-        self._processed: pd.DataFrame = self.perform_pipeline(self.raw)
-        self._train_processed: pd.DataFrame = self.perform_pipeline(self.train_raw)
-        self._test_processed: pd.DataFrame = self.perform_pipeline(self.test_raw)
+        super().__init__(
+            scm.scm_class, raw, train_raw, test_raw, scaling_method, encoding_method
+        )
 
     @property
     def categorical(self) -> List[str]:
@@ -162,176 +151,12 @@ class ScmDataset(Data):
 
     @property
     def immutables(self) -> List[str]:
-        """
-        Provides the column names of the immutable data.
-
-        Returns
-        -------
-        List[str]
-        """
         return self.scm._immutables
 
     @property
     def target(self) -> str:
-        """
-        Provies the name of the label column.
-
-        Returns
-        -------
-        str
-        """
         return "label"
-
-    @property
-    def raw(self) -> pd.DataFrame:
-        return self._raw.copy()
 
     @property
     def noise(self) -> pd.DataFrame:
         return self._noise.copy()
-
-    @property
-    def train_raw(self) -> pd.DataFrame:
-        return self._train_raw.copy()
-
-    @property
-    def test_raw(self) -> pd.DataFrame:
-        return self._test_raw.copy()
-
-    def processed(self, with_target=True) -> pd.DataFrame:
-        df = self._processed.copy()
-        if with_target:
-            return df
-        else:
-            df = df[list(set(df.columns) - {self.target})]
-            return df
-
-    def train_processed(self, with_target=True) -> pd.DataFrame:
-        df = self._train_processed.copy()
-        if with_target:
-            return df
-        else:
-            df = df[list(set(df.columns) - {self.target})]
-            return df
-
-    def test_processed(self, with_target=True) -> pd.DataFrame:
-        df = self._test_processed.copy()
-        if with_target:
-            return df
-        else:
-            df = df[list(set(df.columns) - {self.target})]
-            return df
-
-    @property
-    def scaler(self) -> BaseEstimator:
-        """
-        Contains a fitted sklearn scaler.
-
-        Returns
-        -------
-        sklearn.preprocessing.BaseEstimator
-        """
-        return self._scaler
-
-    @scaler.setter
-    def scaler(self, scaler: BaseEstimator):
-        """
-        Sets a new fitted sklearn scaler.
-
-        Parameters
-        ----------
-        scaler : sklearn.preprocessing.Scaler
-            Fitted scaler for ML model.
-
-        Returns
-        -------
-        sklearn.preprocessing.BaseEstimator
-        """
-        self._scaler = scaler
-
-    @property
-    def encoder(self) -> BaseEstimator:
-        """
-        Contains a fitted sklearn encoder:
-
-        Returns
-        -------
-        sklearn.preprocessing.BaseEstimator
-        """
-        return self._encoder
-
-    @encoder.setter
-    def encoder(self, encoder: BaseEstimator):
-        """
-        Sets a new fitted sklearn encoder.
-
-        Parameters
-        ----------
-        encoder: sklearn.preprocessing.Encoder
-            Fitted encoder for ML model.
-        """
-        self._encoder = encoder
-
-    def get_pipeline_element(self, key: str) -> Callable:
-        """
-        Returns a specific element of the pipeline
-
-        Parameters
-        ----------
-        key : str
-            Element of the pipeline we want to return
-
-        Returns
-        -------
-        Pipeline element
-        """
-        key_idx = list(zip(*self._pipeline))[0].index(key)  # find key in pipeline
-        return self._pipeline[key_idx][1]
-
-    def perform_pipeline(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Transforms input for prediction into correct form.
-        Only possible for DataFrames without preprocessing steps.
-
-        Recommended to use to keep correct encodings and normalization
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            Contains raw (unnormalized and not encoded) data.
-
-        Returns
-        -------
-        output : pd.DataFrame
-            Prediction input normalized and encoded
-
-        """
-        output = df.copy()
-
-        for trans_name, trans_function in self._pipeline:
-            output = trans_function(output)
-
-        return output
-
-    def perform_inverse_pipeline(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Transforms output after prediction back into original form.
-        Only possible for DataFrames with preprocessing steps.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            Contains normalized and encoded data.
-
-        Returns
-        -------
-        output : pd.DataFrame
-            Prediction output denormalized and decoded
-
-        """
-        output = df.copy()
-
-        for trans_name, trans_function in self._inverse_pipeline:
-            output = trans_function(output)
-
-        return output

@@ -1,9 +1,9 @@
 import pandas as pd
 
 from carla.data.catalog import DataCatalog
+from carla.data.pipelining import encode, scale
 from carla.evaluation import constraint_violation
 from carla.models.catalog import MLModelCatalog
-from carla.models.pipelining import encode, scale
 
 
 def test_constraint_violations():

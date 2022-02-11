@@ -113,7 +113,7 @@ class Revise(RecourseMethod):
         self._binary_cat_features = self._params["binary_cat_features"]
 
         df_enc_norm_data = self.encode_normalize_order_factuals(
-            data.raw, with_target=True
+            data.df, with_target=True
         )
 
         vae_params = self._params["vae_params"]
@@ -126,8 +126,6 @@ class Revise(RecourseMethod):
             self.vae = train_variational_autoencoder(
                 self.vae,
                 self._mlmodel.data,
-                self._mlmodel.scaler,
-                self._mlmodel.encoder,
                 self._mlmodel.feature_input_order,
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],

@@ -6,10 +6,10 @@ import tensorflow as tf
 import torch
 
 # from carla.data.catalog import DataCatalog
-from carla.data.causal_model.synthethic_data import ScmDataset
+from carla.data.catalog.online_catalog import DataCatalog
 from carla.data.load_catalog import load_catalog
+from carla.data.pipelining import order_data
 from carla.models.api import MLModel
-from carla.models.pipelining import order_data
 
 from .load_model import load_online_model, load_trained_model, save_model
 from .train_model import train_model
@@ -55,7 +55,7 @@ class MLModelCatalog(MLModel):
 
     def __init__(
         self,
-        data,
+        data: DataCatalog,
         model_type: str,
         backend: str = "tensorflow",
         cache: bool = True,
@@ -91,7 +91,7 @@ class MLModelCatalog(MLModel):
             )
 
         # Datasets generated from a Structural Causal Model or a custom dataset do not have a saved .yaml
-        if not isinstance(data, ScmDataset) and data.name != "custom":
+        if isinstance(data, DataCatalog):
             # Load catalog
             catalog_content = ["ann", "linear"]
             catalog = load_catalog("mlmodel_catalog.yaml", data.name, catalog_content)  # type: ignore
@@ -345,8 +345,8 @@ class MLModelCatalog(MLModel):
         # if model loading failed or force_train flag set to true.
         if self._model is None or force_train:
             # get preprocessed data
-            df_train = self.data.train_processed()
-            df_test = self.data.test_processed()
+            df_train = self.data.df_train()
+            df_test = self.data.df_test()
 
             x_train = df_train[list(set(df_train.columns) - {self.data.target})]
             y_train = df_train[self.data.target]

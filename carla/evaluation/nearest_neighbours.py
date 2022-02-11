@@ -28,7 +28,7 @@ def yNN(
     N = counterfactuals.shape[0]
 
     df_enc_norm_data = recourse_method.encode_normalize_order_factuals(
-        mlmodel.data.raw, with_target=True
+        mlmodel.data.df, with_target=True
     )
     nbrs = NearestNeighbors(n_neighbors=y).fit(df_enc_norm_data.values)
 

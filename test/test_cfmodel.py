@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from tensorflow import Graph, Session
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods.catalog.actionable_recourse import ActionableRecourse
@@ -26,7 +26,7 @@ testmodel = ["ann", "linear"]
 def test_feature_tweak_get_counterfactuals(model_type):
 
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     if model_type == "xgboost":
         model = XGBoostModel(data)
@@ -56,7 +56,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
 def test_focus_get_counterfactuals(model_type):
 
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     if model_type == "xgboost":
         model = XGBoostModel(data)
@@ -93,13 +93,12 @@ def test_focus_get_counterfactuals(model_type):
 def test_dice_get_counterfactuals(model_type):
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name, encoding_method="OneHot_drop_binary")
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, model_type)
 
-    df = data.processed(with_target=False)
     # get factuals
-    factuals = predict_negative_instances(model_tf, df)
+    factuals = predict_negative_instances(model_tf, data.df)
 
     hyperparams = {
         "num": 1,
@@ -124,7 +123,7 @@ def test_dice_get_counterfactuals(model_type):
 def test_ar_get_counterfactual(model_type):
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
     model_tf = MLModelCatalog(data, model_type)
 
     coeffs, intercepts = None, None
@@ -161,7 +160,7 @@ def test_ar_get_counterfactual(model_type):
 @pytest.mark.parametrize("model_type", testmodel)
 def test_cem_get_counterfactuals(model_type):
     data_name = "adult"
-    data = DataCatalog(data_name=data_name)
+    data = OnlineCatalog(data_name=data_name)
 
     hyperparams_cem = {
         "batch_size": 1,
@@ -206,7 +205,7 @@ def test_cem_get_counterfactuals(model_type):
 @pytest.mark.parametrize("model_type", testmodel)
 def test_cem_vae(model_type):
     data_name = "adult"
-    data = DataCatalog(data_name=data_name)
+    data = OnlineCatalog(data_name=data_name)
 
     hyperparams_cem = {
         "batch_size": 1,
@@ -252,7 +251,7 @@ def test_cem_vae(model_type):
 def test_face_get_counterfactuals(model_type):
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, model_type)
     # get factuals
@@ -282,7 +281,7 @@ def test_face_get_counterfactuals(model_type):
 def test_growing_spheres(model_type):
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, model_type)
     # get factuals
@@ -303,7 +302,7 @@ def test_growing_spheres(model_type):
 def test_clue(model_type):
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
@@ -334,7 +333,7 @@ def test_clue(model_type):
 def test_wachter(model_type):
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
@@ -354,7 +353,7 @@ def test_wachter(model_type):
 @pytest.mark.parametrize("model_type", testmodel)
 def test_revise(model_type):
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
@@ -394,7 +393,7 @@ def test_revise(model_type):
 @pytest.mark.parametrize("model_type", testmodel)
 def test_cchvae(model_type):
     data_name = "compas"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
@@ -433,7 +432,7 @@ def test_cchvae(model_type):
 def test_crud(model_type):
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals

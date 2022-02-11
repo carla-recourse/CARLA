@@ -79,7 +79,7 @@ class ActionableRecourse(RecourseMethod):
 
         # normalize and encode data
         self._norm_enc_data = self.encode_normalize_order_factuals(
-            self._data.raw, with_target=True
+            self._data.df, with_target=True
         )
 
         # Get hyperparameter

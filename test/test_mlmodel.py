@@ -4,8 +4,8 @@ import torch
 from pandas._testing import assert_frame_equal
 
 from carla.data.catalog import DataCatalog
+from carla.data.pipelining import encode, scale
 from carla.models.catalog import MLModelCatalog
-from carla.models.pipelining import encode, scale
 
 testmodel = ["ann", "linear"]
 test_data = ["adult", "give_me_some_credit", "compas", "heloc"]

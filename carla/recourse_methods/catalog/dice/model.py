@@ -62,7 +62,7 @@ class Dice(RecourseMethod):
         )
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
-            dataframe=mlmodel.data.processed(with_target=True),
+            dataframe=mlmodel.data.df,
             continuous_features=self._continuous,
             outcome_name=self._target,
         )

@@ -100,7 +100,7 @@ class CCHVAE(RecourseMethod):
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
         df_enc_norm_data = self.encode_normalize_order_factuals(
-            self._mlmodel.data.raw, with_target=True
+            self._mlmodel.data.df, with_target=True
         )
 
         self._n_search_samples = self._params["n_search_samples"]
@@ -126,8 +126,6 @@ class CCHVAE(RecourseMethod):
             generative_model = train_variational_autoencoder(
                 generative_model,
                 mlmodel.data,
-                mlmodel.data.scaler,
-                mlmodel.data.encoder,
                 mlmodel.feature_input_order,
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],

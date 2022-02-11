@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
-from carla.models.pipelining import encode, scale
+from carla.data.pipelining import encode, scale
 
 
 class RecourseMethod(ABC):

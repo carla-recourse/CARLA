@@ -57,7 +57,7 @@ class Face(RecourseMethod):
         self.fraction = checked_hyperparams["fraction"]
 
         # Normalize and encode data
-        self._df_enc_norm = self.encode_normalize_order_factuals(self._mlmodel.data.raw)
+        self._df_enc_norm = self.encode_normalize_order_factuals(self._mlmodel.data.df)
 
         self._immutables = encode_feature_names(
             self._mlmodel.data.immutables, self._mlmodel.feature_input_order

@@ -17,8 +17,8 @@ class TreeModel(MLModel):
         self._mymodel = DecisionTreeClassifier(max_depth=4)
 
         # add support for methods that can also use categorical data
-        data_transformed = self.scaler.transform(data.raw[data.continuous])
-        target = data.raw[data.target]
+        data_transformed = self.scaler.transform(data.df[data.continuous])
+        target = data.df[data.target]
 
         X_train, X_test, y_train, y_test = train_test_split(
             data_transformed, target, test_size=0.20
@@ -71,8 +71,8 @@ class ForestModel(MLModel):
             n_estimators=5,
             max_depth=2,
         )
-        data_transformed = self.scaler.transform(data.raw[data.continuous])
-        target = data.raw[data.target]
+        data_transformed = self.scaler.transform(data.df[data.continuous])
+        target = data.df[data.target]
 
         X_train, X_test, y_train, y_test = train_test_split(
             data_transformed, target, test_size=0.20
@@ -126,9 +126,9 @@ class XGBoostModel(MLModel):
         super().__init__(data)
         self._feature_input_order = data.continuous
 
-        data_transformed = self.scaler.transform(data.raw[data.continuous])
+        data_transformed = self.scaler.transform(data.df[data.continuous])
         data_transformed = pd.DataFrame(data_transformed, columns=data.continuous)
-        target = data.raw[data.target]
+        target = data.df[data.target]
 
         X_train, X_test, y_train, y_test = train_test_split(
             data_transformed, target, test_size=0.20

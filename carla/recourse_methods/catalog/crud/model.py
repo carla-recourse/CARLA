@@ -97,7 +97,7 @@ class CRUD(RecourseMethod):
         self._binary_cat_features = checked_hyperparams["binary_cat_features"]
 
         df_enc_norm_data = self.encode_normalize_order_factuals(
-            self._mlmodel.data.raw, with_target=True
+            self._mlmodel.data.df, with_target=True
         )
 
         vae_params = checked_hyperparams["vae_params"]

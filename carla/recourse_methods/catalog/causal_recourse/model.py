@@ -70,9 +70,9 @@ class CausalRecourse(RecourseMethod):
     def _get_original_df(self):
         normalized = self._mlmodel.use_pipeline
         if normalized:
-            data_df = self.encode_normalize_order_factuals(self._dataset.raw)
+            data_df = self.encode_normalize_order_factuals(self._dataset.df)
         else:
-            data_df = self._dataset.raw
+            data_df = self._dataset.df
         return data_df
 
     def _get_range_values(self):

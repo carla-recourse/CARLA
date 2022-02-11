@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 from carla.models.api import MLModel
-from carla.models.pipelining import decode
 
 
 def constraint_violation(
@@ -25,19 +24,20 @@ def constraint_violation(
     """
     immutables = mlmodel.data.immutables
 
+    df_decoded_cfs = mlmodel.data.inverse_transform(counterfactuals.copy())
     # Decode counterfactuals to compare immutables with not encoded factuals
-    df_decoded_cfs = counterfactuals.copy()
-    df_decoded_cfs = decode(
-        mlmodel.data.encoder, mlmodel.data.categorical, df_decoded_cfs
-    )
-    df_decoded_cfs[mlmodel.data.continuous] = mlmodel.data.scaler.inverse_transform(
-        df_decoded_cfs[mlmodel.data.continuous]
-    )
-    df_decoded_cfs[mlmodel.data.continuous] = df_decoded_cfs[
-        mlmodel.data.continuous
-    ].astype(
-        "int64"
-    )  # avoid precision error
+    # df_decoded_cfs = counterfactuals.copy()
+    # df_decoded_cfs = decode(
+    #     mlmodel.data.encoder, mlmodel.data.categorical, df_decoded_cfs
+    # )
+    # df_decoded_cfs[mlmodel.data.continuous] = mlmodel.data.scaler.inverse_transform(
+    #     df_decoded_cfs[mlmodel.data.continuous]
+    # )
+    # df_decoded_cfs[mlmodel.data.continuous] = df_decoded_cfs[
+    #     mlmodel.data.continuous
+    # ].astype(
+    #     "int64"
+    # )  # avoid precision error
 
     df_decoded_cfs = df_decoded_cfs[immutables]
     df_factuals = factuals[immutables]
