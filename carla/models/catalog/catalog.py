@@ -71,8 +71,6 @@ class MLModelCatalog(MLModel):
 
 
         """
-        super().__init__(data)
-
         self._model_type = model_type
         self._backend = backend
         self._continuous = data.continuous
