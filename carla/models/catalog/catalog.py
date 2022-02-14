@@ -87,6 +87,7 @@ class MLModelCatalog(MLModel):
             raise ValueError(
                 'Backend not available, please choose between "pytorch" and "tensorflow".'
             )
+        super().__init__(data)
 
         # Datasets generated from a Structural Causal Model or a custom dataset do not have a saved .yaml
         if isinstance(data, DataCatalog):
