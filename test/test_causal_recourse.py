@@ -16,7 +16,7 @@ def test_causal_recourse():
     training_params = {"lr": 0.8, "epochs": 10, "batch_size": 16}
 
     model_type = "linear"
-    model = MLModelCatalog(data, model_type, load_online=False, use_pipeline=False)
+    model = MLModelCatalog(data, model_type, load_online=False)
     model.train(
         learning_rate=training_params["lr"],
         epochs=training_params["epochs"],
@@ -24,7 +24,7 @@ def test_causal_recourse():
     )
 
     # get factuals
-    factuals = predict_negative_instances(model, data, normalize=False)[:5]
+    factuals = predict_negative_instances(model, data.df)[:5]
     assert len(factuals) > 0
 
     hyperparams = {

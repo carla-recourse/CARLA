@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.data.pipelining import encode
 from carla.models.catalog import MLModelCatalog
 
@@ -10,7 +10,7 @@ testdata = ["adult", "give_me_some_credit", "compas", "heloc"]
 
 @pytest.mark.parametrize("data_name", testdata)
 def test_adult_col(data_name):
-    data_catalog = DataCatalog(data_name)
+    data_catalog = OnlineCatalog(data_name)
 
     actual_col = (
         data_catalog.categorical + data_catalog.continuous + [data_catalog.target]
@@ -24,9 +24,9 @@ def test_adult_col(data_name):
 
 @pytest.mark.parametrize("data_name", testdata)
 def test_adult_norm(data_name):
-    data = DataCatalog(data_name)
-
+    data = OnlineCatalog(data_name)
     mlmodel = MLModelCatalog(data, "ann")
+
     norm = data.raw
     norm[data.continuous] = mlmodel.scaler.transform(norm[data.continuous])
 
@@ -40,8 +40,7 @@ def test_adult_norm(data_name):
 
 @pytest.mark.parametrize("data_name", testdata)
 def test_adult_enc(data_name):
-    data = DataCatalog(data_name)
-
+    data = OnlineCatalog(data_name)
     mlmodel = MLModelCatalog(data, "ann")
 
     cat = encode(mlmodel.encoder, data.categorical, data.raw)

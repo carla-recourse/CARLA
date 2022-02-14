@@ -3,8 +3,7 @@ import pytest
 import torch
 from pandas._testing import assert_frame_equal
 
-from carla.data.catalog import DataCatalog
-from carla.data.pipelining import encode, scale
+from carla.data.catalog import OnlineCatalog
 from carla.models.catalog import MLModelCatalog
 
 testmodel = ["ann", "linear"]
@@ -13,7 +12,7 @@ test_data = ["adult", "give_me_some_credit", "compas", "heloc"]
 
 def test_properties():
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, "ann")
 
@@ -38,39 +37,43 @@ def test_properties():
     assert model_tf_adult.feature_input_order == exp_feature_order_adult
 
 
-def test_inverse_pipeline():
+def test_transform():
     data_name = "adult"
-    data = DataCatalog(data_name)
+    transformed_data = OnlineCatalog(
+        data_name, scaling_method="MinMax", encoding_method="OneHot_drop_binary"
+    )
+    raw_data = OnlineCatalog(
+        data_name, scaling_method="Identity", encoding_method="Identity"
+    )
 
-    model_tf_adult = MLModelCatalog(data, "ann")
-
-    transformed_data = model_tf_adult.perform_pipeline(data.raw)
-    detransformed_data = model_tf_adult.perform_inverse_pipeline(transformed_data)
-
-    expected_data = data.raw[detransformed_data.columns]
-    expected_data[data.continuous] = expected_data[data.continuous].astype("float")
-    expected_data.columns = detransformed_data.columns
-
-    assert_frame_equal(expected_data, detransformed_data)
+    assert_frame_equal(
+        transformed_data.inverse_transform(transformed_data.df), raw_data.df
+    )
+    assert_frame_equal(transformed_data.transform(raw_data.df), transformed_data.df)
+    assert_frame_equal(
+        transformed_data.transform(
+            transformed_data.inverse_transform(transformed_data.df)
+        ),
+        transformed_data.df,
+    )
+    assert_frame_equal(
+        transformed_data.inverse_transform(transformed_data.transform(raw_data.df)),
+        raw_data.df,
+    )
 
 
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_tf(model_type, data_name):
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, model_type)
 
-    # normalize and encode data
-    norm_enc_data = scale(model_tf_adult.scaler, data.continuous, data.raw)
-    norm_enc_data = encode(model_tf_adult.encoder, data.categorical, norm_enc_data)
-    norm_enc_data = norm_enc_data[model_tf_adult.feature_input_order]
-
-    single_sample = norm_enc_data.iloc[22]
+    single_sample = data.df.iloc[22]
     single_sample = single_sample[model_tf_adult.feature_input_order].values.reshape(
         (1, -1)
     )
-    samples = norm_enc_data.iloc[0:22]
+    samples = data.df.iloc[0:22]
     samples = samples[model_tf_adult.feature_input_order].values
 
     # Test single and bulk non probabilistic predictions
@@ -95,13 +98,13 @@ def test_predictions_tf(model_type, data_name):
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_with_pipeline(model_type, data_name):
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, model_type)
     model_tf_adult.use_pipeline = True
 
-    single_sample = data.raw.iloc[22].to_frame().T
-    samples = data.raw.iloc[0:22]
+    single_sample = data.df.iloc[22].to_frame().T
+    samples = data.df.iloc[0:22]
 
     # Test single and bulk non probabilistic predictions
     single_prediction_tf = model_tf_adult.predict(single_sample)
@@ -124,39 +127,15 @@ def test_predictions_with_pipeline(model_type, data_name):
 
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
-def test_pipeline(model_type, data_name):
-    data = DataCatalog(data_name)
-
-    model = MLModelCatalog(data, model_type, use_pipeline=True)
-
-    samples = data.raw.iloc[0:22]
-
-    enc_norm_samples = model.perform_pipeline(samples)
-
-    rows, cols = samples.shape
-    expected_shape = (rows, cols - 1)
-
-    assert expected_shape == enc_norm_samples.shape
-    assert enc_norm_samples.select_dtypes(exclude=[np.number]).empty
-
-
-@pytest.mark.parametrize("model_type", testmodel)
-@pytest.mark.parametrize("data_name", test_data)
 def test_predictions_pt(model_type, data_name):
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
     model = MLModelCatalog(data, model_type, backend="pytorch")
-    feature_input_order = model.feature_input_order
 
-    # normalize and encode data
-    norm_enc_data = scale(model.scaler, data.continuous, data.raw)
-    norm_enc_data = encode(model.encoder, data.categorical, norm_enc_data)
-    norm_enc_data = norm_enc_data[feature_input_order]
-
-    single_sample = norm_enc_data.iloc[22]
+    single_sample = data.df.iloc[22]
     single_sample = single_sample[model.feature_input_order].values.reshape((1, -1))
     single_sample_torch = torch.Tensor(single_sample)
 
-    samples = norm_enc_data.iloc[0:22]
+    samples = data.df.iloc[0:22]
     samples = samples[model.feature_input_order].values
     samples_torch = torch.Tensor(samples)
 

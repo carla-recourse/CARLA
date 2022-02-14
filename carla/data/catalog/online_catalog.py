@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 from carla.data.catalog import DataCatalog
-from carla.data.load_catalog import load_catalog
+from carla.data.load_catalog import load
 
 from .load_data import load_dataset
 
@@ -19,7 +19,7 @@ class OnlineCatalog(DataCatalog):
 
     Returns
     -------
-    None
+    DataCatalog
     """
 
     def __init__(
@@ -29,7 +29,7 @@ class OnlineCatalog(DataCatalog):
         encoding_method: str = "OneHot_drop_binary",
     ):
         catalog_content = ["continuous", "categorical", "immutable", "target"]
-        self.catalog: Dict[str, Any] = load_catalog(  # type: ignore
+        self.catalog: Dict[str, Any] = load(  # type: ignore
             "data_catalog.yaml", data_name, catalog_content
         )
 

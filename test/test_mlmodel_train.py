@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.models.catalog import MLModelCatalog
 
 testmodel = ["ann", "linear"]
@@ -22,20 +22,22 @@ training_params_ann = {
 training_params = {"linear": training_params_linear, "ann": training_params_ann}
 
 
-def test_properties():
-    data_name = "adult"
-    data = DataCatalog(data_name)
-
-    model_type = "linear"
-    model_tf_adult = MLModelCatalog(
-        data, model_type, load_online=False, use_pipeline=True
-    )
-    params = training_params[model_type][data_name]
-    model_tf_adult.train(
+def __train_model(data, model_type, backend):
+    model = MLModelCatalog(data, model_type, load_online=False, backend=backend)
+    params = training_params[model_type][data.name]
+    model.train(
         learning_rate=params["lr"],
         epochs=params["epochs"],
         batch_size=params["batch_size"],
     )
+    return model
+
+
+def test_properties():
+    data_name = "adult"
+    model_type = "linear"
+    data = OnlineCatalog(data_name)
+    model_tf_adult = __train_model(data, model_type, backend="tensorflow")
 
     exp_backend_tf = "tensorflow"
     exp_feature_order_adult = [
@@ -61,37 +63,27 @@ def test_properties():
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_tf(model_type, data_name):
+    data = OnlineCatalog(data_name)
+    model = __train_model(data, model_type, backend="tensorflow")
 
-    data = DataCatalog(data_name)
+    single_sample = data.df.iloc[[22]]
+    samples = data.df.iloc[0:22]
 
-    model_tf_adult = MLModelCatalog(
-        data, model_type, load_online=False, use_pipeline=True
-    )
-    params = training_params[model_type][data_name]
-    model_tf_adult.train(
-        learning_rate=params["lr"],
-        epochs=params["epochs"],
-        batch_size=params["batch_size"],
-    )
-
-    single_sample = data.raw.iloc[[22]]
-    samples = data.raw.iloc[0:22]
-
-    # Test single and bulk non probabilistic predictions
-    single_prediction_tf = model_tf_adult.predict(single_sample)
+    # Test single and bulk non-probabilistic predictions
+    single_prediction_tf = model.predict(single_sample)
     expected_shape = tuple((1, 1))
     assert single_prediction_tf.shape == expected_shape
 
-    predictions_tf = model_tf_adult.predict(samples)
+    predictions_tf = model.predict(samples)
     expected_shape = tuple((22, 1))
     assert predictions_tf.shape == expected_shape
 
     # Test single and bulk probabilistic predictions
-    single_predict_proba_tf = model_tf_adult.predict_proba(single_sample)
+    single_predict_proba_tf = model.predict_proba(single_sample)
     expected_shape = tuple((1, 2))
     assert single_predict_proba_tf.shape == expected_shape
 
-    predictions_proba_tf = model_tf_adult.predict_proba(samples)
+    predictions_proba_tf = model.predict_proba(samples)
     expected_shape = tuple((22, 2))
     assert predictions_proba_tf.shape == expected_shape
 
@@ -99,19 +91,11 @@ def test_predictions_tf(model_type, data_name):
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_pt(model_type, data_name):
-    data = DataCatalog(data_name)
-    model = MLModelCatalog(
-        data, model_type, load_online=False, use_pipeline=True, backend="pytorch"
-    )
-    params = training_params[model_type][data_name]
-    model.train(
-        learning_rate=params["lr"],
-        epochs=params["epochs"],
-        batch_size=params["batch_size"],
-    )
+    data = OnlineCatalog(data_name)
+    model = __train_model(data, model_type, backend="Pytorch")
 
-    single_sample = data.raw.iloc[[22]]
-    samples = data.raw.iloc[0:22]
+    single_sample = data.df.iloc[[22]]
+    samples = data.df.iloc[0:22]
 
     # Test single non probabilistic predictions
     single_prediction = model.predict(single_sample)

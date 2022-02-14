@@ -7,7 +7,7 @@ import torch
 
 # from carla.data.catalog import DataCatalog
 from carla.data.catalog.online_catalog import DataCatalog
-from carla.data.load_catalog import load_catalog
+from carla.data.load_catalog import load
 from carla.data.pipelining import order_data
 from carla.models.api import MLModel
 
@@ -92,7 +92,7 @@ class MLModelCatalog(MLModel):
         if isinstance(data, DataCatalog):
             # Load catalog
             catalog_content = ["ann", "linear"]
-            catalog = load_catalog("mlmodel_catalog.yaml", data.name, catalog_content)  # type: ignore
+            catalog = load("mlmodel_catalog.yaml", data.name, catalog_content)  # type: ignore
 
             if model_type not in catalog:
                 raise ValueError("Model type not in model catalog")

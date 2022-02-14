@@ -3,7 +3,7 @@ import tensorflow as tf
 import torch
 from keras import backend as K
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.autoencoder import (
     CSVAE,
@@ -17,18 +17,18 @@ from carla.recourse_methods.autoencoder import (
 def test_cs_vae():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
-    test_input = np.zeros((1, 20))
+    test_input = np.zeros((1, 13))
     test_input = torch.Tensor(test_input)
     test_class = torch.Tensor(np.array([[0, 0]]))
 
     csvae = CSVAE(data_name, layers=[test_input.shape[1], 16, 8])
 
     fitted_csvae = train_variational_autoencoder(
-        csvae, data, model.scaler, model.encoder, model.feature_input_order, epochs=1
+        csvae, data, model.feature_input_order, epochs=1
     )
 
     output = fitted_csvae.predict(test_input, test_class)
@@ -48,19 +48,17 @@ def test_cs_vae():
 def test_variational_autoencoder():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    test_input = np.zeros((1, 20))
+    test_input = np.zeros((1, 13))
     test_input = torch.Tensor(test_input).to(device)
 
     vae = VariationalAutoencoder(data_name, layers=[test_input.shape[1], 512, 256, 8])
 
-    fitted_vae = train_variational_autoencoder(
-        vae, data, model.scaler, model.encoder, model.feature_input_order
-    )
+    fitted_vae = train_variational_autoencoder(vae, data, model.feature_input_order)
 
     test_reconstructed, _, _, _, _ = fitted_vae.predict(test_input)
 
@@ -78,21 +76,19 @@ def test_variational_autoencoder():
 def test_variational_autoencoder_length():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    test_input = np.zeros((1, 20))
+    test_input = np.zeros((1, 13))
     test_input = torch.Tensor(test_input).to(device)
 
     layers = [[test_input.shape[1], 8], [test_input.shape[1], 2, 3, 4, 5, 6, 8]]
     for layer in layers:
         vae = VariationalAutoencoder(data_name, layer)
 
-        fitted_vae = train_variational_autoencoder(
-            vae, data, model.scaler, model.encoder, model.feature_input_order
-        )
+        fitted_vae = train_variational_autoencoder(vae, data, model.feature_input_order)
 
         test_reconstructed, _, _, _, _ = fitted_vae.predict(test_input)
 
@@ -102,7 +98,7 @@ def test_variational_autoencoder_length():
 def test_autoencoder():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, "ann")
     test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
@@ -111,8 +107,6 @@ def test_autoencoder():
     fitted_ae = train_autoencoder(
         ae,
         data,
-        model.scaler,
-        model.encoder,
         model.feature_input_order,
         epochs=5,
         save=False,
@@ -127,8 +121,6 @@ def test_autoencoder():
     fitted_ae = train_autoencoder(
         ae,
         data,
-        model.scaler,
-        model.encoder,
         model.feature_input_order,
         epochs=5,
         save=False,
@@ -148,8 +140,6 @@ def test_autoencoder():
     fitted_ae = train_autoencoder(
         ae,
         data,
-        model.scaler,
-        model.encoder,
         model.feature_input_order,
         epochs=5,
         save=False,
@@ -164,7 +154,7 @@ def test_save_and_load():
     with tf.Session() as sess:
         # Build data and mlmodel
         data_name = "adult"
-        data = DataCatalog(data_name)
+        data = OnlineCatalog(data_name)
 
         model = MLModelCatalog(data, "ann")
         test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
@@ -173,8 +163,6 @@ def test_save_and_load():
         fitted_ae = train_autoencoder(
             ae,
             data,
-            model.scaler,
-            model.encoder,
             model.feature_input_order,
             epochs=5,
             save=True,

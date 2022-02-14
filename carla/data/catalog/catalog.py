@@ -49,6 +49,7 @@ class DataCatalog(Data, ABC):
         self._df_train = df_train
         self._df_test = df_test
 
+        # TODO rather then passing a string this could accept a function
         # Fit scaler and encoder
         self.scaler: BaseEstimator = self.__fit_scaler(scaling_method)
         self.encoder: BaseEstimator = self.__fit_encoder(encoding_method)
@@ -202,6 +203,10 @@ class DataCatalog(Data, ABC):
             fitted_scaler = preprocessing.MinMaxScaler().fit(self.df[self.continuous])
         elif scaling_method == "Standard":
             fitted_scaler = preprocessing.StandardScaler().fit(self.df[self.continuous])
+        elif scaling_method is None or "Identity":
+            fitted_scaler = preprocessing.FunctionTransformer(
+                func=None, inverse_func=None
+            )
         else:
             raise ValueError("Scaling Method not known")
         return fitted_scaler
@@ -215,6 +220,10 @@ class DataCatalog(Data, ABC):
             fitted_encoder = preprocessing.OneHotEncoder(
                 drop="if_binary", handle_unknown="error", sparse=False
             ).fit(self.df[self.categorical])
+        elif encoding_method is None or "Identity":
+            fitted_encoder = preprocessing.FunctionTransformer(
+                func=None, inverse_func=None
+            )
         else:
             raise ValueError("Encoding Method not known")
         return fitted_encoder

@@ -40,7 +40,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
     }
 
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     feature_tweak = FeatureTweak(model, hyperparams)
@@ -77,7 +77,7 @@ def test_focus_get_counterfactuals(model_type):
     }
 
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     focus = FOCUS(model, data, hyperparams)
@@ -141,7 +141,7 @@ def test_ar_get_counterfactual(model_type):
         intercepts = -(intercepts_neg - intercepts_pos)
 
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, data.df)
     test_factual = factuals.iloc[:5]
 
     # get counterfactuals
@@ -185,7 +185,7 @@ def test_cem_get_counterfactuals(model_type):
                 data=data, model_type=model_type, encoding_method="Binary"
             )
 
-            factuals = predict_negative_instances(model_ann, data)
+            factuals = predict_negative_instances(model_ann, data.df)
             test_factuals = factuals.iloc[:5]
 
             recourse = CEM(
@@ -230,7 +230,7 @@ def test_cem_vae(model_type):
                 data=data, model_type=model_type, encoding_method="Binary"
             )
 
-            factuals = predict_negative_instances(model_ann, data)
+            factuals = predict_negative_instances(model_ann, data.df)
             test_factuals = factuals.iloc[:5]
 
             recourse = CEM(
@@ -255,7 +255,7 @@ def test_face_get_counterfactuals(model_type):
 
     model_tf = MLModelCatalog(data, model_type)
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, data.df)
     test_factual = factuals.iloc[:5]
 
     # Test for knn mode
@@ -285,7 +285,7 @@ def test_growing_spheres(model_type):
 
     model_tf = MLModelCatalog(data, model_type)
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, data.df)
     test_factual = factuals.iloc[:5]
 
     gs = GrowingSpheres(model_tf)
@@ -306,7 +306,7 @@ def test_clue(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:20]
 
     hyperparams = {
@@ -337,7 +337,7 @@ def test_wachter(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:10]
 
     hyperparams = {"loss_type": "BCE", "binary_cat_features": False}
@@ -357,7 +357,7 @@ def test_revise(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     vae_params = {
@@ -397,7 +397,7 @@ def test_cchvae(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     hyperparams = {
@@ -436,7 +436,7 @@ def test_crud(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     hyperparams = {

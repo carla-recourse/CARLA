@@ -32,7 +32,7 @@ class MLModel(ABC):
         self,
         data: Data,
     ) -> None:
-        self.data: Data = data
+        self._data: Data = data
 
     @property
     def data(self) -> Data:

@@ -6,7 +6,7 @@ import yaml
 from carla import lib_path
 
 
-def load_catalog(filename: str, dataset: str, keys: List[str]):
+def load(filename: str, dataset: str, keys: List[str]):
     with open(os.path.join(lib_path, filename), "r") as f:
         catalog = yaml.safe_load(f)
 

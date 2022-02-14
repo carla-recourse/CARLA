@@ -1,7 +1,6 @@
 import pandas as pd
 
-from carla.data.catalog import DataCatalog
-from carla.data.pipelining import encode, scale
+from carla.data.catalog import OnlineCatalog
 from carla.evaluation import constraint_violation
 from carla.models.catalog import MLModelCatalog
 
@@ -9,7 +8,7 @@ from carla.models.catalog import MLModelCatalog
 def test_constraint_violations():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
@@ -202,12 +201,7 @@ def test_constraint_violations():
         test_counterfactual,
         columns=columns,
     )
-    test_counterfactual = scale(
-        model_tf.scaler, model_tf.data.continuous, test_counterfactual
-    )
-    test_counterfactual = encode(
-        model_tf.encoder, model_tf.data.categorical, test_counterfactual
-    )
+    test_counterfactual = data.transform(test_counterfactual)
 
     expected = [[2], [0], [1], [0], [1]]
     actual = constraint_violation(model_tf, test_counterfactual, test_factual)
