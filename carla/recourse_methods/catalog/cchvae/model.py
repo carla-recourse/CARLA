@@ -99,10 +99,6 @@ class CCHVAE(RecourseMethod):
         super().__init__(mlmodel)
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
-        df_enc_norm_data = self.encode_normalize_order_factuals(
-            self._mlmodel.data.df, with_target=True
-        )
-
         self._n_search_samples = self._params["n_search_samples"]
         self._p_norm = self._params["p_norm"]
         self._step = self._params["step"]
@@ -111,7 +107,7 @@ class CCHVAE(RecourseMethod):
 
         vae_params = self._params["vae_params"]
         self._generative_model = self._load_vae(
-            df_enc_norm_data, vae_params, self._mlmodel, self._params["data_name"]
+            self._mlmodel.data.df, vae_params, self._mlmodel, self._params["data_name"]
         )
 
     def _load_vae(
@@ -239,17 +235,15 @@ class CCHVAE(RecourseMethod):
                 return candidate_counterfactuals[min_index]
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
-        df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
 
         encoded_feature_names = self._mlmodel.encoder.get_feature_names(
             self._mlmodel.data.categorical
         )
         cat_features_indices = [
-            df_enc_norm_fact.columns.get_loc(feature)
-            for feature in encoded_feature_names
+            factuals.columns.get_loc(feature) for feature in encoded_feature_names
         ]
 
-        df_cfs = df_enc_norm_fact.apply(
+        df_cfs = factuals.apply(
             lambda x: self._counterfactual_search(
                 self._step, x.reshape((1, -1)), cat_features_indices
             ),

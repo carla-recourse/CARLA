@@ -107,9 +107,6 @@ class Clue(RecourseMethod):
         input_dims_binary = list(np.repeat(2, len(self._mlmodel.data.categorical)))
         self._input_dimension = input_dims_continuous + input_dims_binary
 
-        # normalize and encode data
-        self._df_norm_enc_data = self.encode_normalize_order_factuals(data.df)
-
         # load autoencoder
         self._vae = self._load_vae()
 
@@ -185,10 +182,7 @@ class Clue(RecourseMethod):
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         list_cfs = []
 
-        # normalize and encode data and instance
-        df_norm_enc_factual = self.encode_normalize_order_factuals(factuals)
-
-        for index, row in df_norm_enc_factual.iterrows():
+        for index, row in factuals.iterrows():
             counterfactual = vae_gradient_search(row.values, self._mlmodel, self._vae)
             list_cfs.append(counterfactual)
 

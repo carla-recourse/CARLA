@@ -40,7 +40,7 @@ def constraint_violation(
     # )  # avoid precision error
 
     df_decoded_cfs = df_decoded_cfs[immutables]
-    df_factuals = factuals[immutables]
+    df_factuals = mlmodel.data.inverse_transform(factuals)[immutables]
 
     logical = df_factuals != df_decoded_cfs
     logical = np.sum(logical.values, axis=1).reshape((-1, 1))

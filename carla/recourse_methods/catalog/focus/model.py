@@ -129,12 +129,8 @@ class FOCUS(RecourseMethod):
         best_perturb = np.array([])
 
         def f(best_perturb):
-            # normalize and remove target
-            original_input = self.encode_normalize_order_factuals(
-                factuals, with_target=False
-            )
             # doesn't work with categorical features, so they aren't used
-            original_input = original_input[self.data.continuous]
+            original_input = factuals[self.data.continuous]
             original_input = original_input.to_numpy()
             ground_truth = self.model.predict(original_input)
 

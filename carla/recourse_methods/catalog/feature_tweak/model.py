@@ -356,8 +356,7 @@ class FeatureTweak(RecourseMethod):
         instances = factuals.copy()
         instances = instances.reset_index(drop=True)
 
-        # normalize and one-hot-encoding
-        instances = self.encode_normalize_order_factuals(instances, with_target=False)
+        # only works for continuous data
         instances = instances[self.data.continuous]
 
         # y = factuals[self.target_col]

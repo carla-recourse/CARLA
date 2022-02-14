@@ -544,11 +544,10 @@ class CEM(RecourseMethod):
 
         """
         # normalize and one-hot-encoding
-        df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
-        df_enc_norm_fact = df_enc_norm_fact.reset_index(drop=True)
+        factuals = factuals.reset_index(drop=True)
 
         # find counterfactuals
-        df_cfs = df_enc_norm_fact.apply(
+        df_cfs = factuals.apply(
             lambda x: self._counterfactual_search(x), axis=1, raw=True
         )
         df_cfs = check_counterfactuals(self._mlmodel, df_cfs)

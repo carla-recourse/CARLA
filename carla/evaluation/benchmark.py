@@ -70,11 +70,6 @@ class Benchmark:
 
         self._factuals = factuals.copy()
 
-        # Normalizing and encoding factual for later use
-        self._enc_norm_factuals = recourse_method.encode_normalize_order_factuals(
-            factuals, with_target=True
-        )
-
     def compute_ynn(self) -> pd.DataFrame:
         """
         Computes y-Nearest-Neighbours for generated counterfactuals
@@ -122,7 +117,7 @@ class Benchmark:
         pd.DataFrame
         """
         factual_without_nans, counterfactuals_without_nans = remove_nans(
-            self._enc_norm_factuals, self._counterfactuals
+            self._factuals, self._counterfactuals
         )
 
         columns = ["Distance_1", "Distance_2", "Distance_3", "Distance_4"]
@@ -183,7 +178,7 @@ class Benchmark:
         pd.Dataframe
         """
         factual_without_nans, counterfactuals_without_nans = remove_nans(
-            self._enc_norm_factuals, self._counterfactuals
+            self._factuals, self._counterfactuals
         )
 
         if counterfactuals_without_nans.empty:

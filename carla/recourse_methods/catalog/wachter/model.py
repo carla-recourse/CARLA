@@ -88,18 +88,14 @@ class Wachter(RecourseMethod):
         self._binary_cat_features = checked_hyperparams["binary_cat_features"]
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
-        # Normalize and encode data
-        df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
-
         encoded_feature_names = self._mlmodel.encoder.get_feature_names(
             self._mlmodel.data.categorical
         )
         cat_features_indices = [
-            df_enc_norm_fact.columns.get_loc(feature)
-            for feature in encoded_feature_names
+            factuals.columns.get_loc(feature) for feature in encoded_feature_names
         ]
 
-        df_cfs = df_enc_norm_fact.apply(
+        df_cfs = factuals.apply(
             lambda x: wachter_recourse(
                 self._mlmodel.raw_model,
                 x.reshape((1, -1)),

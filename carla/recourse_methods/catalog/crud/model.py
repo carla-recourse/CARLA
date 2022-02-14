@@ -96,10 +96,6 @@ class CRUD(RecourseMethod):
         self._max_iter = checked_hyperparams["max_iter"]
         self._binary_cat_features = checked_hyperparams["binary_cat_features"]
 
-        df_enc_norm_data = self.encode_normalize_order_factuals(
-            self._mlmodel.data.df, with_target=True
-        )
-
         vae_params = checked_hyperparams["vae_params"]
         self._vae = CSVAE(
             checked_hyperparams["data_name"],
@@ -120,27 +116,22 @@ class CRUD(RecourseMethod):
             )
         else:
             try:
-                self._vae.load(df_enc_norm_data.shape[1] - 1)
+                self._vae.load(self._mlmodel.data.df.shape[1] - 1)
             except FileNotFoundError as exc:
                 raise FileNotFoundError(
                     "Loading of Autoencoder failed. {}".format(str(exc))
                 )
 
     def get_counterfactuals(self, factuals: pd.DataFrame):
-        df_enc_norm_fact = self.encode_normalize_order_factuals(
-            factuals, with_target=True
-        )
-
         # pay attention to categorical features
         encoded_feature_names = self._mlmodel.encoder.get_feature_names(
             self._mlmodel.data.categorical
         )
         cat_features_indices = [
-            df_enc_norm_fact.columns.get_loc(feature)
-            for feature in encoded_feature_names
+            factuals.columns.get_loc(feature) for feature in encoded_feature_names
         ]
 
-        df_cfs = df_enc_norm_fact.apply(
+        df_cfs = factuals.apply(
             lambda x: counterfactual_search(
                 self._mlmodel,
                 self._vae,

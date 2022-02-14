@@ -56,11 +56,9 @@ class GrowingSpheres(RecourseMethod):
         )
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
-        # Normalize and encode data
-        df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
 
         list_cfs = []
-        for index, row in df_enc_norm_fact.iterrows():
+        for index, row in factuals.iterrows():
             counterfactual = growing_spheres_search(
                 row,
                 self._mutables,

@@ -27,17 +27,14 @@ def yNN(
     number_of_diff_labels = 0
     N = counterfactuals.shape[0]
 
-    df_enc_norm_data = recourse_method.encode_normalize_order_factuals(
-        mlmodel.data.df, with_target=True
-    )
-    nbrs = NearestNeighbors(n_neighbors=y).fit(df_enc_norm_data.values)
+    nbrs = NearestNeighbors(n_neighbors=y).fit(mlmodel.data.df.values)
 
     for i, row in counterfactuals.iterrows():
         knn = nbrs.kneighbors(row.values.reshape((1, -1)), y, return_distance=False)[0]
         cf_label = row[mlmodel.data.target]
 
         for idx in knn:
-            neighbour = df_enc_norm_data.iloc[idx]
+            neighbour = mlmodel.data.df.iloc[idx]
             neighbour = neighbour.drop(mlmodel.data.target)
             neighbour = neighbour.values.reshape((1, -1))
             neighbour_label = np.argmax(mlmodel.predict_proba(neighbour))
