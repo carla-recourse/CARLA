@@ -6,9 +6,8 @@ import tensorflow as tf
 import torch
 
 # from carla.data.catalog import DataCatalog
-from carla.data.catalog.online_catalog import DataCatalog
+from carla.data.catalog.online_catalog import DataCatalog, OnlineCatalog
 from carla.data.load_catalog import load
-from carla.data.pipelining import order_data
 from carla.models.api import MLModel
 
 from .load_model import load_online_model, load_trained_model, save_model
@@ -90,7 +89,7 @@ class MLModelCatalog(MLModel):
         super().__init__(data)
 
         # Datasets generated from a Structural Causal Model or a custom dataset do not have a saved .yaml
-        if isinstance(data, DataCatalog):
+        if isinstance(data, OnlineCatalog):
             # Load catalog
             catalog_content = ["ann", "linear"]
             catalog = load("mlmodel_catalog.yaml", data.name, catalog_content)  # type: ignore
@@ -101,9 +100,7 @@ class MLModelCatalog(MLModel):
             self._catalog = catalog[model_type][self._backend]
             self._feature_input_order = self._catalog["feature_order"]
         else:
-            encoded_features = list(
-                self.data.encoder.get_feature_names(data.categorical)
-            )
+            encoded_features = list(data.encoder.get_feature_names(data.categorical))
 
             self._catalog = None
             self._feature_input_order = list(
@@ -117,7 +114,7 @@ class MLModelCatalog(MLModel):
 
     def _test_accuracy(self):
         # get preprocessed data
-        df_test = self.data.test_processed()
+        df_test = self.data.df_train
 
         x_test = df_test[list(set(df_test.columns) - {self.data.target})]
         y_test = df_test[self.data.target]
@@ -180,24 +177,6 @@ class MLModelCatalog(MLModel):
         """
         return self._model
 
-    def order_features(self, x):
-        """
-        Restores the correct input feature order for the ML model
-
-        Only works for encoded data
-
-        Parameters
-        ----------
-        x : pd.DataFrame
-            Data we want to order
-
-        Returns
-        -------
-        output : pd.DataFrame
-            Whole DataFrame with ordered feature
-        """
-        return order_data(self._feature_input_order, x)
-
     def predict(
         self, x: Union[np.ndarray, pd.DataFrame, torch.Tensor, tf.Tensor]
     ) -> Union[np.ndarray, pd.DataFrame, torch.Tensor, tf.Tensor]:
@@ -217,9 +196,6 @@ class MLModelCatalog(MLModel):
             Ml model prediction for interval [0, 1] with shape N x 1
         """
 
-        # order data (column-wise) before prediction
-        x = self.order_features(x)
-
         if len(x.shape) != 2:
             raise ValueError(
                 "Input shape has to be two-dimensional, (instances, features)."
@@ -229,6 +205,8 @@ class MLModelCatalog(MLModel):
             return self.predict_proba(x)[:, 1].reshape((-1, 1))
         elif self._backend == "tensorflow":
             # keep output in shape N x 1
+            # order data (column-wise) before prediction
+            x = self.order_features(x)
             return self._model.predict(x)[:, 1].reshape((-1, 1))
         else:
             raise ValueError(
@@ -344,8 +322,8 @@ class MLModelCatalog(MLModel):
         # if model loading failed or force_train flag set to true.
         if self._model is None or force_train:
             # get preprocessed data
-            df_train = self.data.df_train()
-            df_test = self.data.df_test()
+            df_train = self.data.df_train
+            df_test = self.data.df_test
 
             x_train = df_train[list(set(df_train.columns) - {self.data.target})]
             y_train = df_train[self.data.target]

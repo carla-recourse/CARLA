@@ -1,3 +1,4 @@
+import warnings
 from abc import ABC, abstractmethod
 from typing import Union
 
@@ -5,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from carla.data.api import Data
+from carla.data.pipelining import order_data
 
 
 class MLModel(ABC):
@@ -127,3 +129,25 @@ class MLModel(ABC):
             Ml model prediction with shape N x 2
         """
         pass
+
+    def order_features(self, x):
+        """
+        Restores the correct input feature order for the ML model
+
+        Only works for encoded data
+
+        Parameters
+        ----------
+        x : pd.DataFrame
+            Data we want to order
+
+        Returns
+        -------
+        output : pd.DataFrame
+            Whole DataFrame with ordered feature
+        """
+        if isinstance(x, pd.DataFrame):
+            return order_data(self.feature_input_order, x)
+        else:
+            warnings.warn("cannot re-order for non dataframe input")
+            return x

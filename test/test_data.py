@@ -16,7 +16,7 @@ def test_adult_col(data_name):
         data_catalog.categorical + data_catalog.continuous + [data_catalog.target]
     )
     actual_col = actual_col.sort()
-    expected_col = data_catalog.raw.columns.values
+    expected_col = data_catalog.df.columns.values
     expected_col = expected_col.sort()
 
     assert actual_col == expected_col

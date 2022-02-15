@@ -52,7 +52,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
     assert non_nan_cfs.shape[0] > 0
 
 
-@pytest.mark.parametrize("model_type", ["xgboost", "sklearn"])
+@pytest.mark.parametrize("model_type", ["sklearn", "xgboost"])
 def test_focus_get_counterfactuals(model_type):
 
     data_name = "adult"

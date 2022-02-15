@@ -10,7 +10,7 @@ def test_constraint_violations():
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
-    model_tf = MLModelCatalog(data, "ann")
+    model = MLModelCatalog(data, "ann")
     # get factuals
     columns = [
         "age",
@@ -204,6 +204,6 @@ def test_constraint_violations():
     test_counterfactual = data.transform(test_counterfactual)
 
     expected = [[2], [0], [1], [0], [1]]
-    actual = constraint_violation(model_tf, test_counterfactual, test_factual)
+    actual = constraint_violation(model, test_counterfactual, test_factual)
 
     assert expected == actual

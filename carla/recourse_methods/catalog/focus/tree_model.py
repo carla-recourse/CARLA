@@ -1,4 +1,3 @@
-import pandas as pd
 import xgboost
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -52,12 +51,12 @@ class TreeModel(MLModel):
     # The predict function outputs
     # the continuous prediction of the model
     def predict(self, x):
-        return self._mymodel.predict(x)
+        return self._mymodel.predict(self.order_features(x))
 
     # The predict_proba method outputs
     # the prediction as class probabilities
     def predict_proba(self, x):
-        return self._mymodel.predict_proba(x)
+        return self._mymodel.predict_proba(self.order_features(x))
 
 
 # Custom black-box models need to inherit from
@@ -71,7 +70,7 @@ class ForestModel(MLModel):
             n_estimators=5,
             max_depth=2,
         )
-        data_transformed = self.scaler.transform(data.df[data.continuous])
+        data_transformed = data.df[data.continuous]
         target = data.df[data.target]
 
         X_train, X_test, y_train, y_test = train_test_split(
@@ -110,12 +109,12 @@ class ForestModel(MLModel):
     # The predict function outputs
     # the continuous prediction of the model
     def predict(self, x):
-        return self._mymodel.predict(x)
+        return self._mymodel.predict(self.order_features(x))
 
     # The predict_proba method outputs
     # the prediction as class probabilities
     def predict_proba(self, x):
-        return self._mymodel.predict_proba(x)
+        return self._mymodel.predict_proba(self.order_features(x))
 
 
 class XGBoostModel(MLModel):
@@ -126,8 +125,7 @@ class XGBoostModel(MLModel):
         super().__init__(data)
         self._feature_input_order = data.continuous
 
-        data_transformed = self.scaler.transform(data.df[data.continuous])
-        data_transformed = pd.DataFrame(data_transformed, columns=data.continuous)
+        data_transformed = data.df[self._feature_input_order]
         target = data.df[data.target]
 
         X_train, X_test, y_train, y_test = train_test_split(
@@ -177,9 +175,9 @@ class XGBoostModel(MLModel):
     # The predict function outputs
     # the continuous prediction of the model
     def predict(self, x):
-        return self._mymodel.predict(x)
+        return self._mymodel.predict(self.order_features(x))
 
     # The predict_proba method outputs
     # the prediction as class probabilities
     def predict_proba(self, x):
-        return self._mymodel.predict_proba(x)
+        return self._mymodel.predict_proba(self.order_features(x))

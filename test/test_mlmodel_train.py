@@ -92,7 +92,7 @@ def test_predictions_tf(model_type, data_name):
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_pt(model_type, data_name):
     data = OnlineCatalog(data_name)
-    model = __train_model(data, model_type, backend="Pytorch")
+    model = __train_model(data, model_type, backend="pytorch")
 
     single_sample = data.df.iloc[[22]]
     samples = data.df.iloc[0:22]

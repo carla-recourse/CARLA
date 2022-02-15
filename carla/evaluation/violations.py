@@ -16,7 +16,7 @@ def constraint_violation(
     ----------
     mlmodel: Black-box-model we want to discover
     counterfactuals: Normalized and encoded counterfactual examples
-    factuals: Not normalized and encoded factuals
+    factuals: Not normalized and not encoded factuals
 
     Returns
     -------
@@ -39,8 +39,12 @@ def constraint_violation(
     #     "int64"
     # )  # avoid precision error
 
+    df_decoded_cfs[mlmodel.data.continuous] = df_decoded_cfs[
+        mlmodel.data.continuous
+    ].astype("int64")
     df_decoded_cfs = df_decoded_cfs[immutables]
-    df_factuals = mlmodel.data.inverse_transform(factuals)[immutables]
+    df_factuals = factuals[immutables]
+    # df_factuals = mlmodel.data.inverse_transform(factuals)[immutables]
 
     logical = df_factuals != df_decoded_cfs
     logical = np.sum(logical.values, axis=1).reshape((-1, 1))

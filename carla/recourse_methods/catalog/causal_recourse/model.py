@@ -97,9 +97,7 @@ class CausalRecourse(RecourseMethod):
             )
 
             # we need to make sure that actions don't go out of bounds [0, 1]
-            if self._mlmodel.use_pipeline and isinstance(
-                self._mlmodel.scaler, preprocessing.MinMaxScaler
-            ):
+            if isinstance(self._dataset.scaler, preprocessing.MinMaxScaler):
                 out_of_bounds_idx = []
                 for i, action_set in enumerate(valid_action_sets):
                     instance = _series_plus_dict(factual_instance, action_set)
