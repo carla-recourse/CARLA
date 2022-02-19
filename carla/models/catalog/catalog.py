@@ -78,10 +78,8 @@ class MLModelCatalog(MLModel):
         # TODO fix different encodings for different backends
         if self._backend == "pytorch":
             ext = "pt"
-            # encoding_method = "OneHot"
         elif self._backend == "tensorflow":
             ext = "h5"
-            # encoding_method = "OneHot_drop_binary"
         else:
             raise ValueError(
                 'Backend not available, please choose between "pytorch" and "tensorflow".'
@@ -114,7 +112,7 @@ class MLModelCatalog(MLModel):
 
     def _test_accuracy(self):
         # get preprocessed data
-        df_test = self.data.df_train
+        df_test = self.data.df_test
 
         x_test = df_test[list(set(df_test.columns) - {self.data.target})]
         y_test = df_test[self.data.target]

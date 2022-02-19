@@ -24,6 +24,7 @@ def predict_negative_instances(model: Any, data: pd.DataFrame) -> pd.DataFrame:
     df["y"] = predict_label(model, df)
     df = df[df["y"] == 0]
     df = df.drop("y", axis="columns")
+    df = df.drop(model.data.target, axis="columns")
 
     return df
 
