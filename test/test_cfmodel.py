@@ -46,7 +46,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
     feature_tweak = FeatureTweak(model, hyperparams)
     cfs = feature_tweak.get_counterfactuals(test_factual)
 
-    assert test_factual[data.continuous + [data.target]].shape == cfs.shape
+    assert test_factual[data.continuous].shape == cfs[data.continuous].shape
 
     non_nan_cfs = cfs.dropna()
     assert non_nan_cfs.shape[0] > 0
