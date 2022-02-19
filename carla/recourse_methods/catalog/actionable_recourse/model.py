@@ -176,6 +176,7 @@ class ActionableRecourse(RecourseMethod):
 
         # to keep matching indexes for iterrows and coeffs
         factuals = factuals.reset_index()
+        factuals = self._mlmodel.get_ordered_features(factuals)
 
         # Check if we need lime to build coefficients
         if (coeffs is None) and (intercepts is None):

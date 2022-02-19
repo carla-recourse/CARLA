@@ -130,9 +130,9 @@ class MLModel(ABC):
         """
         pass
 
-    def order_features(self, x):
+    def get_ordered_features(self, x):
         """
-        Restores the correct input feature order for the ML model
+        Restores the correct input feature order for the ML model, this also drops the target column.
 
         Only works for encoded data
 

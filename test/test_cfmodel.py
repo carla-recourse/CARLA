@@ -46,7 +46,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
     feature_tweak = FeatureTweak(model, hyperparams)
     cfs = feature_tweak.get_counterfactuals(test_factual)
 
-    assert test_factual[data.continuous].shape == cfs[data.continuous].shape
+    assert test_factual[data.continuous + [data.target]].shape == cfs.shape
 
     non_nan_cfs = cfs.dropna()
     assert non_nan_cfs.shape[0] > 0
@@ -109,7 +109,7 @@ def test_dice_get_counterfactuals(model_type):
 
     df_cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
 
-    cfs = model_tf.order_features(df_cfs)
+    cfs = model_tf.get_ordered_features(df_cfs)
     cfs[data.target] = df_cfs[data.target]
 
     assert test_factual.shape[0] == cfs.shape[0]

@@ -77,6 +77,7 @@ class Dice(RecourseMethod):
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         # Prepare factuals
         querry_instances = factuals.copy()
+        querry_instances = self._model.get_ordered_features(querry_instances)
 
         # check if querry_instances are not empty
         if not querry_instances.shape[0] > 0:

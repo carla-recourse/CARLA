@@ -204,7 +204,7 @@ class MLModelCatalog(MLModel):
         elif self._backend == "tensorflow":
             # keep output in shape N x 1
             # order data (column-wise) before prediction
-            x = self.order_features(x)
+            x = self.get_ordered_features(x)
             return self._model.predict(x)[:, 1].reshape((-1, 1))
         else:
             raise ValueError(
@@ -231,7 +231,7 @@ class MLModelCatalog(MLModel):
         """
 
         # order data (column-wise) before prediction
-        x = self.order_features(x)
+        x = self.get_ordered_features(x)
 
         if len(x.shape) != 2:
             raise ValueError("Input shape has to be two-dimensional")
@@ -329,8 +329,8 @@ class MLModelCatalog(MLModel):
             y_test = df_test[self.data.target]
 
             # order data (column-wise) before training
-            x_train = self.order_features(x_train)
-            x_test = self.order_features(x_test)
+            x_train = self.get_ordered_features(x_train)
+            x_test = self.get_ordered_features(x_test)
 
             self._model = train_model(
                 self,

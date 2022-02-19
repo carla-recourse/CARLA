@@ -139,7 +139,9 @@ class Benchmark:
         #     )
 
         arr_f = factual_without_nans.to_numpy()
-        arr_cf = self._mlmodel.order_features(counterfactuals_without_nans).to_numpy()
+        arr_cf = self._mlmodel.get_ordered_features(
+            counterfactuals_without_nans
+        ).to_numpy()
 
         distances = get_distances(arr_f, arr_cf)
 

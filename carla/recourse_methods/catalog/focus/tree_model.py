@@ -51,12 +51,12 @@ class TreeModel(MLModel):
     # The predict function outputs
     # the continuous prediction of the model
     def predict(self, x):
-        return self._mymodel.predict(self.order_features(x))
+        return self._mymodel.predict(self.get_ordered_features(x))
 
     # The predict_proba method outputs
     # the prediction as class probabilities
     def predict_proba(self, x):
-        return self._mymodel.predict_proba(self.order_features(x))
+        return self._mymodel.predict_proba(self.get_ordered_features(x))
 
 
 # Custom black-box models need to inherit from
@@ -109,12 +109,12 @@ class ForestModel(MLModel):
     # The predict function outputs
     # the continuous prediction of the model
     def predict(self, x):
-        return self._mymodel.predict(self.order_features(x))
+        return self._mymodel.predict(self.get_ordered_features(x))
 
     # The predict_proba method outputs
     # the prediction as class probabilities
     def predict_proba(self, x):
-        return self._mymodel.predict_proba(self.order_features(x))
+        return self._mymodel.predict_proba(self.get_ordered_features(x))
 
 
 class XGBoostModel(MLModel):
@@ -175,9 +175,9 @@ class XGBoostModel(MLModel):
     # The predict function outputs
     # the continuous prediction of the model
     def predict(self, x):
-        return self._mymodel.predict(self.order_features(x))
+        return self._mymodel.predict(self.get_ordered_features(x))
 
     # The predict_proba method outputs
     # the prediction as class probabilities
     def predict_proba(self, x):
-        return self._mymodel.predict_proba(self.order_features(x))
+        return self._mymodel.predict_proba(self.get_ordered_features(x))

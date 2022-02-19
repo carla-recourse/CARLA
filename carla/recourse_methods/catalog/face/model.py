@@ -104,6 +104,9 @@ class Face(RecourseMethod):
         df = df.drop(df[cond].index)
         df = pd.concat([factuals, df], ignore_index=True)
 
+        df = self._mlmodel.get_ordered_features(df)
+        factuals = self._mlmodel.get_ordered_features(factuals)
+
         list_cfs = []
         for i in range(factuals.shape[0]):
             cf = graph_search(

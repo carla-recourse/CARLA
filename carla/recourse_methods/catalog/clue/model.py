@@ -180,6 +180,9 @@ class Clue(RecourseMethod):
         )
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
+
+        factuals = self._mlmodel.get_ordered_features(factuals)
+
         list_cfs = []
 
         for index, row in factuals.iterrows():
