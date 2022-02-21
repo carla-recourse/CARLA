@@ -48,7 +48,7 @@ def load_online_model(
     """
     full_path = (
         "https://raw.githubusercontent.com/"
-        "carla-recourse/cf-models/main/models/"
+        "carla-recourse/cf-models/change-pytorch-models/models/"
         f"{dataset}/{name}.{ext}"
     )
 

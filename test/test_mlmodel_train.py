@@ -22,7 +22,7 @@ training_params_ann = {
 training_params = {"linear": training_params_linear, "ann": training_params_ann}
 
 
-def __train_model(data, model_type, backend):
+def _train_model(data, model_type, backend):
     model = MLModelCatalog(data, model_type, load_online=False, backend=backend)
     params = training_params[model_type][data.name]
     model.train(
@@ -37,7 +37,7 @@ def test_properties():
     data_name = "adult"
     model_type = "linear"
     data = OnlineCatalog(data_name)
-    model_tf_adult = __train_model(data, model_type, backend="tensorflow")
+    model_tf_adult = _train_model(data, model_type, backend="tensorflow")
 
     exp_backend_tf = "tensorflow"
     exp_feature_order_adult = [
@@ -64,7 +64,7 @@ def test_properties():
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_tf(model_type, data_name):
     data = OnlineCatalog(data_name)
-    model = __train_model(data, model_type, backend="tensorflow")
+    model = _train_model(data, model_type, backend="tensorflow")
 
     single_sample = data.df.iloc[[22]]
     samples = data.df.iloc[0:22]
@@ -92,7 +92,7 @@ def test_predictions_tf(model_type, data_name):
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_pt(model_type, data_name):
     data = OnlineCatalog(data_name)
-    model = __train_model(data, model_type, backend="pytorch")
+    model = _train_model(data, model_type, backend="pytorch")
 
     single_sample = data.df.iloc[[22]]
     samples = data.df.iloc[0:22]
