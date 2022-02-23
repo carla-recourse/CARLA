@@ -106,8 +106,6 @@ class CRUD(RecourseMethod):
             self._vae = train_variational_autoencoder(
                 self._vae,
                 self._mlmodel.data,
-                self._mlmodel.scaler,
-                self._mlmodel.encoder,
                 self._mlmodel.feature_input_order,
                 lambda_reg=None,
                 epochs=vae_params["epochs"],
@@ -124,7 +122,6 @@ class CRUD(RecourseMethod):
 
     def get_counterfactuals(self, factuals: pd.DataFrame):
 
-        factuals = self._mlmodel.get_ordered_features(factuals)
         # pay attention to categorical features
         encoded_feature_names = self._mlmodel.data.encoder.get_feature_names(
             self._mlmodel.data.categorical

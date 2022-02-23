@@ -53,6 +53,9 @@ class DataCatalog(Data, ABC):
         # Fit scaler and encoder
         self.scaler: BaseEstimator = self.__fit_scaler(scaling_method)
         self.encoder: BaseEstimator = self.__fit_encoder(encoding_method)
+        self._identity_encoding = (
+            encoding_method is None or encoding_method == "Identity"
+        )
 
         # Preparing pipeline components
         self._pipeline = self.__init_pipeline()
@@ -154,7 +157,10 @@ class DataCatalog(Data, ABC):
         output = df.copy()
 
         for trans_name, trans_function in self._pipeline:
-            output = trans_function(output)
+            if trans_name == "encoder" and self._identity_encoding:
+                continue
+            else:
+                output = trans_function(output)
 
         return output
 

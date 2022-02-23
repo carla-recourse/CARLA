@@ -97,6 +97,7 @@ class ScmDataset(DataCatalog):
         scaling_method: str = "MinMax",
         encoding_method: str = "OneHot_drop_binary",
     ):
+        # TODO setup normalization with generate_dataset in CausalModel class
         self.scm = scm
         raw, self._noise = _create_synthetic_data(scm, num_samples=size)
         train_raw, test_raw = train_test_split(raw)

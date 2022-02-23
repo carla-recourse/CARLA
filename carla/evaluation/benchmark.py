@@ -138,7 +138,7 @@ class Benchmark:
         #         binary_columns_to_drop, axis=1
         #     )
 
-        arr_f = factual_without_nans.to_numpy()
+        arr_f = self._mlmodel.get_ordered_features(factual_without_nans).to_numpy()
         arr_cf = self._mlmodel.get_ordered_features(
             counterfactuals_without_nans
         ).to_numpy()

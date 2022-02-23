@@ -46,19 +46,30 @@ def test_transform():
         data_name, scaling_method="Identity", encoding_method="Identity"
     )
 
+    # sort columns as order could be different
     assert_frame_equal(
-        transformed_data.inverse_transform(transformed_data.df), raw_data.df
+        transformed_data.inverse_transform(transformed_data.df).sort_index(axis=1),
+        raw_data.df.sort_index(axis=1),
+        check_dtype=False,
     )
-    assert_frame_equal(transformed_data.transform(raw_data.df), transformed_data.df)
+    assert_frame_equal(
+        transformed_data.transform(raw_data.df).sort_index(axis=1),
+        transformed_data.df.sort_index(axis=1),
+        check_dtype=False,
+    )
     assert_frame_equal(
         transformed_data.transform(
             transformed_data.inverse_transform(transformed_data.df)
-        ),
-        transformed_data.df,
+        ).sort_index(axis=1),
+        transformed_data.df.sort_index(axis=1),
+        check_dtype=False,
     )
     assert_frame_equal(
-        transformed_data.inverse_transform(transformed_data.transform(raw_data.df)),
-        raw_data.df,
+        transformed_data.inverse_transform(
+            transformed_data.transform(raw_data.df)
+        ).sort_index(axis=1),
+        raw_data.df.sort_index(axis=1),
+        check_dtype=False,
     )
 
 
@@ -125,6 +136,7 @@ def test_predictions_with_pipeline(model_type, data_name):
     assert predictions_proba_tf.shape == expected_shape
 
 
+# TODO add parametrize backend
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_pt(model_type, data_name):

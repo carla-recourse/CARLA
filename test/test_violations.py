@@ -202,6 +202,7 @@ def test_constraint_violations():
         columns=columns,
     )
     test_counterfactual = data.transform(test_counterfactual)
+    test_factual = data.transform(test_factual)
 
     expected = [[2], [0], [1], [0], [1]]
     actual = constraint_violation(model, test_counterfactual, test_factual)

@@ -244,6 +244,8 @@ class MLModelCatalog(MLModel):
 
             if isinstance(x, pd.DataFrame):
                 _x = x.values
+            elif isinstance(x, torch.Tensor):
+                _x = x.clone()
             else:
                 _x = x.copy()
 

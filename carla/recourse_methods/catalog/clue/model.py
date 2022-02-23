@@ -4,7 +4,6 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 import torch
-from sklearn.model_selection import train_test_split
 
 from carla.data.api import Data
 from carla.models.api import MLModel
@@ -100,6 +99,7 @@ class Clue(RecourseMethod):
         self._early_stop = checked_hyperparams["early_stop"]
         self._continuous = self._mlmodel.data.continuous
         self._categorical = self._mlmodel.data.categorical
+        self._data = data
 
         # get input dimension
         # indicate dimensions of inputs -- input_dim_vec: (if binary = 2; if continuous = 1)
@@ -155,15 +155,14 @@ class Clue(RecourseMethod):
         return vae
 
     def _train_vae(self, path):
-        # training
-        x_train, x_test = train_test_split(
-            self._df_norm_enc_data.values, train_size=0.7
-        )
-
         # Error message when training VAE using float 64: -> Change to: float 32
         # "Expected object of scalar type Float but got scalar type Double for argument #2 'mat1' in call to _th_addmm"
-        x_train = np.float32(x_train)
-        x_test = np.float32(x_test)
+        x_train = np.float32(
+            self._mlmodel.get_ordered_features(self._data.df_train).values
+        )
+        x_test = np.float32(
+            self._mlmodel.get_ordered_features(self._data.df_test).values
+        )
 
         training(
             x_train,

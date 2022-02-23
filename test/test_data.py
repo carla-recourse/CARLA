@@ -1,9 +1,6 @@
-import numpy as np
 import pytest
 
 from carla.data.catalog import OnlineCatalog
-from carla.data.pipelining import encode
-from carla.models.catalog import MLModelCatalog
 
 testdata = ["adult", "give_me_some_credit", "compas", "heloc"]
 
@@ -22,28 +19,29 @@ def test_adult_col(data_name):
     assert actual_col == expected_col
 
 
-@pytest.mark.parametrize("data_name", testdata)
-def test_adult_norm(data_name):
-    data = OnlineCatalog(data_name)
-    mlmodel = MLModelCatalog(data, "ann")
+# TODO these tests probably can be deleted as test_transform should test the same
+# @pytest.mark.parametrize("data_name", testdata)
+# def test_adult_norm(data_name):
+#     data = OnlineCatalog(data_name)
+#     mlmodel = MLModelCatalog(data, "ann")
+#
+#     norm = data.df
+#     norm[data.continuous] = mlmodel.data.scaler.transform(norm[data.continuous])
+#
+#     col = data.continuous
+#
+#     raw = data.df[col]
+#     norm = norm[col]
+#
+#     assert ((raw != norm).all()).any()
 
-    norm = data.raw
-    norm[data.continuous] = mlmodel.scaler.transform(norm[data.continuous])
 
-    col = data.continuous
-
-    raw = data.raw[col]
-    norm = norm[col]
-
-    assert ((raw != norm).all()).any()
-
-
-@pytest.mark.parametrize("data_name", testdata)
-def test_adult_enc(data_name):
-    data = OnlineCatalog(data_name)
-    mlmodel = MLModelCatalog(data, "ann")
-
-    cat = encode(mlmodel.encoder, data.categorical, data.raw)
-    cat = cat[mlmodel.feature_input_order]
-
-    assert cat.select_dtypes(exclude=[np.number]).empty
+# @pytest.mark.parametrize("data_name", testdata)
+# def test_adult_enc(data_name):
+#     data = OnlineCatalog(data_name)
+#     mlmodel = MLModelCatalog(data, "ann")
+#
+#     cat = encode(mlmodel.data.encoder, data.categorical, data.df)
+#     cat = cat[mlmodel.feature_input_order]
+#
+#     assert cat.select_dtypes(exclude=[np.number]).empty
