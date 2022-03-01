@@ -119,7 +119,8 @@ def load_trained_model(
     if os.path.exists(cache_path):
         # load the model
         if backend == "pytorch":
-            model = torch.load(cache_path)
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            model = torch.load(cache_path, map_location=device)
         elif backend == "tensorflow":
             model = tf.keras.models.load_model(cache_path, compile=False)
         else:
