@@ -165,7 +165,7 @@ class Benchmark:
             violations = []
         else:
             violations = constraint_violation(
-                self._mlmodel, counterfactuals_without_nans, factual_without_nans
+                self._mlmodel.data, counterfactuals_without_nans, factual_without_nans
             )
         columns = ["Constraint_Violation"]
 

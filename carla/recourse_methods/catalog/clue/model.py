@@ -104,7 +104,7 @@ class Clue(RecourseMethod):
         # get input dimension
         # indicate dimensions of inputs -- input_dim_vec: (if binary = 2; if continuous = 1)
         input_dims_continuous = list(np.repeat(1, len(self._mlmodel.data.continuous)))
-        input_dims_binary = list(np.repeat(2, len(self._mlmodel.data.categorical)))
+        input_dims_binary = list(np.repeat(1, len(self._mlmodel.data.categorical)))
         self._input_dimension = input_dims_continuous + input_dims_binary
 
         # load autoencoder

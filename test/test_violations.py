@@ -2,7 +2,6 @@ import pandas as pd
 
 from carla.data.catalog import OnlineCatalog
 from carla.evaluation import constraint_violation
-from carla.models.catalog import MLModelCatalog
 
 
 def test_constraint_violations():
@@ -10,7 +9,6 @@ def test_constraint_violations():
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
-    model = MLModelCatalog(data, "ann")
     # get factuals
     columns = [
         "age",
@@ -205,6 +203,6 @@ def test_constraint_violations():
     test_factual = data.transform(test_factual)
 
     expected = [[2], [0], [1], [0], [1]]
-    actual = constraint_violation(model, test_counterfactual, test_factual)
+    actual = constraint_violation(data, test_counterfactual, test_factual)
 
     assert expected == actual

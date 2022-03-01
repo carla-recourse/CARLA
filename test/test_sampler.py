@@ -10,12 +10,16 @@ def test_abduction():
     data = scm.generate_dataset(100)
 
     factual_instance = data.df.iloc[0].to_dict()
-    noise = data.noise.iloc[0].to_dict()
+
+    noise = data.noise
+    noise.columns = data.df[data.continuous + data.categorical].columns
+    noise = data.transform(noise)
+    noise = noise.iloc[0].to_dict()
 
     # hard-coding the fact that we know variables have numbers as name and we have three of them
     for i in range(1, 4):
 
-        true_noise = noise["u" + str(i)]
+        true_noise = noise["x" + str(i)]
 
         parents = scm.get_parents("x" + str(i))
         predicted_noise = get_abduction_noise(
