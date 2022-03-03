@@ -3,7 +3,7 @@ import pytest
 import torch
 from pandas._testing import assert_frame_equal
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.models.pipelining import encode, scale
 
@@ -13,7 +13,7 @@ test_data = ["adult", "give_me_some_credit", "compas", "heloc"]
 
 def test_properties():
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, "ann")
 
@@ -40,7 +40,7 @@ def test_properties():
 
 def test_inverse_pipeline():
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, "ann")
 
@@ -57,7 +57,7 @@ def test_inverse_pipeline():
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_tf(model_type, data_name):
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, model_type)
 
@@ -95,7 +95,7 @@ def test_predictions_tf(model_type, data_name):
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_with_pipeline(model_type, data_name):
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(data, model_type)
     model_tf_adult.use_pipeline = True
@@ -125,7 +125,7 @@ def test_predictions_with_pipeline(model_type, data_name):
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_pipeline(model_type, data_name):
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, model_type, use_pipeline=True)
 
@@ -143,7 +143,7 @@ def test_pipeline(model_type, data_name):
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_pt(model_type, data_name):
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
     model = MLModelCatalog(data, model_type, backend="pytorch")
     feature_input_order = model.feature_input_order
 

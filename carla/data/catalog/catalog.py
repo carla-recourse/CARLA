@@ -1,59 +1,41 @@
-from typing import Any, Dict, List
+from abc import ABC
 
 import pandas as pd
 
-from carla.data.load_catalog import load_catalog
-
 from ..api import Data
-from .load_data import load_dataset
 
 
-class DataCatalog(Data):
+class DataCatalog(Data, ABC):
     """
-    Use already implemented datasets.
+    Framework for datasets, using sklearn processing.
 
     Parameters
     ----------
-    data_name : {'adult', 'compas', 'give_me_some_credit'}
-        Used to get the correct dataset from online repository.
+    data_name: str
+        What name the dataset should have.
+    df: pd.DataFrame
+        Complete dataframe.
+    df_train: pd.DataFrame
+        Training portion of the complete dataframe.
+    df_test: pd.DataFrame
+        Testing portion of the complete dataframe.
 
     Returns
     -------
     None
     """
 
-    def __init__(self, data_name: str):
+    def __init__(
+        self,
+        data_name: str,
+        raw,
+        train_raw,
+        test_raw,
+    ):
         self.name = data_name
-
-        catalog_content = ["continuous", "categorical", "immutable", "target"]
-        self.catalog: Dict[str, Any] = load_catalog(  # type: ignore
-            "data_catalog.yaml", data_name, catalog_content
-        )
-
-        for key in ["continuous", "categorical", "immutable"]:
-            if self.catalog[key] is None:
-                self.catalog[key] = []
-
-        raw, train_raw, test_raw = load_dataset(data_name)
         self._raw: pd.DataFrame = raw
         self._train_raw: pd.DataFrame = train_raw
         self._test_raw: pd.DataFrame = test_raw
-
-    @property
-    def categorical(self) -> List[str]:
-        return self.catalog["categorical"]
-
-    @property
-    def continuous(self) -> List[str]:
-        return self.catalog["continuous"]
-
-    @property
-    def immutables(self) -> List[str]:
-        return self.catalog["immutable"]
-
-    @property
-    def target(self) -> str:
-        return self.catalog["target"]
 
     @property
     def raw(self) -> pd.DataFrame:

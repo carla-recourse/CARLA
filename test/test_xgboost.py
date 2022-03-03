@@ -1,6 +1,6 @@
 from sklearn.tree import _tree
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.recourse_methods.catalog.focus.parse_xgboost import (
     TREE_LEAF,
     TREE_UNDEFINED,
@@ -40,7 +40,7 @@ def test_regex():
 
 def test_get_tree():
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
     model = XGBoostModel(data)
     booster = model.tree_iterator[0]
 
@@ -52,7 +52,7 @@ def test_get_tree():
 
 def test_parse_node():
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
     model = XGBoostModel(data)
     booster = model.tree_iterator[0]
 
@@ -99,7 +99,7 @@ def test_parse_node():
 
 def test_parse_booster():
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
     model = XGBoostModel(data)
     tree = model.tree_iterator[0]
 
