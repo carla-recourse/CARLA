@@ -13,11 +13,11 @@ class DataCatalog(Data, ABC):
     ----------
     data_name: str
         What name the dataset should have.
-    df: pd.DataFrame
+    raw: pd.DataFrame
         Complete dataframe.
-    df_train: pd.DataFrame
+    train_raw: pd.DataFrame
         Training portion of the complete dataframe.
-    df_test: pd.DataFrame
+    test_raw: pd.DataFrame
         Testing portion of the complete dataframe.
 
     Returns
