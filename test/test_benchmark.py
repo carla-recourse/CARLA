@@ -122,7 +122,7 @@ def test_drop_binary():
         "native-country_Non-US",
         "native-country_US",
     ]
-    test_categoricals = [
+    test_categorical = [
         "workclass",
         "marital-status",
         "occupation",
@@ -141,7 +141,7 @@ def test_drop_binary():
         "native-country_Non-US",
     ]
 
-    actual = get_drop_columns_binary(test_categoricals, test_columns)
+    actual = get_drop_columns_binary(test_categorical, test_columns)
 
     assert actual == expected
 

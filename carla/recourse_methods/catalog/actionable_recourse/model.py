@@ -153,10 +153,10 @@ class ActionableRecourse(RecourseMethod):
             categorical_names=[
                 cat
                 for cat in self._mlmodel.feature_input_order
-                if cat not in self._data.continous
+                if cat not in self._data.continuous
             ]
             # self._data.encoded_normalized's categorical features contain feature name and value, separated by '_'
-            # while self._data.categoricals do not contain those additional values.
+            # while self._data.categorical do not contain those additional values.
         )
 
         for index, row in factuals.iterrows():

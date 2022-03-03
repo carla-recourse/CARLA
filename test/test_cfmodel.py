@@ -46,7 +46,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
     feature_tweak = FeatureTweak(model, hyperparams)
     cfs = feature_tweak.get_counterfactuals(test_factual)
 
-    assert test_factual[data.continous + [data.target]].shape == cfs.shape
+    assert test_factual[data.continuous + [data.target]].shape == cfs.shape
 
     non_nan_cfs = cfs.dropna()
     assert non_nan_cfs.shape[0] > 0
@@ -83,7 +83,7 @@ def test_focus_get_counterfactuals(model_type):
     focus = FOCUS(model, data, hyperparams)
     cfs = focus.get_counterfactuals(test_factual)
 
-    assert test_factual[data.continous].shape == cfs.shape
+    assert test_factual[data.continuous].shape == cfs.shape
 
     non_nan_cfs = cfs.dropna()
     assert non_nan_cfs.shape[0] > 0

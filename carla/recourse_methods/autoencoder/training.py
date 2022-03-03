@@ -7,8 +7,8 @@ def train_autoencoder(
     autoencoder, data, scaler, encoder, input_order, epochs=25, batch_size=64, save=True
 ):
     # normalize and encode data
-    df_dataset = scale(scaler, data.continous, data.raw)
-    df_dataset = encode(encoder, data.categoricals, df_dataset)
+    df_dataset = scale(scaler, data.continuous, data.raw)
+    df_dataset = encode(encoder, data.categorical, df_dataset)
     df_label_data = df_dataset[data.target]
     df_dataset = df_dataset[input_order]
 
@@ -36,8 +36,8 @@ def train_variational_autoencoder(
     batch_size=32,
 ):
     # normalize and encode data
-    df_dataset = scale(scaler, data.continous, data.raw)
-    df_dataset = encode(encoder, data.categoricals, df_dataset)
+    df_dataset = scale(scaler, data.continuous, data.raw)
+    df_dataset = encode(encoder, data.categorical, df_dataset)
     df_dataset = df_dataset[input_order + [data.target]]
 
     vae.fit(df_dataset.values, lambda_reg, epochs, lr, batch_size)

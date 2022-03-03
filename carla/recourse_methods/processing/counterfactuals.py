@@ -41,7 +41,7 @@ def check_counterfactuals(
     return df_cfs
 
 
-def get_drop_columns_binary(categoricals: List[str], columns: List[str]) -> List[str]:
+def get_drop_columns_binary(categorical: List[str], columns: List[str]) -> List[str]:
     """
     Selects the columns which can be dropped for one-hot-encoded dfs without drop_first.
 
@@ -49,7 +49,7 @@ def get_drop_columns_binary(categoricals: List[str], columns: List[str]) -> List
 
     Parameters
     ----------
-    categoricals: non encoded categorical feature names
+    categorical: non encoded categorical feature names
     columns: one-hot-encoded features without drop_first
 
     Returns
@@ -57,7 +57,7 @@ def get_drop_columns_binary(categoricals: List[str], columns: List[str]) -> List
     List of features to drop
     """
     list_drop = [
-        c for c in columns if c.split("_")[0] in [c.split("_")[0] for c in categoricals]
+        c for c in columns if c.split("_")[0] in [c.split("_")[0] for c in categorical]
     ]
     return list_drop[::2]
 

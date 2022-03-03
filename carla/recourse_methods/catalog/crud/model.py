@@ -133,7 +133,7 @@ class CRUD(RecourseMethod):
 
         # pay attention to categorical features
         encoded_feature_names = self._mlmodel.encoder.get_feature_names(
-            self._mlmodel.data.categoricals
+            self._mlmodel.data.categorical
         )
         cat_features_indices = [
             df_enc_norm_fact.columns.get_loc(feature)
