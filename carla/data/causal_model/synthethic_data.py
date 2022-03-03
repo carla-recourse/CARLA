@@ -93,7 +93,7 @@ class ScmDataset(DataCatalog):
     def __init__(self, scm, size: int):
         self.scm = scm
         raw, self._noise = _create_synthetic_data(scm, num_samples=size)
-        train_raw, test_raw = train_test_split(self._raw)
+        train_raw, test_raw = train_test_split(raw)
 
         super().__init__(scm.scm_class, raw, train_raw, test_raw)
 
