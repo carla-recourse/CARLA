@@ -80,7 +80,7 @@ class MLModelCatalog(MLModel):
 
         if self._backend == "pytorch":
             ext = "pt"
-            encoding_method = "OneHot"
+            encoding_method = "OneHot_drop_binary"
         elif self._backend == "tensorflow":
             ext = "h5"
             encoding_method = "OneHot_drop_binary"
