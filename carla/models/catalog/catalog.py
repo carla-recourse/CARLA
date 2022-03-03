@@ -6,8 +6,7 @@ import tensorflow as tf
 import torch
 from sklearn.model_selection import train_test_split
 
-from carla.data.catalog import DataCatalog
-from carla.data.causal_model.synthethic_data import ScmDataset
+from carla.data.catalog import DataCatalog, OnlineCatalog
 from carla.data.load_catalog import load
 from carla.models.api import MLModel
 from carla.models.pipelining import decode, descale, encode, order_data, scale
@@ -86,11 +85,11 @@ class MLModelCatalog(MLModel):
             encoding_method = "OneHot_drop_binary"
         else:
             raise ValueError(
-                "Backend not available, please choose between pytorch and tensorflow"
+                'Backend not available, please choose between "pytorch" and "tensorflow"'
             )
         super().__init__(data, encoding_method=encoding_method)
 
-        if not isinstance(data, ScmDataset) and data.name != "custom":
+        if isinstance(data, OnlineCatalog):
             # Load catalog
             catalog_content = ["ann", "linear"]
             catalog = load("mlmodel_catalog.yaml", data.name, catalog_content)  # type: ignore
