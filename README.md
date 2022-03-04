@@ -69,12 +69,12 @@ pip install carla-recourse
 
 
 ```python
-from carla import DataCatalog, MLModelCatalog
+from carla import OnlineCatalog, MLModelCatalog
 from carla.recourse_methods import GrowingSpheres
 
 # load a catalog dataset
 data_name = "adult"
-dataset = DataCatalog(data_name)
+dataset = OnlineCatalog(data_name)
 
 # load artificial neural network from catalog
 model = MLModelCatalog(dataset, "ann")
