@@ -19,7 +19,7 @@ import yaml
 from tensorflow import Graph, Session
 
 from carla.data.api import Data
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.evaluation import Benchmark
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
@@ -204,7 +204,7 @@ for rm in args.recourse_method:
     if rm in torch_methods:
         backend = "pytorch"
     for data_name in args.dataset:
-        dataset = DataCatalog(data_name)
+        dataset = OnlineCatalog(data_name)
         for model_type in args.type:
             log.info("=====================================")
             log.info("Recourse method: {}".format(rm))
