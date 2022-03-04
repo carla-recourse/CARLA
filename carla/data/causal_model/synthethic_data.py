@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from carla.data.api import Data
+from carla.data.catalog import DataCatalog
 
 
 def _get_noise_string(node):
@@ -78,7 +78,7 @@ def _create_synthetic_data(scm, num_samples):
     return df_endogenous, df_exogenous
 
 
-class ScmDataset(Data):
+class ScmDataset(DataCatalog):
     """
     Generate a dataset from structural equations
 
@@ -91,32 +91,27 @@ class ScmDataset(Data):
     """
 
     def __init__(self, scm, size: int):
-        self.name = scm.scm_class
         self.scm = scm
-        self._raw, self._noise = _create_synthetic_data(scm, num_samples=size)
-        self._train_raw, self._test_raw = train_test_split(self._raw)
+        raw, self._noise = _create_synthetic_data(scm, num_samples=size)
+        train_raw, test_raw = train_test_split(raw)
+
+        super().__init__(scm.scm_class, raw, train_raw, test_raw)
 
     @property
     def categorical(self) -> List[str]:
-        """
-        Provides the column names of the categorical data.
-
-        Returns
-        -------
-        List[str]
-        """
         return self.scm._categorical
 
     @property
     def continuous(self) -> List[str]:
-        """
-        Provides the column names of the continuous data.
-
-        Returns
-        -------
-        List[str]
-        """
         return self.scm._continuous
+
+    @property
+    def immutables(self) -> List[str]:
+        return self.scm._immutables
+
+    @property
+    def target(self) -> str:
+        return "label"
 
     @property
     def categorical_noise(self) -> List[str]:
@@ -141,39 +136,6 @@ class ScmDataset(Data):
         return self.scm._continuous_noise
 
     @property
-    def immutables(self) -> List[str]:
-        """
-        Provides the column names of the immutable data.
-
-        Returns
-        -------
-        List[str]
-        """
-        return self.scm._immutables
-
-    @property
-    def target(self) -> str:
-        """
-        Provies the name of the label column.
-
-        Returns
-        -------
-        str
-        """
-        return "label"
-
-    @property
-    def raw(self) -> pd.DataFrame:
-        """
-        The raw Dataframe without encoding or normalization
-
-        Returns
-        -------
-        pd.DataFrame
-        """
-        return self._raw.copy()
-
-    @property
     def noise(self) -> pd.DataFrame:
         """
         The noise Dataframe without encoding or normalization
@@ -183,11 +145,3 @@ class ScmDataset(Data):
         pd.DataFrame
         """
         return self._noise.copy()
-
-    @property
-    def train_raw(self) -> pd.DataFrame:
-        return self._train_raw.copy()
-
-    @property
-    def test_raw(self) -> pd.DataFrame:
-        return self._test_raw.copy()

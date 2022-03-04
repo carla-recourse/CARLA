@@ -3,7 +3,7 @@ import tensorflow as tf
 import torch
 from keras import backend as K
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.autoencoder import (
     CSVAE,
@@ -17,7 +17,7 @@ from carla.recourse_methods.autoencoder import (
 def test_cs_vae():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
@@ -48,7 +48,7 @@ def test_cs_vae():
 def test_variational_autoencoder():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
@@ -78,7 +78,7 @@ def test_variational_autoencoder():
 def test_variational_autoencoder_length():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
@@ -102,7 +102,7 @@ def test_variational_autoencoder_length():
 def test_autoencoder():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model = MLModelCatalog(data, "ann")
     test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
@@ -164,7 +164,7 @@ def test_save_and_load():
     with tf.Session() as sess:
         # Build data and mlmodel
         data_name = "adult"
-        data = DataCatalog(data_name)
+        data = OnlineCatalog(data_name)
 
         model = MLModelCatalog(data, "ann")
         test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)

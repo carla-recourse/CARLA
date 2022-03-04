@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.evaluation import Benchmark, remove_nans
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
@@ -12,7 +12,7 @@ from carla.recourse_methods.processing import get_drop_columns_binary
 def test_benchmarks():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
@@ -36,7 +36,7 @@ def test_benchmarks():
 def test_ynn():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
@@ -60,7 +60,7 @@ def test_ynn():
 def test_time():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
@@ -84,7 +84,7 @@ def test_time():
 def test_distances():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
@@ -149,7 +149,7 @@ def test_drop_binary():
 def test_success_rate():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
@@ -173,7 +173,7 @@ def test_success_rate():
 def test_redundancy():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
@@ -198,7 +198,7 @@ def test_redundancy():
 def test_violation():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals

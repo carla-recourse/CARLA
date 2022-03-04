@@ -3,7 +3,7 @@ from abc import ABC
 import pytest
 
 from carla.data.api import Data
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.api import RecourseMethod
@@ -14,9 +14,9 @@ testmodel = ["ann", "linear"]
 
 def test_data():
     data_name = "adult"
-    data_catalog = DataCatalog(data_name)
+    data_catalog = OnlineCatalog(data_name)
 
-    assert issubclass(DataCatalog, Data)
+    assert issubclass(OnlineCatalog, Data)
     assert isinstance(data_catalog, Data)
     assert issubclass(Data, ABC)
 
@@ -24,7 +24,7 @@ def test_data():
 @pytest.mark.parametrize("model_type", testmodel)
 def test_mlmodel(model_type):
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_catalog = MLModelCatalog(data, model_type)
 
@@ -35,7 +35,7 @@ def test_mlmodel(model_type):
 
 def test_cfmodel():
     data_name = "adult"
-    data_catalog = DataCatalog(data_name)
+    data_catalog = OnlineCatalog(data_name)
 
     hyperparams = {"num": 1, "desired_class": 1}
     model_catalog = MLModelCatalog(data_catalog, "ann", use_pipeline=True)
