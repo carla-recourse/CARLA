@@ -108,25 +108,19 @@ class ScmDataset(DataCatalog):
 
     @property
     def categorical(self) -> List[str]:
-        """
-        Provides the column names of the categorical data.
-
-        Returns
-        -------
-        List[str]
-        """
         return self.scm._categorical
 
     @property
     def continuous(self) -> List[str]:
-        """
-        Provides the column names of the continuous data.
-
-        Returns
-        -------
-        List[str]
-        """
         return self.scm._continuous
+
+    @property
+    def immutables(self) -> List[str]:
+        return self.scm._immutables
+
+    @property
+    def target(self) -> str:
+        return "label"
 
     @property
     def categorical_noise(self) -> List[str]:
@@ -149,14 +143,6 @@ class ScmDataset(DataCatalog):
         List[str]
         """
         return self.scm._continuous_noise
-
-    @property
-    def immutables(self) -> List[str]:
-        return self.scm._immutables
-
-    @property
-    def target(self) -> str:
-        return "label"
 
     @property
     def noise(self) -> pd.DataFrame:
