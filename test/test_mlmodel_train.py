@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.models.catalog import MLModelCatalog
 
 testmodel = ["ann", "linear"]
@@ -24,7 +24,7 @@ training_params = {"linear": training_params_linear, "ann": training_params_ann}
 
 def test_properties():
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_type = "linear"
     model_tf_adult = MLModelCatalog(
@@ -62,7 +62,7 @@ def test_properties():
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_tf(model_type, data_name):
 
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf_adult = MLModelCatalog(
         data, model_type, load_online=False, use_pipeline=True
@@ -99,7 +99,7 @@ def test_predictions_tf(model_type, data_name):
 @pytest.mark.parametrize("model_type", testmodel)
 @pytest.mark.parametrize("data_name", test_data)
 def test_predictions_pt(model_type, data_name):
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
     model = MLModelCatalog(
         data, model_type, load_online=False, use_pipeline=True, backend="pytorch"
     )
