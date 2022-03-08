@@ -99,12 +99,19 @@ class ScmDataset(DataCatalog):
     ):
         # TODO setup normalization with generate_dataset in CausalModel class
         self.scm = scm
-        raw, self._noise = _create_synthetic_data(scm, num_samples=size)
+        raw, noise = _create_synthetic_data(scm, num_samples=size)
+
         train_raw, test_raw = train_test_split(raw)
+        train_noise = noise.iloc[train_raw.index]
+        test_noise = noise.iloc[test_raw.index]
 
         super().__init__(
             scm.scm_class, raw, train_raw, test_raw, scaling_method, encoding_method
         )
+
+        self._noise = self.transform(noise)
+        self._noise_train = self.transform(train_noise)
+        self._noise_test = self.transform(test_noise)
 
     @property
     def categorical(self) -> List[str]:
@@ -147,3 +154,11 @@ class ScmDataset(DataCatalog):
     @property
     def noise(self) -> pd.DataFrame:
         return self._noise.copy()
+
+    @property
+    def noise_train(self) -> pd.DataFrame:
+        return self._noise_train.copy()
+
+    @property
+    def noise_test(self) -> pd.DataFrame:
+        return self._noise_test.copy()
