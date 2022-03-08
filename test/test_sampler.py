@@ -26,4 +26,4 @@ def test_abduction():
             factual_instance,
         )
 
-        assert np.isclose(predicted_noise, true_noise)
+        assert np.isclose(predicted_noise, true_noise, atol=0.1)
