@@ -21,7 +21,7 @@ def test_cs_vae():
 
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
-    test_input = np.zeros((1, 20))
+    test_input = np.zeros((1, 13))
     test_input = torch.Tensor(test_input)
     test_class = torch.Tensor(np.array([[0, 0]]))
 
@@ -53,7 +53,7 @@ def test_variational_autoencoder():
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    test_input = np.zeros((1, 20))
+    test_input = np.zeros((1, 13))
     test_input = torch.Tensor(test_input).to(device)
 
     vae = VariationalAutoencoder(data_name, layers=[test_input.shape[1], 512, 256, 8])
@@ -83,7 +83,7 @@ def test_variational_autoencoder_length():
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    test_input = np.zeros((1, 20))
+    test_input = np.zeros((1, 13))
     test_input = torch.Tensor(test_input).to(device)
 
     layers = [[test_input.shape[1], 8], [test_input.shape[1], 2, 3, 4, 5, 6, 8]]
