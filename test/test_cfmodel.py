@@ -440,8 +440,6 @@ def test_crud(model_type):
     assert (
         model.get_ordered_features(df_cfs).columns == model.feature_input_order
     ).all()
-    # TODO does this test make sense?
-    # assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
 
     assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
     assert isinstance(df_cfs, pd.DataFrame)

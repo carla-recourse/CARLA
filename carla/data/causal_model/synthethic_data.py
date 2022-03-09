@@ -114,6 +114,7 @@ class ScmDataset(Data):
     ):
         # TODO setup normalization with generate_dataset in CausalModel class
         self.scm = scm
+        self.name = scm.scm_class
         raw, noise = _create_synthetic_data(scm, num_samples=size)
 
         train_raw, test_raw = train_test_split(raw)
@@ -127,6 +128,10 @@ class ScmDataset(Data):
         self._noise = noise
         self._noise_train = train_noise
         self._noise_test = test_noise
+
+        self._identity_encoding = True
+        self.encoder = None
+        self.scaler = None
 
     @property
     def categorical(self) -> List[str]:

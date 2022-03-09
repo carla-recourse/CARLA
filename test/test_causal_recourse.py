@@ -36,6 +36,4 @@ def test_causal_recourse():
     }
     cfs = CausalRecourse(model, hyperparams).get_counterfactuals(factuals)
 
-    # cfs = model.perform_inverse_pipeline(cfs)
-
     assert len(cfs) == len(factuals)

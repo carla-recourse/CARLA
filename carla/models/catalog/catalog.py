@@ -96,7 +96,12 @@ class MLModelCatalog(MLModel):
             self._catalog = catalog[model_type][self._backend]
             self._feature_input_order = self._catalog["feature_order"]
         else:
-            encoded_features = list(data.encoder.get_feature_names(data.categorical))
+            if data._identity_encoding:
+                encoded_features = data.categorical
+            else:
+                encoded_features = list(
+                    data.encoder.get_feature_names(data.categorical)
+                )
 
             self._catalog = None
             self._feature_input_order = list(
