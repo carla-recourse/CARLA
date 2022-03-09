@@ -5,8 +5,6 @@ from carla.data.load_catalog import load
 
 from .load_data import load_dataset
 
-# from .catalog import DataCatalog
-
 
 class OnlineCatalog(DataCatalog):
     """

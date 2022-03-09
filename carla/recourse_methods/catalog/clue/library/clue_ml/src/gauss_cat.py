@@ -104,7 +104,6 @@ def flat_to_gauss_cat(x, input_dim_vec):
             cum_dims += 1
 
         elif dims > 1:
-            # TODO cum_dims > length of array gives emtpy array which result in error here
             output.append(
                 x[:, cum_dims : cum_dims + dims]
                 .max(dim=1)[1]

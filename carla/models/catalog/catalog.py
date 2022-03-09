@@ -74,7 +74,6 @@ class MLModelCatalog(MLModel):
         self._continuous = data.continuous
         self._categorical = data.categorical
 
-        # TODO fix different encodings for different backends
         if self._backend == "pytorch":
             ext = "pt"
         elif self._backend == "tensorflow":
