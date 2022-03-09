@@ -5,7 +5,6 @@ import pandas as pd
 import tensorflow as tf
 import torch
 
-# from carla.data.catalog import DataCatalog
 from carla.data.catalog.online_catalog import DataCatalog, OnlineCatalog
 from carla.data.load_catalog import load
 from carla.models.api import MLModel
