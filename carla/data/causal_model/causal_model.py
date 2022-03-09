@@ -3,9 +3,8 @@ from typing import List
 import networkx as nx
 from causalgraphicalmodels import CausalGraphicalModel, StructuralCausalModel
 
+from carla.data.causal_model.synthethic_data import ScmDataset
 from carla.data.load_scm import load_scm_equations
-
-from .synthethic_data import ScmDataset
 
 
 class CausalModel:

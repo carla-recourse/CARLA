@@ -1,6 +1,6 @@
 import pandas as pd
 
-from carla.data.catalog import DataCatalog
+from carla.data.catalog import OnlineCatalog
 from carla.evaluation import constraint_violation
 from carla.models.catalog import MLModelCatalog
 from carla.models.pipelining import encode, scale
@@ -9,7 +9,7 @@ from carla.models.pipelining import encode, scale
 def test_constraint_violations():
     # Build data and mlmodel
     data_name = "adult"
-    data = DataCatalog(data_name)
+    data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
