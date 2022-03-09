@@ -4,13 +4,30 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from carla.data.catalog import DataCatalog
+from carla.data.api import Data
 
 
 def _get_noise_string(node):
     if not node[0] == "x":
         raise ValueError
-    return "u" + node[1:]
+    return "u" + _get_node_id(node)
+
+
+def _get_signal_string(node):
+    if not node[0] == "u":
+        raise ValueError
+    return "x" + _get_node_id(node)
+
+
+def _get_node_id(node):
+    return node[1:]
+
+
+def _add_noise(signal, noise):
+    nodes = [_get_node_id(node) for node in noise.columns]
+    for node in nodes:
+        signal["x" + node] = signal["x" + node] + noise["u" + node]
+    return signal
 
 
 def _create_synthetic_data(scm, num_samples):
@@ -78,7 +95,7 @@ def _create_synthetic_data(scm, num_samples):
     return df_endogenous, df_exogenous
 
 
-class ScmDataset(DataCatalog):
+class ScmDataset(Data):
     """
     Generate a dataset from structural equations
 
@@ -94,8 +111,6 @@ class ScmDataset(DataCatalog):
         self,
         scm,
         size: int,
-        scaling_method: str = "MinMax",
-        encoding_method: str = "OneHot_drop_binary",
     ):
         # TODO setup normalization with generate_dataset in CausalModel class
         self.scm = scm
@@ -105,13 +120,13 @@ class ScmDataset(DataCatalog):
         train_noise = noise.iloc[train_raw.index]
         test_noise = noise.iloc[test_raw.index]
 
-        super().__init__(
-            scm.scm_class, raw, train_raw, test_raw, scaling_method, encoding_method
-        )
+        self._df = raw
+        self._df_train = train_raw
+        self._df_test = test_raw
 
-        self._noise = self.transform(noise)
-        self._noise_train = self.transform(train_noise)
-        self._noise_test = self.transform(test_noise)
+        self._noise = noise
+        self._noise_train = train_noise
+        self._noise_test = test_noise
 
     @property
     def categorical(self) -> List[str]:
@@ -152,6 +167,18 @@ class ScmDataset(DataCatalog):
         return self.scm._continuous_noise
 
     @property
+    def df(self) -> pd.DataFrame:
+        return self._df.copy()
+
+    @property
+    def df_train(self) -> pd.DataFrame:
+        return self._df_train.copy()
+
+    @property
+    def df_test(self) -> pd.DataFrame:
+        return self._df_test.copy()
+
+    @property
     def noise(self) -> pd.DataFrame:
         return self._noise.copy()
 
@@ -162,3 +189,11 @@ class ScmDataset(DataCatalog):
     @property
     def noise_test(self) -> pd.DataFrame:
         return self._noise_test.copy()
+
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        # TODO add normalization support
+        return df.copy()
+
+    def inverse_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        # TODO add normalization support
+        return df.copy()
