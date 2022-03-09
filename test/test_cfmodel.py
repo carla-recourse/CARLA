@@ -79,7 +79,7 @@ def test_focus_get_counterfactuals(model_type):
     factuals = predict_negative_instances(model, data)
     test_factual = factuals.iloc[:5]
 
-    focus = FOCUS(model, data, hyperparams)
+    focus = FOCUS(model, hyperparams)
     cfs = focus.get_counterfactuals(test_factual)
 
     assert test_factual[data.continuous].shape == cfs.shape
