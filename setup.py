@@ -51,5 +51,7 @@ setup(
         "keras==2.3.0",
         "xgboost==1.4.2",
         "causalgraphicalmodels==0.0.4",
+        "networkx==2.5.1",
+        "imageio==2.9.0",
     ],
 )
