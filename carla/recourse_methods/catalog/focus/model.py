@@ -12,7 +12,6 @@ import tensorflow as tf
 import tensorflow.contrib.eager as tfe
 from sklearn.tree import DecisionTreeClassifier
 
-from carla.data.api import Data
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.focus import trees
@@ -104,10 +103,9 @@ class FOCUS(RecourseMethod):
             explanations for tree ensembles. arXiv preprint arXiv:1910.12199.
     """
 
-    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
+    def __init__(self, mlmodel: MLModel, hyperparams: Dict) -> None:
 
         super().__init__(mlmodel)
-        self.data = data
         self.model = mlmodel
 
         if hyperparams["optimizer"] == "adam":
@@ -130,7 +128,7 @@ class FOCUS(RecourseMethod):
 
         def f(best_perturb):
             # doesn't work with categorical features, so they aren't used
-            original_input = factuals[self.data.continuous]
+            original_input = factuals[self.model.data.continuous]
             original_input = original_input.to_numpy()
             ground_truth = self.model.predict(original_input)
 
@@ -224,10 +222,10 @@ class FOCUS(RecourseMethod):
             pf = tfe.py_func(f, [best_perturb], tf.float32)
             best_perturb = sess.run(pf)
 
-        return pd.DataFrame(best_perturb, columns=self.data.continuous)
+        return pd.DataFrame(best_perturb, columns=self.model.data.continuous)
 
     def _prob_from_input(self, perturbed, sigma, temperature):
-        feat_columns = self.data.continuous
+        feat_columns = self.model.data.continuous
         if not isinstance(self.model.raw_model, DecisionTreeClassifier):
             return trees.get_prob_classification_forest(
                 self.model,

@@ -3,7 +3,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
-from carla import MLModel
+from carla.models.api import MLModel
 
 
 # Custom black-box models need to inherit from
