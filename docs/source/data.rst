@@ -21,11 +21,24 @@ Interface
 
 .. _data_catalog:
 
-Catalog
+DataCatalog
 ------------------
 .. automodule:: data.catalog.catalog
    :members:
    :undoc-members:
+
+OnlineCatalog
+------------------
+.. automodule:: data.catalog.online_catalog
+    :members:
+    :undoc-members:
+
+CsvCatalog
+------------------
+.. automodule:: data.catalog.csv_catalog
+    :members:
+    :undoc-members:
+
 
 Causal Model
 ------------------
