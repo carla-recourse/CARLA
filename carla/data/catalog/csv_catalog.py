@@ -8,7 +8,8 @@ from .catalog import DataCatalog
 
 class CsvCatalog(DataCatalog):
     """
-    Class for loading in csv files as a dataset.
+    Implements DataCatalog using local csv files. Using this class is the easiest way to use your own dataset.
+    Besides data transformation, no other preprocessing is done. E.g. the user should remove NaNs.
 
     Parameters
     ----------
@@ -25,7 +26,7 @@ class CsvCatalog(DataCatalog):
 
     Returns
     -------
-    None
+    DataCatalog
     """
 
     def __init__(

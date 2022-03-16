@@ -8,11 +8,11 @@ from .load_data import load_dataset
 
 class OnlineCatalog(DataCatalog):
     """
-    Use already implemented datasets.
+    Implements DataCatalog using already implemented datasets. These datasets are loaded from an online repository.
 
     Parameters
     ----------
-    data_name : {'adult', 'compas', 'give_me_some_credit'}
+    data_name : {'adult', 'compas', 'give_me_some_credit', 'heloc'}
         Used to get the correct dataset from online repository.
 
     Returns

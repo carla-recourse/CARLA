@@ -18,27 +18,28 @@ from ..api import Data
 
 class DataCatalog(Data, ABC):
     """
-    Framework for datasets, using sklearn processing.
+    Generic framework for datasets, using sklearn processing. This class is implemented by OnlineCatalog and CsvCatalog.
+    OnlineCatalog allows the user to easily load online datasets, while CsvCatalog allows easy use of local datasets.
 
     Parameters
     ----------
     data_name: str
         What name the dataset should have.
     df: pd.DataFrame
-        Complete dataframe.
+        The complete dataframe. This is equivalent to the combination of df_train and df_test, although not shuffled.
     df_train: pd.DataFrame
         Training portion of the complete dataframe.
     df_test: pd.DataFrame
         Testing portion of the complete dataframe.
     scaling_method: str, default: MinMax
-        Type of used sklearn scaler. Can be set with property setter to any sklearn scaler.
+        Type of used sklearn scaler. Can be set with the property setter to any sklearn scaler.
     encoding_method: str, default: OneHot
         Type of OneHotEncoding [OneHot, OneHot_drop_binary]. Additional drop binary decides if one column
-        is dropped for binary features. Can be set with property setter to any sklearn encoder.
+        is dropped for binary features. Can be set with the property setter to any sklearn encoder.
 
     Returns
     -------
-    None
+    Data
     """
 
     def __init__(
