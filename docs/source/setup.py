@@ -21,6 +21,8 @@ setup(
         "ipython",
         "keras==2.3.0",
         "matplotlib",
+        "networkx==2.5.1",
+        "imageio==2.9.0",
     ],
     entry_points="""
                 [console_scripts]
