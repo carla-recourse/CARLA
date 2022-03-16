@@ -33,9 +33,11 @@ class DataCatalog(Data, ABC):
         Testing portion of the complete dataframe.
     scaling_method: str, default: MinMax
         Type of used sklearn scaler. Can be set with the property setter to any sklearn scaler.
+        Set to "Identity" for no scaling.
     encoding_method: str, default: OneHot
         Type of OneHotEncoding [OneHot, OneHot_drop_binary]. Additional drop binary decides if one column
         is dropped for binary features. Can be set with the property setter to any sklearn encoder.
+        Set to "Identity" for no encoding.
 
     Returns
     -------
