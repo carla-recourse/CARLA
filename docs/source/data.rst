@@ -29,11 +29,15 @@ DataCatalog
    :members:
    :undoc-members:
 
+.. _online_catalog:
+
 OnlineCatalog
 ------------------
 .. automodule:: data.catalog.online_catalog
     :members:
     :undoc-members:
+
+.. _csv_catalog:
 
 CsvCatalog
 ------------------
