@@ -7,6 +7,27 @@ from .catalog import DataCatalog
 
 
 class CsvCatalog(DataCatalog):
+    """
+    Class for loading in csv files as a dataset.
+
+    Parameters
+    ----------
+    file_path: str
+        Path of the csv file.
+    categorical: list[str]
+        List containing the column names of the categorical features.
+    continuous: list[str]
+        List containing the column names of the continuous features.
+    immutables: list[str]
+        List containing the column names of the immutable features.
+    target: str
+        Column name of the target.
+
+    Returns
+    -------
+    None
+    """
+
     def __init__(
         self,
         file_path: str,
