@@ -68,12 +68,7 @@ class CausalRecourse(RecourseMethod):
         return intervenable_nodes
 
     def _get_original_df(self):
-        normalized = self._mlmodel.use_pipeline
-        if normalized:
-            data_df = self.encode_normalize_order_factuals(self._dataset.raw)
-        else:
-            data_df = self._dataset.raw
-        return data_df
+        return self._dataset.df
 
     def _get_range_values(self):
         data_df = self._get_original_df()
@@ -102,9 +97,7 @@ class CausalRecourse(RecourseMethod):
             )
 
             # we need to make sure that actions don't go out of bounds [0, 1]
-            if self._mlmodel.use_pipeline and isinstance(
-                self._mlmodel.scaler, preprocessing.MinMaxScaler
-            ):
+            if isinstance(self._dataset.scaler, preprocessing.MinMaxScaler):
                 out_of_bounds_idx = []
                 for i, action_set in enumerate(valid_action_sets):
                     instance = _series_plus_dict(factual_instance, action_set)
@@ -141,12 +134,7 @@ class CausalRecourse(RecourseMethod):
         return min_action_set, min_cost
 
     def get_counterfactuals(self, factuals: pd.DataFrame):
-
-        normalized = self._mlmodel.use_pipeline
-        if normalized:
-            factual_df = self.encode_normalize_order_factuals(factuals)
-        else:
-            factual_df = factuals.drop(columns=self._dataset.target)
+        factual_df = factuals.drop(columns=self._dataset.target)
 
         cfs = []
         # actions = []

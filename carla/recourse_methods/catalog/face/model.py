@@ -56,9 +56,6 @@ class Face(RecourseMethod):
         self.mode = checked_hyperparams["mode"]
         self.fraction = checked_hyperparams["fraction"]
 
-        # Normalize and encode data
-        self._df_enc_norm = self.encode_normalize_order_factuals(self._mlmodel.data.raw)
-
         self._immutables = encode_feature_names(
             self._mlmodel.data.immutables, self._mlmodel.feature_input_order
         )
@@ -100,22 +97,20 @@ class Face(RecourseMethod):
             raise ValueError("Mode has to be either knn or epsilon")
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
-        # Normalize and encode factual
-        df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
-
         # >drop< factuals from dataset to prevent duplicates,
         # >reorder< and >add< factuals to top; necessary in order to use the index
-        df_enc_norm_data = self._df_enc_norm.copy()
-        cond = df_enc_norm_data.isin(df_enc_norm_fact).values
-        df_enc_norm_data = df_enc_norm_data.drop(df_enc_norm_data[cond].index)
-        df_enc_norm_data = pd.concat(
-            [df_enc_norm_fact, df_enc_norm_data], ignore_index=True
-        )
+        df = self._mlmodel.data.df.copy()
+        cond = df.isin(factuals).values
+        df = df.drop(df[cond].index)
+        df = pd.concat([factuals, df], ignore_index=True)
+
+        df = self._mlmodel.get_ordered_features(df)
+        factuals = self._mlmodel.get_ordered_features(factuals)
 
         list_cfs = []
-        for i in range(df_enc_norm_fact.shape[0]):
+        for i in range(factuals.shape[0]):
             cf = graph_search(
-                df_enc_norm_data,
+                df,
                 i,
                 self._immutables,
                 self._mlmodel,

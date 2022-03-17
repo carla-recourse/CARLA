@@ -12,7 +12,7 @@ def test_yNN():
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, data.df)
 
     hyperparams = {"num": 1, "desired_class": 1}
     # Pipeline needed for dice, but not for predicting negative instances

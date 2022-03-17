@@ -9,23 +9,28 @@ from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.processing import get_drop_columns_binary
 
 
-def test_benchmarks():
+def make_benchmark():
     # Build data and mlmodel
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, "ann")
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, data.df)
 
     hyperparams = {"num": 1, "desired_class": 1}
-    # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]
 
     dice = Dice(model_tf, hyperparams)
 
     benchmark = Benchmark(model_tf, dice, test_factual)
+
+    return benchmark
+
+
+def test_benchmarks():
+    # Build data and mlmodel
+    benchmark = make_benchmark()
     df_benchmark = benchmark.run_benchmark()
 
     expected = (5, 9)
@@ -35,21 +40,7 @@ def test_benchmarks():
 
 def test_ynn():
     # Build data and mlmodel
-    data_name = "adult"
-    data = OnlineCatalog(data_name)
-
-    model_tf = MLModelCatalog(data, "ann")
-    # get factuals
-    factuals = predict_negative_instances(model_tf, data)
-
-    hyperparams = {"num": 1, "desired_class": 1}
-    # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
-    test_factual = factuals.iloc[:5]
-
-    dice = Dice(model_tf, hyperparams)
-
-    benchmark = Benchmark(model_tf, dice, test_factual)
+    benchmark = make_benchmark()
     yNN = benchmark.compute_ynn()
 
     expected = (1, 1)
@@ -59,21 +50,7 @@ def test_ynn():
 
 def test_time():
     # Build data and mlmodel
-    data_name = "adult"
-    data = OnlineCatalog(data_name)
-
-    model_tf = MLModelCatalog(data, "ann")
-    # get factuals
-    factuals = predict_negative_instances(model_tf, data)
-
-    hyperparams = {"num": 1, "desired_class": 1}
-    # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
-    test_factual = factuals.iloc[:5]
-
-    dice = Dice(model_tf, hyperparams)
-
-    benchmark = Benchmark(model_tf, dice, test_factual)
+    benchmark = make_benchmark()
     df_time = benchmark.compute_average_time()
 
     expected = (1, 1)
@@ -83,21 +60,7 @@ def test_time():
 
 def test_distances():
     # Build data and mlmodel
-    data_name = "adult"
-    data = OnlineCatalog(data_name)
-
-    model_tf = MLModelCatalog(data, "ann")
-    # get factuals
-    factuals = predict_negative_instances(model_tf, data)
-
-    hyperparams = {"num": 1, "desired_class": 1}
-    # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
-    test_factual = factuals.iloc[:5]
-
-    dice = Dice(model_tf, hyperparams)
-
-    benchmark = Benchmark(model_tf, dice, test_factual)
+    benchmark = make_benchmark()
     df_distances = benchmark.compute_distances()
 
     expected = (5, 4)
@@ -148,21 +111,7 @@ def test_drop_binary():
 
 def test_success_rate():
     # Build data and mlmodel
-    data_name = "adult"
-    data = OnlineCatalog(data_name)
-
-    model_tf = MLModelCatalog(data, "ann")
-    # get factuals
-    factuals = predict_negative_instances(model_tf, data)
-
-    hyperparams = {"num": 1, "desired_class": 1}
-    # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
-    test_factual = factuals.iloc[:5]
-
-    dice = Dice(model_tf, hyperparams)
-
-    benchmark = Benchmark(model_tf, dice, test_factual)
+    benchmark = make_benchmark()
     rate = benchmark.compute_success_rate()
 
     expected = (1, 1)
@@ -172,21 +121,7 @@ def test_success_rate():
 
 def test_redundancy():
     # Build data and mlmodel
-    data_name = "adult"
-    data = OnlineCatalog(data_name)
-
-    model_tf = MLModelCatalog(data, "ann")
-    # get factuals
-    factuals = predict_negative_instances(model_tf, data)
-
-    hyperparams = {"num": 1, "desired_class": 1}
-    # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
-    test_factual = factuals.iloc[:5]
-
-    dice = Dice(model_tf, hyperparams)
-
-    benchmark = Benchmark(model_tf, dice, test_factual)
+    benchmark = make_benchmark()
     df_redundancy = benchmark.compute_redundancy()
 
     expected = (5, 1)
@@ -197,21 +132,7 @@ def test_redundancy():
 
 def test_violation():
     # Build data and mlmodel
-    data_name = "adult"
-    data = OnlineCatalog(data_name)
-
-    model_tf = MLModelCatalog(data, "ann")
-    # get factuals
-    factuals = predict_negative_instances(model_tf, data)
-
-    hyperparams = {"num": 1, "desired_class": 1}
-    # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
-    test_factual = factuals.iloc[:5]
-
-    dice = Dice(model_tf, hyperparams)
-
-    benchmark = Benchmark(model_tf, dice, test_factual)
+    benchmark = make_benchmark()
     df_violation = benchmark.compute_constraint_violation()
 
     expected = (5, 1)

@@ -112,10 +112,6 @@ class Revise(RecourseMethod):
         self._target_class = self._params["target_class"]
         self._binary_cat_features = self._params["binary_cat_features"]
 
-        df_enc_norm_data = self.encode_normalize_order_factuals(
-            data.raw, with_target=True
-        )
-
         vae_params = self._params["vae_params"]
         self.vae = VariationalAutoencoder(
             self._params["data_name"],
@@ -126,8 +122,6 @@ class Revise(RecourseMethod):
             self.vae = train_variational_autoencoder(
                 self.vae,
                 self._mlmodel.data,
-                self._mlmodel.scaler,
-                self._mlmodel.encoder,
                 self._mlmodel.feature_input_order,
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
@@ -136,7 +130,7 @@ class Revise(RecourseMethod):
             )
         else:
             try:
-                self.vae.load(df_enc_norm_data.shape[1] - 1)
+                self.vae.load(data.df.shape[1] - 1)
             except FileNotFoundError as exc:
                 raise FileNotFoundError(
                     "Loading of Autoencoder failed. {}".format(str(exc))
@@ -145,21 +139,16 @@ class Revise(RecourseMethod):
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        df_enc_norm_fact = self.encode_normalize_order_factuals(
-            factuals, with_target=True
-        )
-
         # pay attention to categorical features
-        encoded_feature_names = self._mlmodel.encoder.get_feature_names(
+        encoded_feature_names = self._mlmodel.data.encoder.get_feature_names(
             self._mlmodel.data.categorical
         )
         cat_features_indices = [
-            df_enc_norm_fact.columns.get_loc(feature)
-            for feature in encoded_feature_names
+            factuals.columns.get_loc(feature) for feature in encoded_feature_names
         ]
 
         list_cfs = self._counterfactual_optimization(
-            cat_features_indices, device, df_enc_norm_fact
+            cat_features_indices, device, factuals
         )
 
         cf_df = check_counterfactuals(self._mlmodel, list_cfs)

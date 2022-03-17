@@ -6,8 +6,10 @@ Data
 =====
 This data wrapper contains the possibilities to
 
-- use pre-processed datasets from our :ref:`data_catalog` or
-- implement every possible dataset by inheriting our :ref:`data_api`
+- use pre-processed datasets from our :ref:`online_catalog` or
+- use local datasets using
+  :ref:`csv_catalog`
+- implement every possible dataset by either inheriting our :ref:`data_catalog` or for even more control :ref:`data_api`
 
 Example implementations for both use-cases can be found in our section :doc:`examples`.
 
@@ -21,11 +23,28 @@ Interface
 
 .. _data_catalog:
 
-Catalog
+DataCatalog
 ------------------
 .. automodule:: data.catalog.catalog
    :members:
    :undoc-members:
+
+.. _online_catalog:
+
+OnlineCatalog
+------------------
+.. automodule:: data.catalog.online_catalog
+    :members:
+    :undoc-members:
+
+.. _csv_catalog:
+
+CsvCatalog
+------------------
+.. automodule:: data.catalog.csv_catalog
+    :members:
+    :undoc-members:
+
 
 Causal Model
 ------------------

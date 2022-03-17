@@ -1,12 +1,12 @@
+import warnings
 from abc import ABC, abstractmethod
 from typing import Union
 
 import numpy as np
 import pandas as pd
-from sklearn import preprocessing
-from sklearn.base import BaseEstimator
 
 from carla.data.api import Data
+from carla.data.pipelining import order_data
 
 
 class MLModel(ABC):
@@ -17,11 +17,6 @@ class MLModel(ABC):
     ----------
     data: Data
         Dataset inherited from Data-wrapper
-    scaling_method: str, default: MinMax
-        Type of used sklearn scaler. Can be set with property setter to any sklearn scaler.
-    encoding_method: str, default: OneHot
-        Type of OneHotEncoding [OneHot, OneHot_drop_binary]. Additional drop binary decides if one column
-        is dropped for binary features. Can be set with property setter to any sklearn encoder.
 
     Methods
     -------
@@ -38,29 +33,8 @@ class MLModel(ABC):
     def __init__(
         self,
         data: Data,
-        scaling_method: str = "MinMax",
-        encoding_method: str = "OneHot",
     ) -> None:
-        self.data: Data = data
-
-        if scaling_method == "MinMax":
-            fitted_scaler = preprocessing.MinMaxScaler().fit(data.raw[data.continuous])
-            self.scaler: BaseEstimator = fitted_scaler
-        else:
-            raise NotImplementedError("Scaling Method not implemented")
-
-        if encoding_method == "OneHot":
-            fitted_encoder = preprocessing.OneHotEncoder(
-                handle_unknown="error", sparse=False
-            ).fit(data.raw[data.categorical])
-        elif encoding_method == "OneHot_drop_binary":
-            fitted_encoder = preprocessing.OneHotEncoder(
-                drop="if_binary", handle_unknown="error", sparse=False
-            ).fit(data.raw[data.categorical])
-        else:
-            raise ValueError("Encoding Method not known")
-
-        self.encoder: BaseEstimator = fitted_encoder
+        self._data: Data = data
 
     @property
     def data(self) -> Data:
@@ -76,56 +50,6 @@ class MLModel(ABC):
     @data.setter
     def data(self, data: Data) -> None:
         self._data = data
-
-    @property
-    def scaler(self) -> BaseEstimator:
-        """
-        Contains a fitted sklearn scaler.
-
-        Returns
-        -------
-        sklearn.preprocessing.BaseEstimator
-        """
-        return self._scaler
-
-    @scaler.setter
-    def scaler(self, scaler: BaseEstimator):
-        """
-        Sets a new fitted sklearn scaler.
-
-        Parameters
-        ----------
-        scaler : sklearn.preprocessing.Scaler
-            Fitted scaler for ML model.
-
-        Returns
-        -------
-        sklearn.preprocessing.BaseEstimator
-        """
-        self._scaler = scaler
-
-    @property
-    def encoder(self) -> BaseEstimator:
-        """
-        Contains a fitted sklearn encoder:
-
-        Returns
-        -------
-        sklearn.preprocessing.BaseEstimator
-        """
-        return self._encoder
-
-    @encoder.setter
-    def encoder(self, encoder: BaseEstimator):
-        """
-        Sets a new fitted sklearn encoder.
-
-        Parameters
-        ----------
-        encoder: sklearn.preprocessing.Encoder
-            Fitted encoder for ML model.
-        """
-        self._encoder = encoder
 
     @property
     @abstractmethod
@@ -205,3 +129,25 @@ class MLModel(ABC):
             Ml model prediction with shape N x 2
         """
         pass
+
+    def get_ordered_features(self, x):
+        """
+        Restores the correct input feature order for the ML model, this also drops the target column.
+
+        Only works for encoded data
+
+        Parameters
+        ----------
+        x : pd.DataFrame
+            Data we want to order
+
+        Returns
+        -------
+        output : pd.DataFrame
+            Whole DataFrame with ordered feature
+        """
+        if isinstance(x, pd.DataFrame):
+            return order_data(self.feature_input_order, x)
+        else:
+            warnings.warn("cannot re-order for non dataframe input")
+            return x

@@ -28,7 +28,7 @@ def test_cs_vae():
     csvae = CSVAE(data_name, layers=[test_input.shape[1], 16, 8])
 
     fitted_csvae = train_variational_autoencoder(
-        csvae, data, model.scaler, model.encoder, model.feature_input_order, epochs=1
+        csvae, data, model.feature_input_order, epochs=1
     )
 
     output = fitted_csvae.predict(test_input, test_class)
@@ -58,9 +58,7 @@ def test_variational_autoencoder():
 
     vae = VariationalAutoencoder(data_name, layers=[test_input.shape[1], 512, 256, 8])
 
-    fitted_vae = train_variational_autoencoder(
-        vae, data, model.scaler, model.encoder, model.feature_input_order
-    )
+    fitted_vae = train_variational_autoencoder(vae, data, model.feature_input_order)
 
     test_reconstructed, _, _, _, _ = fitted_vae.predict(test_input)
 
@@ -90,9 +88,7 @@ def test_variational_autoencoder_length():
     for layer in layers:
         vae = VariationalAutoencoder(data_name, layer)
 
-        fitted_vae = train_variational_autoencoder(
-            vae, data, model.scaler, model.encoder, model.feature_input_order
-        )
+        fitted_vae = train_variational_autoencoder(vae, data, model.feature_input_order)
 
         test_reconstructed, _, _, _, _ = fitted_vae.predict(test_input)
 
@@ -111,8 +107,6 @@ def test_autoencoder():
     fitted_ae = train_autoencoder(
         ae,
         data,
-        model.scaler,
-        model.encoder,
         model.feature_input_order,
         epochs=5,
         save=False,
@@ -127,8 +121,6 @@ def test_autoencoder():
     fitted_ae = train_autoencoder(
         ae,
         data,
-        model.scaler,
-        model.encoder,
         model.feature_input_order,
         epochs=5,
         save=False,
@@ -148,8 +140,6 @@ def test_autoencoder():
     fitted_ae = train_autoencoder(
         ae,
         data,
-        model.scaler,
-        model.encoder,
         model.feature_input_order,
         epochs=5,
         save=False,
@@ -173,8 +163,6 @@ def test_save_and_load():
         fitted_ae = train_autoencoder(
             ae,
             data,
-            model.scaler,
-            model.encoder,
             model.feature_input_order,
             epochs=5,
             save=True,

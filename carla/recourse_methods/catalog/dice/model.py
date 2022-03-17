@@ -55,13 +55,14 @@ class Dice(RecourseMethod):
         self._continuous = mlmodel.data.continuous
         self._categorical = mlmodel.data.categorical
         self._target = mlmodel.data.target
+        self._model = mlmodel
 
         checked_hyperparams = merge_default_parameters(
             hyperparams, self._DEFAULT_HYPERPARAMS
         )
         # Prepare data for dice data structure
         self._dice_data = dice_ml.Data(
-            dataframe=mlmodel.data.raw,
+            dataframe=mlmodel.data.df,
             continuous_features=self._continuous,
             outcome_name=self._target,
         )
@@ -73,14 +74,10 @@ class Dice(RecourseMethod):
         self._desired_class = checked_hyperparams["desired_class"]
         self._post_hoc_sparsity_param = checked_hyperparams["posthoc_sparsity_param"]
 
-        # Need scaler and encoder for get_counterfactual output
-        self._scaler = mlmodel.scaler
-        self._encoder = mlmodel.encoder
-        self._feature_order = mlmodel.feature_input_order
-
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         # Prepare factuals
         querry_instances = factuals.copy()
+        querry_instances = self._model.get_ordered_features(querry_instances)
 
         # check if querry_instances are not empty
         if not querry_instances.shape[0] > 0:
@@ -96,9 +93,5 @@ class Dice(RecourseMethod):
 
         list_cfs = dice_exp.cf_examples_list
         df_cfs = pd.concat([cf.final_cfs_df for cf in list_cfs], ignore_index=True)
-        df_cfs[self._continuous] = self._scaler.transform(df_cfs[self._continuous])
-        encoded_features = self._encoder.get_feature_names(self._categorical)
-        df_cfs[encoded_features] = self._encoder.transform(df_cfs[self._categorical])
-        df_cfs = df_cfs[self._feature_order + [self._target]]
 
         return df_cfs
