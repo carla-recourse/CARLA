@@ -437,9 +437,4 @@ def test_crud(model_type):
     df_cfs = crud.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
-    assert (
-        model.get_ordered_features(df_cfs).columns == model.feature_input_order
-    ).all()
-
-    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
     assert isinstance(df_cfs, pd.DataFrame)
