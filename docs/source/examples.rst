@@ -138,11 +138,13 @@ See below a concrete example on how to use a sklearn model in our framework.
    # the MLModel interface
    class TreeModel(MLModel):
        def __init__(self, data):
+           # initialize the superclass using the data object
            super().__init__(data)
-           # The constructor can be used to load or build an
-           # arbitrary black-box-model
+
+           # define your model object
            self._mymodel = DecisionTreeClassifier(max_depth=4)
 
+           # you can use the train-test split of the data object
            features = data.continuous + data.categorical
 
            X_train = data.df_train[features]
@@ -151,6 +153,7 @@ See below a concrete example on how to use a sklearn model in our framework.
            X_test = data.df_test[data.continuous + data.categorical]
            y_test = data.df_test[data.target]
 
+           # fit your model
            self._mymodel.fit(X=X_train, y_train)
            train_score = self._mymodel.score(X=X_train, y=y_train)
            test_score = self._mymodel.score(X=X_test, y=y_test)
@@ -160,6 +163,7 @@ See below a concrete example on how to use a sklearn model in our framework.
                )
            )
 
+           # save the feature order the model was trained on
            self._feature_input_order = features
 
        # List of the feature order the ml model was trained on
