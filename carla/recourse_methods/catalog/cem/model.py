@@ -270,8 +270,6 @@ class CEM(RecourseMethod):
             return train_autoencoder(
                 ae,
                 self._mlmodel.data,
-                self._mlmodel.scaler,
-                self._mlmodel.encoder,
                 self._mlmodel.feature_input_order,
                 epochs=ae_params["epochs"],
                 save=True,
@@ -544,11 +542,11 @@ class CEM(RecourseMethod):
 
         """
         # normalize and one-hot-encoding
-        df_enc_norm_fact = self.encode_normalize_order_factuals(factuals)
-        df_enc_norm_fact = df_enc_norm_fact.reset_index(drop=True)
+        factuals = factuals.reset_index(drop=True)
+        factuals = self._mlmodel.get_ordered_features(factuals)
 
         # find counterfactuals
-        df_cfs = df_enc_norm_fact.apply(
+        df_cfs = factuals.apply(
             lambda x: self._counterfactual_search(x), axis=1, raw=True
         )
         df_cfs = check_counterfactuals(self._mlmodel, df_cfs)

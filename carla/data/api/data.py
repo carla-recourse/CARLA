@@ -67,39 +67,66 @@ class Data(ABC):
 
     @property
     @abstractmethod
-    def raw(self):
+    def df(self):
         """
-        The raw Dataframe without encoding or normalization
+        The full dataframe.
 
         Returns
         -------
         pd.DataFrame
-            Tabular data with raw information
         """
         pass
 
     @property
     @abstractmethod
-    def train_raw(self):
+    def df_train(self):
         """
-        The raw training split Dataframe without encoding or normalization
+        The training split Dataframe.
 
         Returns
         -------
         pd.DataFrame
-            Tabular data with raw information
         """
         pass
 
     @property
     @abstractmethod
-    def test_raw(self):
+    def df_test(self):
         """
-        The raw testing split Dataframe without encoding or normalization
+        The testing split Dataframe.
 
         Returns
         -------
         pd.DataFrame
-            Tabular data with raw information
+        """
+        pass
+
+    @abstractmethod
+    def transform(self, df):
+        """
+        Data transformation.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+
+        Returns
+        -------
+        pd.Dataframe
+        """
+        pass
+
+    @abstractmethod
+    def inverse_transform(self, df):
+        """
+        Inverts transform operation.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+
+        Returns
+        -------
+        pd.Dataframe
         """
         pass

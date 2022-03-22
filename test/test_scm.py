@@ -29,7 +29,7 @@ def test_synthetic_data():
 
     dataset = scm.generate_dataset(10)
 
-    assert dataset.raw.shape == (10, 4)
+    assert dataset.df.shape == (10, 4)
     assert dataset.noise.shape == (10, 3)
     assert set(dataset.continuous) == {"x1", "x2", "x3"}
     assert dataset.categorical == []

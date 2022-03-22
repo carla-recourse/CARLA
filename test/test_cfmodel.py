@@ -41,7 +41,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
     }
 
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     feature_tweak = FeatureTweak(model, hyperparams)
@@ -51,7 +51,7 @@ def test_feature_tweak_get_counterfactuals(model_type):
     assert isinstance(cfs, pd.DataFrame)
 
 
-@pytest.mark.parametrize("model_type", ["xgboost", "sklearn"])
+@pytest.mark.parametrize("model_type", ["sklearn", "xgboost"])
 def test_focus_get_counterfactuals(model_type):
 
     data_name = "adult"
@@ -76,7 +76,7 @@ def test_focus_get_counterfactuals(model_type):
     }
 
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     focus = FOCUS(model, hyperparams)
@@ -93,19 +93,21 @@ def test_dice_get_counterfactuals(model_type):
     data = OnlineCatalog(data_name)
 
     model_tf = MLModelCatalog(data, model_type)
+
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, data.df)
 
     hyperparams = {
         "num": 1,
         "desired_class": 1,
         "posthoc_sparsity_param": 0.1,
     }
-    # Pipeline needed for dice, but not for predicting negative instances
-    model_tf.use_pipeline = True
     test_factual = factuals.iloc[:5]
 
-    cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
+    df_cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
+
+    cfs = model_tf.get_ordered_features(df_cfs)
+    cfs[data.target] = df_cfs[data.target]
 
     assert test_factual.shape[0] == cfs.shape[0]
     assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
@@ -134,7 +136,7 @@ def test_ar_get_counterfactual(model_type):
         intercepts = -(intercepts_neg - intercepts_pos)
 
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, data.df)
     test_factual = factuals.iloc[:5]
 
     # get counterfactuals
@@ -176,7 +178,7 @@ def test_cem_get_counterfactuals(model_type):
                 data=data, model_type=model_type, encoding_method="Binary"
             )
 
-            factuals = predict_negative_instances(model_ann, data)
+            factuals = predict_negative_instances(model_ann, data.df)
             test_factuals = factuals.iloc[:5]
 
             recourse = CEM(
@@ -219,7 +221,7 @@ def test_cem_vae(model_type):
                 data=data, model_type=model_type, encoding_method="Binary"
             )
 
-            factuals = predict_negative_instances(model_ann, data)
+            factuals = predict_negative_instances(model_ann, data.df)
             test_factuals = factuals.iloc[:5]
 
             recourse = CEM(
@@ -242,7 +244,7 @@ def test_face_get_counterfactuals(model_type):
 
     model_tf = MLModelCatalog(data, model_type)
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, data.df)
     test_factual = factuals.iloc[:5]
 
     # Test for knn mode
@@ -270,7 +272,7 @@ def test_growing_spheres(model_type):
 
     model_tf = MLModelCatalog(data, model_type)
     # get factuals
-    factuals = predict_negative_instances(model_tf, data)
+    factuals = predict_negative_instances(model_tf, data.df)
     test_factual = factuals.iloc[:5]
 
     gs = GrowingSpheres(model_tf)
@@ -289,7 +291,7 @@ def test_clue(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:20]
 
     hyperparams = {
@@ -318,7 +320,7 @@ def test_wachter(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:10]
 
     hyperparams = {"loss_type": "BCE", "binary_cat_features": False}
@@ -336,7 +338,7 @@ def test_revise(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     vae_params = {
@@ -374,7 +376,7 @@ def test_cchvae(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     hyperparams = {
@@ -411,7 +413,7 @@ def test_crud(model_type):
 
     model = MLModelCatalog(data, model_type, backend="pytorch")
     # get factuals
-    factuals = predict_negative_instances(model, data)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     hyperparams = {
@@ -435,5 +437,4 @@ def test_crud(model_type):
     df_cfs = crud.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
-    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
     assert isinstance(df_cfs, pd.DataFrame)

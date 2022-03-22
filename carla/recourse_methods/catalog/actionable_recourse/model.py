@@ -77,11 +77,6 @@ class ActionableRecourse(RecourseMethod):
         super().__init__(mlmodel)
         self._data = mlmodel.data
 
-        # normalize and encode data
-        self._norm_enc_data = self.encode_normalize_order_factuals(
-            self._data.raw, with_target=True
-        )
-
         # Get hyperparameter
         checked_hyperparams = merge_default_parameters(
             hyperparams, self._DEFAULT_HYPERPARAMS
@@ -92,7 +87,7 @@ class ActionableRecourse(RecourseMethod):
 
         # Build ActionSet
         self.action_set = rs.ActionSet(
-            X=self._norm_enc_data[self._mlmodel.feature_input_order]
+            X=self._data.df[self._mlmodel.feature_input_order]
         )
 
         # transform immutable feature names into encoded feature names of self._data.encoded_normalized
@@ -141,8 +136,8 @@ class ActionableRecourse(RecourseMethod):
         """
         coeffs = np.zeros(factuals.shape)
         intercepts = []
-        lime_data = self._norm_enc_data[self._mlmodel.feature_input_order]
-        lime_label = self._norm_enc_data[self._data.target]
+        lime_data = self._data.df[self._mlmodel.feature_input_order]
+        lime_label = self._data.df[self._data.target]
 
         lime_exp = LimeTabularExplainer(
             training_data=lime_data.values,
@@ -181,12 +176,12 @@ class ActionableRecourse(RecourseMethod):
 
         # to keep matching indexes for iterrows and coeffs
         factuals = factuals.reset_index()
-        factuals_enc_norm = self.encode_normalize_order_factuals(factuals)
+        factuals = self._mlmodel.get_ordered_features(factuals)
 
         # Check if we need lime to build coefficients
         if (coeffs is None) and (intercepts is None):
             log.info("Start generating LIME coefficients")
-            coeffs, intercepts = self._get_lime_coefficients(factuals_enc_norm)
+            coeffs, intercepts = self._get_lime_coefficients(factuals)
             log.info("Finished generating LIME coefficients")
         else:
             # Local explanations via LIME generate coeffs and intercepts per instance, while global explanations
@@ -197,7 +192,7 @@ class ActionableRecourse(RecourseMethod):
             )
 
         # generate counterfactuals
-        for index, row in factuals_enc_norm.iterrows():
+        for index, row in factuals.iterrows():
             # asserts are essential for mypy typechecking
             assert coeffs is not None
             assert intercepts is not None

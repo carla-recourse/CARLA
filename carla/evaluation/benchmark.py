@@ -13,7 +13,6 @@ from carla.evaluation.violations import constraint_violation
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.processing import get_drop_columns_binary
 
 
 class Benchmark:
@@ -71,11 +70,6 @@ class Benchmark:
 
         self._factuals = factuals.copy()
 
-        # Normalizing and encoding factual for later use
-        self._enc_norm_factuals = recourse_method.encode_normalize_order_factuals(
-            factuals, with_target=True
-        )
-
     def compute_ynn(self) -> pd.DataFrame:
         """
         Computes y-Nearest-Neighbours for generated counterfactuals
@@ -123,7 +117,7 @@ class Benchmark:
         pd.DataFrame
         """
         factual_without_nans, counterfactuals_without_nans = remove_nans(
-            self._enc_norm_factuals, self._counterfactuals
+            self._factuals, self._counterfactuals
         )
 
         columns = ["Distance_1", "Distance_2", "Distance_3", "Distance_4"]
@@ -131,21 +125,10 @@ class Benchmark:
         if counterfactuals_without_nans.empty:
             return pd.DataFrame(columns=columns)
 
-        if self._mlmodel.encoder.drop is None:
-            # To prevent double count of encoded features without drop if_binary
-            binary_columns_to_drop = get_drop_columns_binary(
-                self._mlmodel.data.categorical,
-                counterfactuals_without_nans.columns.tolist(),
-            )
-            counterfactuals_without_nans = counterfactuals_without_nans.drop(
-                binary_columns_to_drop, axis=1
-            )
-            factual_without_nans = factual_without_nans.drop(
-                binary_columns_to_drop, axis=1
-            )
-
-        arr_f = factual_without_nans.to_numpy()
-        arr_cf = counterfactuals_without_nans.to_numpy()
+        arr_f = self._mlmodel.get_ordered_features(factual_without_nans).to_numpy()
+        arr_cf = self._mlmodel.get_ordered_features(
+            counterfactuals_without_nans
+        ).to_numpy()
 
         distances = get_distances(arr_f, arr_cf)
 
@@ -169,7 +152,7 @@ class Benchmark:
             violations = []
         else:
             violations = constraint_violation(
-                self._mlmodel, counterfactuals_without_nans, factual_without_nans
+                self._mlmodel.data, counterfactuals_without_nans, factual_without_nans
             )
         columns = ["Constraint_Violation"]
 
@@ -184,7 +167,7 @@ class Benchmark:
         pd.Dataframe
         """
         factual_without_nans, counterfactuals_without_nans = remove_nans(
-            self._enc_norm_factuals, self._counterfactuals
+            self._factuals, self._counterfactuals
         )
 
         if counterfactuals_without_nans.empty:

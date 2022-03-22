@@ -244,9 +244,6 @@ for rm in args.recourse_method:
                 factuals = factuals.iloc[: args.number_of_samples]
                 factuals = factuals.reset_index(drop=True)
 
-                if rm == "dice":
-                    mlmodel.use_pipeline = True
-
                 recourse_method = initialize_recourse_method(
                     rm, mlmodel, dataset, data_name, model_type, setup
                 )

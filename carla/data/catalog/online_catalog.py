@@ -8,11 +8,11 @@ from .load_data import load_dataset
 
 class OnlineCatalog(DataCatalog):
     """
-    Use already implemented datasets.
+    Implements DataCatalog using already implemented datasets. These datasets are loaded from an online repository.
 
     Parameters
     ----------
-    data_name : {'adult', 'compas', 'give_me_some_credit'}
+    data_name : {'adult', 'compas', 'give_me_some_credit', 'heloc'}
         Used to get the correct dataset from online repository.
 
     Returns
@@ -23,6 +23,8 @@ class OnlineCatalog(DataCatalog):
     def __init__(
         self,
         data_name: str,
+        scaling_method: str = "MinMax",
+        encoding_method: str = "OneHot_drop_binary",
     ):
         catalog_content = ["continuous", "categorical", "immutable", "target"]
         self.catalog: Dict[str, Any] = load(  # type: ignore
@@ -36,7 +38,9 @@ class OnlineCatalog(DataCatalog):
         # Load the raw data
         raw, train_raw, test_raw = load_dataset(data_name)
 
-        super().__init__(data_name, raw, train_raw, test_raw)
+        super().__init__(
+            data_name, raw, train_raw, test_raw, scaling_method, encoding_method
+        )
 
     @property
     def categorical(self) -> List[str]:
