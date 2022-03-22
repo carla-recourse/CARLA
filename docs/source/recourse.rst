@@ -35,6 +35,14 @@ Actionable Recourse
    :members:
    :undoc-members:
 
+.. _causal:
+
+Causal Recourse
+^^^^^^^^^^^^^^^
+.. automodule:: recourse_methods.catalog.causal_recourse
+   :members:
+   :undoc-members:
+
 .. _cchvae:
 
 CCHVAE
@@ -75,6 +83,23 @@ FACE
    :members:
    :undoc-members:
 
+.. _featuretweak:
+
+FeatureTweak
+^^^^^^^
+.. automodule:: recourse_methods.catalog.feature_tweak.model
+   :members:
+   :undoc-members:
+
+.. _focus:
+
+FOCUS
+^^^^^^^
+.. automodule:: recourse_methods.catalog.focus.model
+   :members:
+   :undoc-members:
+
+
 .. _gs:
 
 Growing Spheres
@@ -96,21 +121,5 @@ REVISE
 Wachter
 ^^^^^^^
 .. automodule:: recourse_methods.catalog.wachter.model
-   :members:
-   :undoc-members:
-
-.. _focus:
-
-FOCUS
-^^^^^^^
-.. automodule:: recourse_methods.catalog.focus.model
-   :members:
-   :undoc-members:
-
-.. _featuretweak:
-
-FeatureTweak
-^^^^^^^
-.. automodule:: recourse_methods.catalog.feature_tweak.model
    :members:
    :undoc-members:

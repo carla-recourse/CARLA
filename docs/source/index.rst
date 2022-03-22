@@ -12,22 +12,24 @@ Available Datasets
 - Adult Data Set: `Adult <https://archive.ics.uci.edu/ml/datasets/adult>`_
 - COMPAS: `Compas <https://www.kaggle.com/danofer/compass>`_
 - Give Me Some Credit (GMC): `GMC <https://www.kaggle.com/c/GiveMeSomeCredit/data>`_
+- HELOC: `HELOC <https://community.fico.com/s/explainable-machine-learning-challenge?tabset-158d9=2>`_
 
 Implemented Counterfactual Methods
 ----------------------------------
 
 - Actionable Recourse (AR): `AR <https://arxiv.org/pdf/1809.06514.pdf>`_
+- Causal recourse: `Causal <https://arxiv.org/abs/2002.06278.pdf>`_
 - CCHVAE: `CCHVAE <https://arxiv.org/pdf/1910.09398.pdf>`_
 - Contrastive Explanations Method (CEM): `CEM <https://arxiv.org/pdf/1802.07623.pdf>`_
 - Counterfactual Latent Uncertainty Explanations (CLUE): `CLUE <https://arxiv.org/pdf/2006.06848.pdf>`_
 - CRUDS: `CRUDS <https://finale.seas.harvard.edu/files/finale/files/cruds-_counterfactual_recourse_using_disentangled_subspaces.pdf>`_
 - Diverse Counterfactual Explanations (DiCE): `DiCE <https://arxiv.org/pdf/1905.07697.pdf>`_
 - Feasible and Actionable Counterfactual Explanations (FACE): `FACE <https://arxiv.org/pdf/1909.09369.pdf>`_
+- FeatureTweak: `FeatureTweak <https://arxiv.org/pdf/1706.06691.pdf>`_
+- FOCUS: `FOCUS <https://arxiv.org/pdf/1911.12199.pdf>`_
 - Growing Sphere (GS): `GS <https://arxiv.org/pdf/1910.09398.pdf>`_
 - Revise: `Revise <https://arxiv.org/pdf/1907.09615.pdf>`_
 - Wachter: `Wachter <https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf>`_
-- FOCUS: `FOCUS <https://arxiv.org/pdf/1911.12199.pdf>`_
-- FeatureTweak: `FeatureTweak <https://arxiv.org/pdf/1706.06691.pdf>`_
 
 Provided Machine Learning Models
 --------------------------------

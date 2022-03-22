@@ -16,12 +16,13 @@ class TreeModel(MLModel):
         self._mymodel = DecisionTreeClassifier(max_depth=4)
 
         # add support for methods that can also use categorical data
-        data_transformed = self.scaler.transform(data.df[data.continuous])
+        data_transformed = data.df[data.continuous]
         target = data.df[data.target]
 
         X_train, X_test, y_train, y_test = train_test_split(
             data_transformed, target, test_size=0.20
         )
+        data.df_train
         self._mymodel.fit(X=X_train, y=y_train)
         train_score = self._mymodel.score(X=X_train, y=y_train)
         test_score = self._mymodel.score(X=X_test, y=y_test)

@@ -52,7 +52,7 @@ class ActionableRecourse(RecourseMethod):
         *   Actionable Recourse (AR) supports only binary categorical features.
             See implementation at https://github.com/ustunb/actionable-recourse/blob/master/examples/ex_01_quickstart.ipynb
         *   AR is only defined on linear models. To make it work for arbitrary non-linear networks
-            we need to find Actionab coefficients for every instance, for example with lime.
+            we need to find Actionable coefficients for every instance, for example with lime.
     - Warning
         *   AR does not always find a counterfactual example. The probability of finding one raises for a high size
             of flip set.
