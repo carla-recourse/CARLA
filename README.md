@@ -40,17 +40,18 @@ It is planned to make all recourse methods available for all ML frameworks . The
 | Recourse Method | Tensorflow | Pytorch | SKlearn | XGBoost |
 | --------------- | :--------: | :-----: | :-----: | :-----: |
 | Actionable Recourse |      X | X       |         |         |
+| Causal |                   X | X       |         |         |
 | CCHVAE |                     | X       |         |         |
 | CEM |                      X |         |         |         |
 | CLUE |                       | X       |         |         |
 | CRUDS |                      | X       |         |         |
 | DiCE |                     X | X       |         |         |
 | FACE |                     X | X       |         |         |
+| FeatureTweak |               |         | X       |    X    |
+| FOCUS |                      |         | X       |    X    |
 | Growing Spheres |          X | X       |         |         |
 | Revise |                     | X       |         |         |
 | Wachter |                    | X       |         |         |
-| FOCUS |                      |         | X       |    X    |
-| FeatureTweak |               |         | X       |    X    |
 
 ## Installation
 

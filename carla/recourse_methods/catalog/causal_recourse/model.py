@@ -44,6 +44,22 @@ def powerset(iterable):
 
 
 class CausalRecourse(RecourseMethod):
+    """
+    Implementation of causal recourse.
+
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See Notes below to see its content.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+    """
+
     def __init__(self, mlmodel: MLModelCatalog, hyperparams: Dict):
 
         self._mlmodel = mlmodel

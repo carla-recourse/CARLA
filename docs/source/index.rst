@@ -18,7 +18,7 @@ Implemented Counterfactual Methods
 ----------------------------------
 
 - Actionable Recourse (AR): `AR <https://arxiv.org/pdf/1809.06514.pdf>`_
-- Causal recourse: `Causal <https://arxiv.org/abs/2002.06278.pdf>`_
+- Causal recourse: `Causal <https://arxiv.org/pdf/2002.06278.pdf>`_
 - CCHVAE: `CCHVAE <https://arxiv.org/pdf/1910.09398.pdf>`_
 - Contrastive Explanations Method (CEM): `CEM <https://arxiv.org/pdf/1802.07623.pdf>`_
 - Counterfactual Latent Uncertainty Explanations (CLUE): `CLUE <https://arxiv.org/pdf/2006.06848.pdf>`_
@@ -47,6 +47,8 @@ It is planned to make all recourse methods available for all ML frameworks. The 
 +=================+============+=========+=========+=========+
 | AR              |     X      |    X    |         |         |
 +-----------------+------------+---------+---------+---------+
+| Causal          |     X      |    X    |         |         |
++-----------------+------------+---------+---------+---------+
 | CCHVAE          |            |    X    |         |         |
 +-----------------+------------+---------+---------+---------+
 | CEM             |     X      |         |         |         |
@@ -59,15 +61,15 @@ It is planned to make all recourse methods available for all ML frameworks. The 
 +-----------------+------------+---------+---------+---------+
 | FACE            |     X      |    X    |         |         |
 +-----------------+------------+---------+---------+---------+
+| FeatureTweak    |            |         |    X    |    X    |
++-----------------+------------+---------+---------+---------+
+| FOCUS           |            |         |    X    |    X    |
++-----------------+------------+---------+---------+---------+
 | Growing Spheres |     X      |    X    |         |         |
 +-----------------+------------+---------+---------+---------+
 | Revise          |            |    X    |         |         |
 +-----------------+------------+---------+---------+---------+
 | Wachter         |            |    X    |         |         |
-+-----------------+------------+---------+---------+---------+
-| FOCUS           |            |         |    X    |    X    |
-+-----------------+------------+---------+---------+---------+
-| FeatureTweak    |            |         |    X    |    X    |
 +-----------------+------------+---------+---------+---------+
 
 Citation
@@ -85,6 +87,8 @@ If you use this codebase, please cite: ::
           archivePrefix={arXiv},
           primaryClass={cs.LG}
     }
+
+Please also cite the original authors' work.
 
 .. toctree::
    :maxdepth: 2
