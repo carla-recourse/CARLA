@@ -36,13 +36,13 @@ class Wachter(RecourseMethod):
             Learning rate for gradient descent.
         * "lambda_param": float, default: 0.01
             Weight factor for feature_cost.
-        * "n_iter": int, defaul: 1000
+        * "n_iter": int, default: 1000
             Maximum number of iteration.
         * "t_max_min": float, default: 0.5
             Maximum time of search.
         * "norm": int, default: 1
             L-norm to calculate cost.
-        * "clamp": bool, defaul: True
+        * "clamp": bool, default: True
             If true, feature values will be clamped to (0, 1).
         * "loss_type": {"MSE", "BCE"}
             String for loss function.

@@ -65,11 +65,11 @@ class Revise(RecourseMethod):
             + "layers": list
                 Number of neurons and layer of autoencoder.
             + "train": bool
-                Decides if a new Autoencoder will be learned.
+                Decides if a new autoencoder will be learned.
             + "lambda_reg": flot
                 Hyperparameter for variational autoencoder.
             + "epochs": int
-                Number of epcchs to train VAE
+                Number of epochs to train VAE
             + "lr": float
                 Learning rate for VAE training
             + "batch_size": int
