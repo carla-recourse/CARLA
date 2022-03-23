@@ -1,7 +1,8 @@
 from sklearn.tree import _tree
 
 from carla.data.catalog import OnlineCatalog
-from carla.recourse_methods.catalog.focus.parse_xgboost import (
+from carla.models.catalog import MLModelCatalog
+from carla.models.catalog.parse_xgboost import (
     TREE_LEAF,
     TREE_UNDEFINED,
     _get_tree_from_booster,
@@ -10,7 +11,6 @@ from carla.recourse_methods.catalog.focus.parse_xgboost import (
     re_feature,
     re_numbers,
 )
-from carla.recourse_methods.catalog.focus.tree_model import XGBoostModel
 
 
 def test_constants():
@@ -41,7 +41,7 @@ def test_regex():
 def test_get_tree():
     data_name = "adult"
     data = OnlineCatalog(data_name)
-    model = XGBoostModel(data)
+    model = MLModelCatalog(data, "forest", "xgboost")
     booster = model.tree_iterator[0]
 
     tree = _get_tree_from_booster(booster)
@@ -53,7 +53,7 @@ def test_get_tree():
 def test_parse_node():
     data_name = "adult"
     data = OnlineCatalog(data_name)
-    model = XGBoostModel(data)
+    model = MLModelCatalog(data, "forest", "xgboost")
     booster = model.tree_iterator[0]
 
     tree = _get_tree_from_booster(booster)
@@ -100,7 +100,7 @@ def test_parse_node():
 def test_parse_booster():
     data_name = "adult"
     data = OnlineCatalog(data_name)
-    model = XGBoostModel(data)
+    model = MLModelCatalog(data, "forest", "xgboost")
     tree = model.tree_iterator[0]
 
     children_left, children_right, thresholds, features, scores = parse_booster(tree)

@@ -3,8 +3,7 @@ import tensorflow as tf
 import xgboost.core
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 
-from carla.recourse_methods.catalog.focus.parse_xgboost import parse_booster
-from carla.recourse_methods.catalog.focus.tree_model import ForestModel, XGBoostModel
+from carla.models.catalog.parse_xgboost import parse_booster
 
 
 def _split_approx(node, feat_input, feat_index, threshold, sigma):
@@ -120,12 +119,11 @@ def get_prob_classification_forest(
         """parse and individual tree"""
         return get_prob_classification_tree(tree, feat_columns, feat_input, sigma)
 
-    if isinstance(model, ForestModel):
+    if model.backend == "sklearn":
         tree_l = [
             tree_parser(estimator) for estimator in model.tree_iterator.estimators_
         ][:number_trees]
-    elif isinstance(model, XGBoostModel):
-        # TODO what is being parsed here
+    elif model.backend == "xgboost":
         tree_l = [tree_parser(estimator) for estimator in model.tree_iterator][
             :number_trees
         ]
