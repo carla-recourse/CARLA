@@ -15,7 +15,6 @@ from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
 from carla.recourse_methods.catalog.feature_tweak import FeatureTweak
 from carla.recourse_methods.catalog.focus import FOCUS
-from carla.recourse_methods.catalog.focus.tree_model import ForestModel, XGBoostModel
 from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
 from carla.recourse_methods.catalog.revise import Revise
 from carla.recourse_methods.catalog.wachter import Wachter
@@ -23,18 +22,13 @@ from carla.recourse_methods.catalog.wachter import Wachter
 testmodel = ["ann", "linear"]
 
 
-@pytest.mark.parametrize("model_type", ["xgboost", "sklearn"])
-def test_feature_tweak_get_counterfactuals(model_type):
+@pytest.mark.parametrize("backend", ["xgboost", "sklearn"])
+def test_feature_tweak_get_counterfactuals(backend):
 
     data_name = "adult"
     data = OnlineCatalog(data_name)
-
-    if model_type == "xgboost":
-        model = XGBoostModel(data)
-    elif model_type == "sklearn":
-        model = ForestModel(data)
-    else:
-        raise ValueError("model type not recognized")
+    model = MLModelCatalog(data, "forest", backend, load_online=False)
+    model.train(max_depth=2, n_estimators=5)
 
     hyperparams = {
         "eps": 0.1,
@@ -51,18 +45,13 @@ def test_feature_tweak_get_counterfactuals(model_type):
     assert isinstance(cfs, pd.DataFrame)
 
 
-@pytest.mark.parametrize("model_type", ["sklearn", "xgboost"])
-def test_focus_get_counterfactuals(model_type):
+@pytest.mark.parametrize("backend", ["sklearn", "xgboost"])
+def test_focus_get_counterfactuals(backend):
 
     data_name = "adult"
     data = OnlineCatalog(data_name)
-
-    if model_type == "xgboost":
-        model = XGBoostModel(data)
-    elif model_type == "sklearn":
-        model = ForestModel(data)
-    else:
-        raise ValueError("model type not recognized")
+    model = MLModelCatalog(data, "forest", backend, load_online=False)
+    model.train(max_depth=2, n_estimators=5)
 
     hyperparams = {
         "optimizer": "adam",

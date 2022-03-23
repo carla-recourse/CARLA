@@ -3,11 +3,14 @@ from typing import Optional
 from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
+import joblib
 import tensorflow as tf
 import torch
 
 PYTORCH_EXT = "pt"
 TENSORFLOW_EXT = "h5"
+SKLEARN_EXT = "skjoblib"
+XGBOOST_EXT = "xgjoblib"
 
 
 def load_online_model(
@@ -31,16 +34,18 @@ def load_online_model(
 
     Parameters
     ----------
-    name : str
+    name: str
         Name of the model ``{name}.{ext}`` on https://github.com/carla-recourse/cf-models.
-    dataset : str
+    dataset: str
         Name of the dataset the model has been trained on.
-    cache : boolean, optional
+    ext: str
+        Extension of the file.
+    cache: boolean, optional
         If True, try to load from the local cache first, and save to the cache
         if a download is required.
-    models_home : string, optional
+    models_home: string, optional
         The directory in which to cache data; see :func:`get_models_home`.
-    kws : keys and values, optional
+    kws: keys and values, optional
         Additional keyword arguments are passed to passed through to the read model function
     Returns
     -------
@@ -73,6 +78,10 @@ def load_online_model(
         model = torch.load(full_path, map_location=device)
     elif ext == TENSORFLOW_EXT:
         model = tf.keras.models.load_model(full_path, compile=False)
+    elif ext == SKLEARN_EXT:
+        model = joblib.load(full_path)
+    elif ext == XGBOOST_EXT:
+        model = joblib.load(full_path)
     else:
         raise NotImplementedError("Extension not supported:", ext)
 
@@ -94,7 +103,7 @@ def load_trained_model(
         The filename which is used for the saved model.
     data_name: str
         The subfolder which the model is saved in, corresponding to the dataset.
-    backend : {'tensorflow', 'pytorch'}
+    backend : {'tensorflow', 'pytorch', 'sklearn', 'xgboost'}
         Specifies the used framework.
     models_home : string, optional
         The directory in which to cache data; see :func:`get_models_home`.
@@ -108,6 +117,10 @@ def load_trained_model(
         ext = PYTORCH_EXT
     elif backend == "tensorflow":
         ext = TENSORFLOW_EXT
+    elif backend == "sklearn":
+        ext = SKLEARN_EXT
+    elif backend == "xgboost":
+        ext = XGBOOST_EXT
     else:
         raise NotImplementedError("Backend not supported:", backend)
 
@@ -123,6 +136,8 @@ def load_trained_model(
             model = torch.load(cache_path, map_location=device)
         elif backend == "tensorflow":
             model = tf.keras.models.load_model(cache_path, compile=False)
+        elif backend == "sklearn" or backend == "xgboost":
+            model = joblib.load(cache_path)
         else:
             raise NotImplementedError("Backend not supported:", backend)
         print(f"Loaded model from {cache_path}")
@@ -141,13 +156,13 @@ def save_model(
 
     Parameters
     ----------
-    model: Tensorflow or PyTorch model
+    model: classifier model
         Model that we want to save to disk.
     save_name: str
         The filename which is used for the saved model.
     data_name: str
         The subfolder which the model is saved in, corresponding to the dataset.
-    backend : {'tensorflow', 'pytorch'}
+    backend : {'tensorflow', 'pytorch', 'sklearn', 'xgboost'}
         Specifies the used framework.
     models_home : string, optional
         The directory in which to cache data; see :func:`get_models_home`.
@@ -161,6 +176,10 @@ def save_model(
         ext = PYTORCH_EXT
     elif backend == "tensorflow":
         ext = TENSORFLOW_EXT
+    elif backend == "sklearn":
+        ext = SKLEARN_EXT
+    elif backend == "xgboost":
+        ext = XGBOOST_EXT
     else:
         raise NotImplementedError("Backend not supported:", backend)
 
@@ -176,6 +195,8 @@ def save_model(
         torch.save(model, cache_path)
     elif backend == "tensorflow":
         model.save(cache_path)
+    elif backend == "sklearn" or backend == "xgboost":
+        joblib.dump(model, cache_path)
 
 
 def get_models_home(models_home=None):
