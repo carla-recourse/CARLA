@@ -22,7 +22,7 @@ setup(
         "ipykernel==5.5.3",
         "nbconvert==6.0.7",
         "keras==2.3.0",
-        "myst_nb",
+        "nbsphinx",
         "pillow==9.0.1",
         "matplotlib==3.5.1",
         "networkx==2.5.1",
