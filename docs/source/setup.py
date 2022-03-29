@@ -20,6 +20,7 @@ setup(
         "dice-ml==0.5",
         "ipython==7.22.0",
         "ipykernel==5.5.3",
+        "nbconvert==6.0.7",
         "keras==2.3.0",
         "myst_nb",
         "pillow==9.0.1",
