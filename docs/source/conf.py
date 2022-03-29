@@ -34,12 +34,12 @@ release = "0.0.1"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "nbsphinx",
     "sphinx.ext.autodoc",
     "sphinx_rtd_theme",
     "numpydoc",
     "sphinx.ext.autosummary",
     "sphinx_autodoc_typehints",
-    "nbsphinx",
 ]
 
 numpydoc_show_class_members = True
