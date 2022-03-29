@@ -7,6 +7,7 @@ setup(
     version=VERSION,
     package_dir={"carla": "carla"},
     install_requires=[
+        "markupsafe==2.0.1",
         "scipy==1.6.2",
         "lime==0.2.0.1",
         "mip==1.12.0",
