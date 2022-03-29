@@ -37,6 +37,15 @@ def test_properties():
     assert model_tf_adult.feature_input_order == exp_feature_order_adult
 
 
+def test_forest_properties():
+    data_name = "adult"
+    data = OnlineCatalog(data_name)
+
+    model = MLModelCatalog(data, "forest", "sklearn")
+
+    assert model is not None
+
+
 def test_transform():
     data_name = "adult"
     transformed_data = OnlineCatalog(

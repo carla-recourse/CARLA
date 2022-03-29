@@ -2,11 +2,15 @@ from typing import Union
 
 import pandas as pd
 import torch
+import xgboost
+from sklearn.ensemble import RandomForestClassifier
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
+from carla.models.catalog.ANN_TF import AnnModel
 from carla.models.catalog.ANN_TF import AnnModel as ann_tf
 from carla.models.catalog.ANN_TORCH import AnnModel as ann_torch
+from carla.models.catalog.Linear_TF import LinearModel
 from carla.models.catalog.Linear_TF import LinearModel as linear_tf
 from carla.models.catalog.Linear_TORCH import LinearModel as linear_torch
 
@@ -21,7 +25,9 @@ def train_model(
     epochs: int,
     batch_size: int,
     hidden_size: list,
-):
+    n_estimators: int,
+    max_depth: int,
+) -> Union[LinearModel, AnnModel, RandomForestClassifier, xgboost.XGBClassifier]:
     """
 
     Parameters
@@ -43,11 +49,15 @@ def train_model(
     batch_size: int
         Size of each batch
     hidden_size: list[int]
-        hidden_size[i] contains the number of nodes in layer [i]
+        hidden_size[i] contains the number of nodes in layer [i].
+    n_estimators: int
+        Number of trees in forest
+    max_depth: int
+        Max depth of trees in forest
 
     Returns
     -------
-
+    Union[LinearModel, AnnModel, RandomForestClassifier, xgboost.XGBClassifier]
     """
     print(f"balance on test set {y_train.mean()}, balance on test set {y_test.mean()}")
     if catalog_model.backend == "tensorflow":
@@ -65,7 +75,9 @@ def train_model(
                 data_name=catalog_model.data.name,
             )
         else:
-            raise ValueError("model type not recognized")
+            raise ValueError(
+                f"model type not recognized for backend {catalog_model.backend}"
+            )
         model.build_train_save_model(
             x_train,
             y_train,
@@ -75,7 +87,7 @@ def train_model(
             batch_size,
             model_name=catalog_model.model_type,
         )
-        model = model.model
+        return model.model
     elif catalog_model.backend == "pytorch":
         train_dataset = DataFrameDataset(x_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -92,7 +104,9 @@ def train_model(
                 num_of_classes=len(pd.unique(y_train)),
             )
         else:
-            raise ValueError("model type not recognized")
+            raise ValueError(
+                f"model type not recognized for backend {catalog_model.backend}"
+            )
         _training_torch(
             model,
             train_loader,
@@ -100,10 +114,47 @@ def train_model(
             learning_rate,
             epochs,
         )
+        return model
+    elif catalog_model.backend == "sklearn":
+        if catalog_model.model_type == "forest":
+            random_forest_model = RandomForestClassifier(
+                n_estimators=n_estimators, max_depth=max_depth
+            )
+            random_forest_model.fit(X=x_train, y=y_train)
+            train_score = random_forest_model.score(X=x_train, y=y_train)
+            test_score = random_forest_model.score(X=x_test, y=y_test)
+            print(
+                "model fitted with training score {} and test score {}".format(
+                    train_score, test_score
+                )
+            )
+            return random_forest_model
+        else:
+            raise ValueError(
+                f"model type not recognized for backend {catalog_model.backend}"
+            )
+    elif catalog_model.backend == "xgboost":
+        if catalog_model.model_type == "forest":
+            param = {
+                "max_depth": max_depth,
+                "objective": "binary:logistic",
+                "n_estimators": n_estimators,
+            }
+            xgboost_model = xgboost.XGBClassifier(**param)
+            xgboost_model.fit(
+                x_train,
+                y_train,
+                eval_set=[(x_train, y_train), (x_test, y_test)],
+                eval_metric="logloss",
+                verbose=True,
+            )
+            return xgboost_model
+        else:
+            raise ValueError(
+                f"model type not recognized for backend {catalog_model.backend}"
+            )
     else:
         raise ValueError("model backend not recognized")
-
-    return model
 
 
 class DataFrameDataset(Dataset):

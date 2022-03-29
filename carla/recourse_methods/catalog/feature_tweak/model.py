@@ -4,7 +4,7 @@ https://github.com/upura/featureTweakPy
 """
 
 import copy
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -12,9 +12,9 @@ import sklearn
 import xgboost
 import xgboost.core
 
+from carla.models.catalog import MLModelCatalog
+from carla.models.catalog.parse_xgboost import parse_booster
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.catalog.focus.parse_xgboost import parse_booster
-from carla.recourse_methods.catalog.focus.tree_model import ForestModel, XGBoostModel
 from carla.recourse_methods.processing import check_counterfactuals
 
 
@@ -209,7 +209,7 @@ class FeatureTweak(RecourseMethod):
 
     Parameters
     ----------
-    mlmodel: ForestModel or XGBoostModel
+    mlmodel: MLModelCatalog
         Black-Box-Model
     hyperparams : dict
         Dictionary containing hyperparameters. See notes below for its contents.
@@ -238,7 +238,7 @@ class FeatureTweak(RecourseMethod):
 
     def __init__(
         self,
-        mlmodel: Union[ForestModel, XGBoostModel],
+        mlmodel: MLModelCatalog,
         hyperparams: Dict,
         cost_func=_L2_cost_func,
     ):
@@ -306,7 +306,7 @@ class FeatureTweak(RecourseMethod):
         def predict(classifier, x):
             if isinstance(
                 classifier,
-                (sklearn.tree.DecisionTreeClassifier, ForestModel, XGBoostModel),
+                (sklearn.tree.DecisionTreeClassifier, MLModelCatalog),
             ):
                 # need to reshape x as it's not a batch
                 return classifier.predict(x.reshape(1, -1))
@@ -359,8 +359,6 @@ class FeatureTweak(RecourseMethod):
         # only works for continuous data
         instances = instances[self.data.continuous]
 
-        # y = factuals[self.target_col]
-        # y = self.model.predict(instances)
         class_labels = [0, 1]
 
         counterfactuals = []

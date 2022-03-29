@@ -13,8 +13,8 @@ import tensorflow.contrib.eager as tfe
 from sklearn.tree import DecisionTreeClassifier
 
 from carla.models.api import MLModel
+from carla.models.catalog import trees
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.catalog.focus import trees
 from carla.recourse_methods.catalog.focus.distances import distance_func
 
 

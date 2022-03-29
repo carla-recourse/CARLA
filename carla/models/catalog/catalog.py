@@ -21,9 +21,9 @@ class MLModelCatalog(MLModel):
     ----------
     data : data.catalog.DataCatalog Class
         Correct dataset for ML model.
-    model_type : {'ann', 'linear'}
+    model_type : {'ann', 'linear', 'forest'}
         Architecture.
-    backend : {'tensorflow', 'pytorch'}
+    backend : {'tensorflow', 'pytorch', 'sklearn', 'xgboost'}
         Specifies the used framework.
     cache : boolean, default: True
         If True, try to load from the local cache first, and save to the cache.
@@ -41,10 +41,6 @@ class MLModelCatalog(MLModel):
         One-dimensional prediction of ml model for an output interval of [0, 1].
     predict_proba:
         Two-dimensional probability prediction of ml model
-    get_pipeline_element:
-        Returns a specific element of the pipeline
-    perform_pipeline:
-        Transforms input for prediction into correct form.
 
     Returns
     -------
@@ -64,9 +60,8 @@ class MLModelCatalog(MLModel):
         """
         Constructor for pretrained ML models from the catalog.
 
-        Possible backends are currently "pytorch" and "tensorflow".
-        Possible models are corrently "ann" and "linear".
-
+        Possible backends are currently "pytorch", "tensorflow" for "ann" and "linear" models.
+        Possible backends are currently "sklearn", "xgboost" for "forest" models.
 
         """
         self._model_type = model_type
@@ -78,13 +73,17 @@ class MLModelCatalog(MLModel):
             ext = "pt"
         elif self._backend == "tensorflow":
             ext = "h5"
+        elif self._backend == "sklearn":
+            ext = "skjoblib"
+        elif self._backend == "xgboost":
+            ext = "xgjoblib"
         else:
             raise ValueError(
-                'Backend not available, please choose between "pytorch" and "tensorflow".'
+                'Backend not available, please choose between "pytorch", "tensorflow", "sklearn", or "xgboost".'
             )
         super().__init__(data)
 
-        # Datasets generated from a Structural Causal Model or a custom dataset do not have a saved .yaml
+        # Only datasets in our catalog have a saved yaml file
         if isinstance(data, OnlineCatalog):
             # Load catalog
             catalog_content = ["ann", "linear"]
@@ -209,9 +208,11 @@ class MLModelCatalog(MLModel):
             # order data (column-wise) before prediction
             x = self.get_ordered_features(x)
             return self._model.predict(x)[:, 1].reshape((-1, 1))
+        elif self._backend == "sklearn" or self._backend == "xgboost":
+            return self._model.predict(self.get_ordered_features(x))
         else:
             raise ValueError(
-                'Uncorrect backend value. Please use only "pytorch" or "tensorflow".'
+                'Incorrect backend value. Please use only "pytorch" or "tensorflow".'
             )
 
     def predict_proba(
@@ -271,18 +272,36 @@ class MLModelCatalog(MLModel):
 
         elif self._backend == "tensorflow":
             return self._model.predict(x)
+        elif self._backend == "sklearn" or self._backend == "xgboost":
+            return self._model.predict_proba(x)
         else:
             raise ValueError(
                 'Incorrect backend value. Please use only "pytorch" or "tensorflow".'
             )
 
+    @property
+    def tree_iterator(self):
+        if self.model_type != "forest":
+            return None
+        elif self.backend == "sklearn":
+            return self._model
+        elif self.backend == "xgboost":
+            # make a copy of the trees, else feature names are not saved
+            booster_it = [booster for booster in self.raw_model.get_booster()]
+            # set the feature names
+            for booster in booster_it:
+                booster.feature_names = self.feature_input_order
+            return booster_it
+
     def train(
         self,
-        learning_rate,
-        epochs,
-        batch_size,
+        learning_rate=None,
+        epochs=None,
+        batch_size=None,
         force_train=False,
         hidden_size=[18, 9, 3],
+        n_estimators=5,
+        max_depth=5,
     ):
         """
 
@@ -298,13 +317,17 @@ class MLModelCatalog(MLModel):
             Force training, even if model already exists in cache.
         hidden_size: list[int]
             hidden_size[i] contains the number of nodes in layer [i]
+        n_estimators: int
+            Number of estimators in forest.
+        max_depth: int
+            Max depth of trees in the forest.
 
         Returns
         -------
 
         """
         layer_string = "_".join([str(size) for size in hidden_size])
-        if self.model_type == "linear":
+        if self.model_type == "linear" or self.model_type == "forest":
             save_name = f"{self.model_type}"
         elif self.model_type == "ann":
             save_name = f"{self.model_type}_layers_{layer_string}"
@@ -337,6 +360,11 @@ class MLModelCatalog(MLModel):
             x_train = self.get_ordered_features(x_train)
             x_test = self.get_ordered_features(x_test)
 
+            # TODO for now only forest recourse with continuous features is supported
+            if self.model_type == "forest":
+                x_train = df_train[self._continuous]
+                x_test = df_test[self._continuous]
+
             self._model = train_model(
                 self,
                 x_train,
@@ -347,6 +375,8 @@ class MLModelCatalog(MLModel):
                 epochs,
                 batch_size,
                 hidden_size,
+                n_estimators,
+                max_depth,
             )
 
             save_model(
