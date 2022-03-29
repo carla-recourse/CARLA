@@ -21,6 +21,7 @@ setup(
         "ipython==7.22.0",
         "ipykernel==5.5.3",
         "nbconvert==6.0.7",
+        "jupyter-client==6.1.12",
         "keras==2.3.0",
         "myst_nb",
         "jinja2==3.0.3",
