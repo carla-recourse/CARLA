@@ -39,6 +39,7 @@ extensions = [
     "numpydoc",
     "sphinx.ext.autosummary",
     "sphinx_autodoc_typehints",
+    "nbsphinx",
 ]
 
 numpydoc_show_class_members = True
