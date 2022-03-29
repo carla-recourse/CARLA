@@ -101,6 +101,7 @@ Please also cite the original authors' work.
    recourse
    benchmarking
    license
+   how_to_use_carla
 
 Indices and tables
 ==================
@@ -108,9 +109,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   how_to_use_carla
