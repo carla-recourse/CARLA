@@ -101,7 +101,7 @@ Please also cite the original authors' work.
    recourse
    benchmarking
    license
-   how_to_use_carla
+   notebooks/how_to_use_carla
 
 Indices and tables
 ==================
