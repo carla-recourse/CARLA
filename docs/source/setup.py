@@ -23,7 +23,7 @@ setup(
         "nbconvert==6.0.7",
         "jupyter-client==6.1.12",
         "jupyterlab",
-        "jupyterlab-server",
+        "jupyterlab-server==2.11.0",
         "keras==2.3.0",
         "myst_nb",
         "jinja2==2.11.3",
