@@ -24,7 +24,7 @@ setup(
         "jupyter-client==6.1.12",
         "keras==2.3.0",
         "myst_nb",
-        "jinja2==3.0.0",
+        "jinja2==2.11.3",
         "pillow==9.0.1",
         "matplotlib==3.5.1",
         "networkx==2.5.1",
