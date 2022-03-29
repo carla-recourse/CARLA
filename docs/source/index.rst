@@ -101,8 +101,7 @@ Please also cite the original authors' work.
    recourse
    benchmarking
    license
-
-:ref:`how_to_use_carla.ipynb`
+   how_to_use_carla
 
 Indices and tables
 ==================
