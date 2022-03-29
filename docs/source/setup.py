@@ -19,6 +19,7 @@ setup(
         "h5py==2.10.0",
         "dice-ml==0.5",
         "ipython==7.22.0",
+        "ipykernel==5.5.3",
         "keras==2.3.0",
         "myst_nb",
         "pillow==9.0.1",
