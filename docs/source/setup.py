@@ -19,6 +19,7 @@ setup(
         "h5py==2.10.0",
         "dice-ml==0.5",
         "ipython",
+        "nbsphinx",
         "keras==2.3.0",
         "pillow==9.0.1",
         "matplotlib==3.5.1",
