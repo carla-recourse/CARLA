@@ -24,7 +24,7 @@ setup(
         "nbconvert==5.6.1",
         "jupyter-client==6.1.12",
         "jupyterlab==3.3.2",
-        "jupyterlab-server==2.9.0",
+        "jupyterlab-server==2.10.0",
         "keras==2.3.0",
         "myst_nb",
         "jinja2==2.11.3",
