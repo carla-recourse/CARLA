@@ -102,7 +102,6 @@ Please also cite the original authors' work.
    benchmarking
    license
    gallery
-   notebooks/how_to_use_carla
 
 Indices and tables
 ==================
