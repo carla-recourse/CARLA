@@ -101,13 +101,7 @@ Please also cite the original authors' work.
    recourse
    benchmarking
    license
-
-Thumbnails gallery
-==================
-
-.. nbgallery::
-   notebooks/how_to_use_carla
-   notebooks/how_to_use_carla_causal
+   tutorial
 
 Indices and tables
 ==================
