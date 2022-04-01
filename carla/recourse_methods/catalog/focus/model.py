@@ -96,7 +96,7 @@ class FOCUS(RecourseMethod):
             Parameter in the softmax operation, also controls degreee of approximation.
         * "distance_weight": float
             Determines the weight of the counterfactual distance in the loss.
-        * "distance_func": "l1" or "l2"
+        * "distance_func": {"l1", "l2"}
             Norm to be used.
 
     .. [1] Lucic, A., Oosterhuis, H., Haned, H., & de Rijke, M. (2018). FOCUS: Flexible optimizable counterfactual
