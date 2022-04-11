@@ -129,57 +129,64 @@ See below a concrete example on how to use a sklearn model in our framework.
 .. code-block:: python
    :linenos:
 
-   from carla.models.api import MLModel
+   from carla import MLModel
+   import xgboost
 
-   from sklearn.model_selection import train_test_split
-   from sklearn.tree import DecisionTreeClassifier
+   class XGBoostModel(MLModel):
+       """The default way of implementing XGBoost
+       https://xgboost.readthedocs.io/en/latest/python/python_intro.html"""
 
-   # Custom black-box models need to inherit from
-   # the MLModel interface
-   class TreeModel(MLModel):
        def __init__(self, data):
-           # initialize the superclass using the data object
            super().__init__(data)
 
-           # define your model object
-           self._mymodel = DecisionTreeClassifier(max_depth=4)
+           # get preprocessed data
+           df_train = self.data.df_train
+           df_test = self.data.df_test
 
-           # you can use the train-test split of the data object
-           features = data.continuous + data.categorical
+           x_train = df_train[self.data.continuous]
+           y_train = df_train[self.data.target]
+           x_test = df_test[self.data.continuous]
+           y_test = df_test[self.data.target]
 
-           X_train = data.df_train[features]
-           y_train = data.df_train[data.target]
+           self._feature_input_order = self.data.continuous
 
-           X_test = data.df_test[data.continuous + data.categorical]
-           y_test = data.df_test[data.target]
-
-           # fit your model
-           self._mymodel.fit(X=X_train, y_train)
-           train_score = self._mymodel.score(X=X_train, y=y_train)
-           test_score = self._mymodel.score(X=X_test, y=y_test)
-           print(
-               "model fitted with training score {} and test score {}".format(
-                   train_score, test_score
+           param = {
+               "max_depth": 2,  # determines how deep the tree can go
+               "objective": "binary:logistic",  # determines the loss function
+               "n_estimators": 5,
+           }
+           self._mymodel = xgboost.XGBClassifier(**param)
+           self._mymodel.fit(
+                   x_train,
+                   y_train,
+                   eval_set=[(x_train, y_train), (x_test, y_test)],
+                   eval_metric="logloss",
+                   verbose=True,
                )
-           )
 
-           # save the feature order the model was trained on
-           self._feature_input_order = features
-
-       # List of the feature order the ml model was trained on
        @property
        def feature_input_order(self):
+           # List of the feature order the ml model was trained on
            return self._feature_input_order
 
-       # The ML framework the model was trained on
        @property
        def backend(self):
-           return "sklearn"
+           # The ML framework the model was trained on
+           return "xgboost"
 
-       # The black-box model object
        @property
        def raw_model(self):
+           # The black-box model object
            return self._mymodel
+
+       @property
+       def tree_iterator(self):
+           # make a copy of the trees, else feature names are not saved
+           booster_it = [booster for booster in self.raw_model.get_booster()]
+           # set the feature names
+           for booster in booster_it:
+               booster.feature_names = self.feature_input_order
+           return booster_it
 
        # The predict function outputs
        # the continuous prediction of the model
