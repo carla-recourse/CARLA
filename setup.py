@@ -38,7 +38,7 @@ setup(
     install_requires=[
         "lime==0.2.0.1",
         "mip==1.12.0",
-        "numpy==1.16.4",
+        "numpy==1.19.4",
         "pandas==1.1.4",
         "recourse==1.0.0",
         "scikit-learn==0.23.2",
