@@ -124,7 +124,7 @@ Black-Box-Model
         def predict_proba(self, x):
             return self._mymodel.predict_proba(x)
 
-See below a concrete example on how to use a sklearn model in our framework.
+See below a concrete example on how to use a custom model in our framework. Note that the tree_iterator method is specific for tree methods, and is not used for other recourse methods.
 
 .. code-block:: python
    :linenos:
