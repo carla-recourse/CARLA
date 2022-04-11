@@ -9,7 +9,7 @@ setup(
     install_requires=[
         "sphinx_gallery",
         "markupsafe==2.0.1",
-        "scipy==1.6.2",
+        "scipy==1.5.4",
         "lime==0.2.0.1",
         "mip==1.12.0",
         "numpy==1.16.4",
