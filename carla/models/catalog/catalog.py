@@ -103,9 +103,13 @@ class MLModelCatalog(MLModel):
                 )
 
             self._catalog = None
-            self._feature_input_order = list(
-                np.sort(data.continuous + encoded_features)
-            )
+
+            if model_type == "forest":
+                self._feature_input_order = list(np.sort(data.continuous))
+            else:
+                self._feature_input_order = list(
+                    np.sort(data.continuous + encoded_features)
+                )
 
         if load_online:
             self._model = load_online_model(

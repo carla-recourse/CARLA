@@ -17,12 +17,12 @@ dataset and black-box-model.
 .. code-block:: python
    :linenos:
 
-    from carla import DataCatalog, MLModelCatalog
+    from carla import OnlineCatalog, MLModelCatalog
     from carla.recourse_methods import GrowingSpheres
 
     # 1. Load data set from the DataCatalog
     data_name = "adult"
-    dataset = DataCatalog(data_name)
+    dataset = OnlineCatalog(data_name)
 
     # 2. Load pre-trained black-box model from the MLModelCatalog
     model = MLModelCatalog(dataset, "ann")
