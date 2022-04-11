@@ -149,5 +149,5 @@ class MLModel(ABC):
         if isinstance(x, pd.DataFrame):
             return order_data(self.feature_input_order, x)
         else:
-            warnings.warn("cannot re-order for non dataframe input")
+            warnings.warn("cannot re-order features for non dataframe input")
             return x

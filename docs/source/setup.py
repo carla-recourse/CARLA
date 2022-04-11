@@ -12,7 +12,7 @@ setup(
         "scipy==1.6.2",
         "lime==0.2.0.1",
         "mip==1.12.0",
-        "numpy==1.19.4",
+        "numpy==1.16.4",
         "pandas==1.1.4",
         "scikit-learn==0.23.2",
         "tensorflow==1.14.0",
