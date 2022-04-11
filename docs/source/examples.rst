@@ -20,7 +20,7 @@ dataset and black-box-model.
     from carla import OnlineCatalog, MLModelCatalog
     from carla.recourse_methods import GrowingSpheres
 
-    # 1. Load data set from the DataCatalog
+    # 1. Load data set from the OnlineCatalog
     data_name = "adult"
     dataset = OnlineCatalog(data_name)
 
@@ -44,6 +44,26 @@ implementations would still resemble :ref:`quick`.
 
 Data
 ^^^^
+
+The easiest way to use your own data is using the CsvDataset. For this you need to define the continuous and categorical features, which of those are immutable, and the target. Then you just give the file path to your .csv file and you are good to go!
+
+.. code-block:: python
+   :linenos:
+
+   from carla.data.catalog import CsvCatalog
+
+   continuous = ["age", "fnlwgt", "education-num", "capital-gain","hours-per-week", "capital-loss"]
+   categorical = ["marital-status", "native-country", "occupation", "race", "relationship", "sex", "workclass"]
+   immutable = ["age", "sex"]
+
+   dataset = CsvCatalog(file_path="adult.csv",
+                        continuous=continuous,
+                        categorical=categorical,
+                        immutables=immutable,
+                        target='income')
+
+If you want full control over your dataset, you can also implement it from scratch using our api.
+
 .. code-block:: python
    :linenos:
 

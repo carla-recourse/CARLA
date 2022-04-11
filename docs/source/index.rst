@@ -34,8 +34,9 @@ Implemented Counterfactual Methods
 Provided Machine Learning Models
 --------------------------------
 
-- **ANN**: Artificial Neural Network with 2 hidden layers and ReLU activation function
-- **LR**: Linear Model with no hidden layer and no activation function
+- **ANN**: Artificial Neural Network with 2 hidden layers and ReLU activation function.
+- **LR**: Linear Model with no hidden layer and no activation function.
+- **Forest**: Tree Ensemble Model.
 
 Which Recourse Methods work with which ML framework?
 -----------------------------------------------

@@ -23,7 +23,7 @@ class MLModel(ABC):
     predict:
         One-dimensional prediction of ml model for an output interval of [0, 1].
     predict_proba:
-        Two-dimensional probability prediction of ml model
+        Two-dimensional probability prediction of ml model.
 
     Returns
     -------
@@ -55,7 +55,7 @@ class MLModel(ABC):
     @abstractmethod
     def feature_input_order(self):
         """
-        Saves the required order of feature as list.
+        Saves the required order of features as list.
 
         Prevents confusion about correct order of input features in evaluation
 
@@ -83,7 +83,7 @@ class MLModel(ABC):
     @abstractmethod
     def raw_model(self):
         """
-        Contains the raw ml model built on its framework
+        Contains the raw ML model built on its framework
 
         Returns
         -------
@@ -114,7 +114,7 @@ class MLModel(ABC):
     @abstractmethod
     def predict_proba(self, x: Union[np.ndarray, pd.DataFrame]):
         """
-        Two-dimensional probability prediction of ml model
+        Two-dimensional probability prediction of ml model.
 
         Shape of input dimension has to be always two-dimensional (e.g., (1, m), (n, m))
 

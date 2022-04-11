@@ -22,12 +22,11 @@ class MLModelCatalog(MLModel):
     data : data.catalog.DataCatalog Class
         Correct dataset for ML model.
     model_type : {'ann', 'linear', 'forest'}
-        Architecture.
+        The model architecture. Artificial Neural Network, Logistic Regression, and Random Forest respectively.
     backend : {'tensorflow', 'pytorch', 'sklearn', 'xgboost'}
-        Specifies the used framework.
+        Specifies the used framework. Tensorflow and PyTorch only support 'ann' and 'linear'. Sklearn and Xgboost only support 'forest'.
     cache : boolean, default: True
-        If True, try to load from the local cache first, and save to the cache.
-        if a download is required.
+        If True, try to load from the local cache first, and save to the cache if a download is required.
     models_home : string, optional
         The directory in which to cache data; see :func:`get_models_home`.
     kws : keys and values, optional
@@ -172,7 +171,7 @@ class MLModelCatalog(MLModel):
     @property
     def raw_model(self) -> Any:
         """
-        Returns the raw ml model built on its framework
+        Returns the raw ML model built on its framework
 
         Returns
         -------
@@ -285,6 +284,13 @@ class MLModelCatalog(MLModel):
 
     @property
     def tree_iterator(self):
+        """
+        A method needed specifically for tree methods. This method should return a list of individual trees that make up the forest.
+
+        Returns
+        -------
+
+        """
         if self.model_type != "forest":
             return None
         elif self.backend == "sklearn":

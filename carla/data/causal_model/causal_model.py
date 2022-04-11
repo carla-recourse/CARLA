@@ -20,6 +20,7 @@ class CausalModel:
     Attributes
     ----------
     scm: StructuralCausalModel
+    StructuralCausalModel from assignment of the form { variable: Function(parents) }.
     cgm: CausalGraphicalModel
     scm_class: str
         Name of the structural causal model
@@ -62,7 +63,7 @@ class CausalModel:
     def get_topological_ordering(self, node_type="endogenous"):
         """Returns a generator of nodes in topologically sorted order.
 
-        A topological sort is a nonunique permutation of the nodes such that an
+        A topological sort is a non-unique permutation of the nodes such that an
         edge from u to v implies that u appears before v in the topological sort
         order.
 
