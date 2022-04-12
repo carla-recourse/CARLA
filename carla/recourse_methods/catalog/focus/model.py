@@ -171,7 +171,7 @@ class FOCUS(RecourseMethod):
                     )
                     approx_prob = tf.gather_nd(p_model, example_class_index)
 
-                    eps = 10.0 ** -10
+                    eps = 10.0**-10
                     distance = distance_func(
                         self.distance_function, perturbed, original_input, eps
                     )

@@ -24,7 +24,7 @@ class BaseDistribution(ABC):
     def visualize(self):
         plt.hist(self.sample(500), 50, facecolor="green", alpha=0.75)
         plt.ylabel("Count")
-        plt.title(fr"Histogram of {self.name}")
+        plt.title(rf"Histogram of {self.name}")
         plt.grid(True)
         plt.show()
 

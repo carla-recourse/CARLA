@@ -19,12 +19,12 @@ from carla.recourse_methods.processing import check_counterfactuals
 
 
 def _L1_cost_func(a, b):
-    """  The 1-norm ||a-b||_1 """
+    """The 1-norm ||a-b||_1"""
     return np.linalg.norm(a - b, ord=1)
 
 
 def _L2_cost_func(a, b):
-    """ The 2-norm ||a-b||_2 """
+    """The 2-norm ||a-b||_2"""
     return np.linalg.norm(a - b, ord=2)
 
 
@@ -122,7 +122,7 @@ def search_path(tree, class_labels):
     """ search the path to the selected leaf node """
     paths = {}
     for leaf_node in leaf_nodes:
-        """ correspond leaf node to left and right parents """
+        """correspond leaf node to left and right parents"""
         child_node = leaf_node
         parent_node = -100  # initialize
         parents_left = []
@@ -178,18 +178,18 @@ def get_path_info(paths, threshold, feature):
         for idx in range(len(parents_left)):
 
             def do_appends(node_id):
-                """ helper function to reduce duplicate code"""
+                """helper function to reduce duplicate code"""
                 node_ids.append(node_id)
                 thresholds.append(threshold[node_id])
                 features.append(feature[node_id])
 
             if parents_left[idx] != -1:
-                """ the child node is the left child of the parent """
+                """the child node is the left child of the parent"""
                 node_id = parents_left[idx]  # node id
                 inequality_symbols.append(0)
                 do_appends(node_id)
             elif parents_right[idx] != -1:
-                """ the child node is the right child of the parent """
+                """the child node is the right child of the parent"""
                 node_id = parents_right[idx]
                 inequality_symbols.append(1)
                 do_appends(node_id)
@@ -326,7 +326,7 @@ class FeatureTweak(RecourseMethod):
             raise ValueError("tree is not of a supported Class")
 
         x_out = copy.deepcopy(x)  # initialize output
-        delta_mini = 10 ** 3  # initialize cost
+        delta_mini = 10**3  # initialize cost
 
         for tree in self.model.tree_iterator:  # loop over individual trees
 
@@ -337,7 +337,7 @@ class FeatureTweak(RecourseMethod):
             ):
                 paths_info = search_path(tree, class_labels)
                 for key in paths_info:
-                    """ generate epsilon-satisfactory instance """
+                    """generate epsilon-satisfactory instance"""
                     path_info = paths_info[key]
                     es_instance = self.esatisfactory_instance(x, path_info)
                     if (

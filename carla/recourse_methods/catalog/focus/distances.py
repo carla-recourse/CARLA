@@ -22,7 +22,7 @@ def l1_dist(x1, x2, ax: int, eps: float = 0.0):
 def l2_dist(x1, x2, ax: int, eps: float = 0.0):
     # sqrt((sum over x^2) + eps)), i.e. L2 norm
     x = x1 - x2
-    return (tf.reduce_sum(x ** 2, axis=ax) + eps) ** 0.5
+    return (tf.reduce_sum(x**2, axis=ax) + eps) ** 0.5
 
 
 def cosine_dist(x1, x2, ax: int, eps: float = 0.0):

@@ -170,7 +170,7 @@ def build_constraints(data, i, keys_immutable, epsilon=0.5):
     immutable_constraint_matrix1 = ((immutable_constraint_matrix1 == 1) * 1).astype(
         float
     )
-    immutable_constraint_matrix2 = immutable_constraint_matrix / (epsilon ** 2)
+    immutable_constraint_matrix2 = immutable_constraint_matrix / (epsilon**2)
     immutable_constraint_matrix2 = ((immutable_constraint_matrix2 == 1) * 1).astype(
         float
     )
