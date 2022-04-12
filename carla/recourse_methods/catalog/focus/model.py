@@ -109,7 +109,9 @@ class FOCUS(RecourseMethod):
         self.model = mlmodel
 
         if hyperparams["optimizer"] == "adam":
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=hyperparams["lr"])
+            self.optimizer = tf.compat.v1.train.AdamOptimizer(
+                learning_rate=hyperparams["lr"]
+            )
         elif hyperparams["optimizer"] == "gd":
             self.optimizer = tf.train.GradientDescentOptimizer(
                 learning_rate=hyperparams["lr"]
@@ -169,7 +171,7 @@ class FOCUS(RecourseMethod):
                     )
                     approx_prob = tf.gather_nd(p_model, example_class_index)
 
-                    eps = 10.0 ** -10
+                    eps = 10.0**-10
                     distance = distance_func(
                         self.distance_function, perturbed, original_input, eps
                     )
@@ -182,10 +184,10 @@ class FOCUS(RecourseMethod):
                     grad = t.gradient(total_loss, to_optimize)
                     self.optimizer.apply_gradients(
                         zip(grad, to_optimize),
-                        global_step=tf.train.get_or_create_global_step(),
+                        global_step=tf.compat.v1.train.get_or_create_global_step(),
                     )
                     # clip perturbed values between 0 and 1 (inclusive)
-                    tf.assign(
+                    tf.compat.v1.assign(
                         perturbed, tf.math.minimum(1, tf.math.maximum(0, perturbed))
                     )
 
@@ -218,7 +220,7 @@ class FOCUS(RecourseMethod):
 
         # Little bit hacky, but needed as other tf code is graph based.
         # Graph based tf and eager execution for tf don't work together nicely.
-        with tf.Session() as sess:
+        with tf.compat.v1.Session() as sess:
             pf = tfe.py_func(f, [best_perturb], tf.float32)
             best_perturb = sess.run(pf)
 
