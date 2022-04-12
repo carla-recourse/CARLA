@@ -23,7 +23,7 @@ jobs:
       - name: Pre-commit checks
         run: |
           pip install -U pip setuptools wheel
-          pip install pre-commit==1.20.0
+          pip install pre-commit==2.9.2
           pre-commit run --all-files
 
   test:
