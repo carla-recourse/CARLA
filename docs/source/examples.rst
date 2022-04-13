@@ -1,8 +1,7 @@
 Examples
 ========
 
-To get a better insight of how to use CARLA for the different purposes, we will provide here some short example
-implementations.
+To get a better insight of how to use CARLA for the different purposes, we will provide here some short example implementations.
 
 To benchmark an arbitrary recourse method, we provide an example implementation based on :ref:`quick`, in the
 section :ref:`ex_bench`
@@ -98,8 +97,22 @@ If you want full control over your dataset, you can also implement it from scrat
 
        # Non-encoded and  non-normalized, raw data set
        @property
-       def raw(self):
+       def df(self):
            return self._dataset
+
+       @property
+       def df_train(self):
+           return self._dataset_train
+
+       @property
+       def df_test(self):
+            return self._dataset_test
+
+       def transform(self, df):
+            return transformed_df
+
+       def inverse_transform(self, df):
+            return original_df
 
 .. _cstm_model:
 
