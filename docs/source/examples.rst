@@ -30,7 +30,7 @@ dataset and black-box-model.
     gs = GrowingSpheres(model)
 
     # 4. Generate counterfactual examples
-    factuals = dataset.raw.sample(10)
+    factuals = dataset.df.sample(10)
     counterfactuals = gs.get_counterfactuals(factuals)
 
 Customization
