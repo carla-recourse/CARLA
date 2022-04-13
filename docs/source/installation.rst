@@ -18,6 +18,12 @@ Install via pip
 Contributing
 ------------
 
+Before you can start contributing to CARLA, you need to install some development tools.
+These tools makes sure all the code committed is up to standards.
+The following steps guide you trough this process.
+
+Then when your code is ready, you can submit a pull request for review. This way we can take a look if everything works and looks good.
+
 Requirements
 ^^^^^^^^^^^^
 
