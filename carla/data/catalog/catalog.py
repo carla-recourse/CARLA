@@ -26,16 +26,16 @@ class DataCatalog(Data, ABC):
     data_name: str
         What name the dataset should have.
     df: pd.DataFrame
-        The complete dataframe. This is equivalent to the combination of df_train and df_test, although not shuffled.
+        The complete Dataframe. This is equivalent to the combination of df_train and df_test, although not shuffled.
     df_train: pd.DataFrame
-        Training portion of the complete dataframe.
+        Training portion of the complete Dataframe.
     df_test: pd.DataFrame
-        Testing portion of the complete dataframe.
+        Testing portion of the complete Dataframe.
     scaling_method: str, default: MinMax
         Type of used sklearn scaler. Can be set with the property setter to any sklearn scaler.
         Set to "Identity" for no scaling.
     encoding_method: str, default: OneHot
-        Type of OneHotEncoding [OneHot, OneHot_drop_binary]. Additional drop binary decides if one column
+        Type of OneHotEncoding {OneHot, OneHot_drop_binary}. Additional drop binary decides if one column
         is dropped for binary features. Can be set with the property setter to any sklearn encoder.
         Set to "Identity" for no encoding.
 
