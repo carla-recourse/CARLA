@@ -4,6 +4,7 @@
 
 CARLA is a python library to benchmark counterfactual explanation and recourse models. It comes out-of-the box with commonly used datasets and various machine learning models. Designed with extensibility in mind: Easily include your own counterfactual methods, new machine learning models or other datasets.
 
+There is a [tutorial notebook](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/notebooks/how_to_use_carla.html) available for a quick start.
 Find extensive documentation [here](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/)!
 Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 
@@ -12,6 +13,7 @@ Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 - Adult Data Set: [Source](https://archive.ics.uci.edu/ml/datasets/adult)
 - COMPAS: [Source](https://www.kaggle.com/danofer/compass)
 - Give Me Some Credit (GMC): [Source](https://www.kaggle.com/c/GiveMeSomeCredit/data)
+- HELOC: [Source](https://community.fico.com/s/explainable-machine-learning-challenge?tabset-158d9=2)
 
 ### Implemented Counterfactual Methods
 
