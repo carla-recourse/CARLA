@@ -69,7 +69,7 @@ class Data(ABC):
     @abstractmethod
     def df(self):
         """
-        The full dataframe.
+        The full Dataframe.
 
         Returns
         -------
@@ -104,7 +104,7 @@ class Data(ABC):
     @abstractmethod
     def transform(self, df):
         """
-        Data transformation.
+        Data transformation, for example normalization of continuous features and encoding of categorical features.
 
         Parameters
         ----------

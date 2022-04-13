@@ -44,6 +44,42 @@ def powerset(iterable):
 
 
 class CausalRecourse(RecourseMethod):
+    """
+    Implementation of causal recourse [1].
+
+    Parameters
+    ----------
+    mlmodel : carla.model.MLModel
+        Black-Box-Model
+    hyperparams : dict
+        Dictionary containing hyperparameters. See Notes below to see its content.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "optimization_approach": {"brute_force", "gradient_descent"}
+            Choose which optimization approach to use.
+        * "num_samples": int
+        * "scm": CausalModel
+            Class that contains the structural causal model, and has some useful helper methods.
+        * "constraint_handle": method
+            Method that returns a boolean, true if constraint is met.
+        * "sampler_handle": method
+            Method used to sample.
+
+        .. [1] Karimi, A. H., Schölkopf, B., & Valera, I. (2021, March). Algorithmic recourse: from counterfactual
+        explanations to interventions. In Proceedings of the 2021 ACM Conference on Fairness, Accountability, and
+        Transparency (pp. 353-362).
+    """
+
     def __init__(self, mlmodel: MLModelCatalog, hyperparams: Dict):
 
         self._mlmodel = mlmodel
