@@ -3,6 +3,8 @@ Examples
 
 To get a better insight of how to use CARLA for the different purposes, we will provide here some short example implementations.
 
+We also have Tutorial notebooks available, which can be found under contents.
+
 To benchmark an arbitrary recourse method, we provide an example implementation based on :ref:`quick`, in the
 section :ref:`ex_bench`
 
