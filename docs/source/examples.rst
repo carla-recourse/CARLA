@@ -29,7 +29,8 @@ dataset and black-box-model.
     model = MLModelCatalog(dataset, "ann")
 
     # 3. Load recourse model with model specific hyperparameters
-    gs = GrowingSpheres(model)
+    hyperparameters = {}
+    gs = GrowingSpheres(model, hyperparameters)
 
     # 4. Generate counterfactual examples
     factuals = dataset.df.sample(10)
