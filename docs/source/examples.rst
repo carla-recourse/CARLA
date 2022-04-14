@@ -95,24 +95,31 @@ If you want full control over your dataset, you can also implement it from scrat
        def target(self):
            return "label"
 
-       # Non-encoded and  non-normalized, raw data set
+       # The full dataset
        @property
        def df(self):
            return self._dataset
 
+       # The training split of the dataset
        @property
        def df_train(self):
            return self._dataset_train
 
+       # The test split of the dataset
        @property
        def df_test(self):
             return self._dataset_test
 
+       # Data transformation, for example normalization of continuous features
+       # and encoding of categorical features
        def transform(self, df):
             return transformed_df
 
+       # Inverts transform operation
        def inverse_transform(self, df):
             return original_df
+
+For reference you can always take a look at the `data api <https://github.com/carla-recourse/CARLA/blob/main/carla/data/api/data.py>`_. In addition we also have a concrete example of an implementation in our `DataCatalog <https://github.com/carla-recourse/CARLA/blob/main/carla/data/catalog/catalog.py>`_.
 
 .. _cstm_model:
 
