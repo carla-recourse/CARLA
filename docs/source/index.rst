@@ -6,16 +6,11 @@ It comes out-of-the box with commonly used datasets and various machine learning
 Designed with extensibility in mind: Easily include your own counterfactual methods,
 new machine learning models or other datasets.
 
-.. figure:: images/architecture.jpg
+.. image:: images/architecture.jpg
   :width: 800
   :alt: architecture
 
-    Architecture of the CARLA python library. The silver boxes show the individual objects
-    that will be created to generate counterfactual explanations and evaluate recourse methods. Useful
-    explanations to specific processes are illustrated as yellow notes. The dashed arrows are showing
-    the different implementation possibilities; either use pre-defined catalog objects or provide custom
-    implementation. All dependencies between these objects are visualised by solid arrows with an
-    additional description.
+In the above image the architecture of the CARLA python library is shown. The silver boxes show the individual objects that will be created to generate counterfactual explanations and evaluate recourse methods. Useful explanations to specific processes are illustrated as yellow notes. The dashed arrows are showing the different implementation possibilities; either use pre-defined catalog objects or provide custom implementation. All dependencies between these objects are visualised by solid arrows with an additional description.
 
 
 Available Datasets
