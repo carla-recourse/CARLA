@@ -272,6 +272,8 @@ This short code example shows you how to implement a recourse method. Any config
     		[...]
     		return counterfactual_examples
 
+For lots of different example of how to do this, you can take a look at all the methods in our `recourse catalog <https://github.com/carla-recourse/CARLA/tree/main/carla/recourse_methods/catalog>`_. For example the Wachter method is a clean example.
+
 .. _ex_bench:
 
 Benchmarking
