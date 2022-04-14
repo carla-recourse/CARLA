@@ -25,6 +25,7 @@ Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 ### Implemented Counterfactual Methods
 
 - Actionable Recourse (AR): [Paper](https://arxiv.org/pdf/1809.06514.pdf)
+- Causal Recourse: [Paper](https://arxiv.org/abs/2002.06278.pdf)
 - CCHVAE: [Paper](https://arxiv.org/pdf/1910.09398.pdf)
 - Contrastive Explanations Method (CEM): [Paper](https://arxiv.org/pdf/1802.07623.pdf)
 - Counterfactual Latent Uncertainty Explanations (CLUE): [Paper](https://arxiv.org/pdf/2006.06848.pdf)
