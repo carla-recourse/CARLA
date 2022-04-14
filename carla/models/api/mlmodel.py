@@ -132,7 +132,8 @@ class MLModel(ABC):
 
     def get_ordered_features(self, x):
         """
-        Restores the correct input feature order for the ML model, this also drops the target column.
+        Restores the correct input feature order for the ML model, this also drops the columns not in the
+        feature order. So it drops the target column, and possibly other features, e.g. categorical.
 
         Only works for encoded data
 

@@ -122,7 +122,7 @@ If you want full control over your dataset, you can also implement it from scrat
        def inverse_transform(self, df):
             return original_df
 
-For reference you can always take a look at the `data api <https://github.com/carla-recourse/CARLA/blob/main/carla/data/api/data.py>`_. In addition we also have a concrete example of an implementation in our `DataCatalog <https://github.com/carla-recourse/CARLA/blob/main/carla/data/catalog/catalog.py>`_.
+For reference you can always take a look at the `data api <https://github.com/carla-recourse/CARLA/blob/main/carla/data/api/data.py>`_. In addition we also have a concrete example of an implementation of our data api in our `DataCatalog <https://github.com/carla-recourse/CARLA/blob/main/carla/data/catalog/catalog.py>`_.
 
 .. _cstm_model:
 
@@ -186,11 +186,17 @@ See below a concrete example on how to use a custom model in our framework. Note
            df_train = self.data.df_train
            df_test = self.data.df_test
 
+           # we only use the continuous features here
+           # so you might want to also include the categorical
+           # features
            x_train = df_train[self.data.continuous]
            y_train = df_train[self.data.target]
            x_test = df_test[self.data.continuous]
            y_test = df_test[self.data.target]
 
+           # you can not only use the feature input order to
+           # order the data but also to e.g. restrict the input
+           # to only the continous features
            self._feature_input_order = self.data.continuous
 
            param = {
@@ -273,7 +279,7 @@ This short code example shows you how to implement a recourse method. Any config
             # It's expected that there is a single counterfactual per factual,
             # however in case a counterfactual cannot be found it should be NaN.
     		[...]
-    		return counterfactual_examples
+            return counterfactual_examples
 
 For lots of different example of how to do this, you can take a look at all the methods in our `recourse catalog <https://github.com/carla-recourse/CARLA/tree/main/carla/recourse_methods/catalog>`_. For example the Wachter method is a clean example.
 

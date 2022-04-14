@@ -7,6 +7,7 @@ setup(
     version=VERSION,
     package_dir={"carla": "carla"},
     install_requires=[
+        "sphinx-copybutton",
         "sphinx_gallery",
         "markupsafe==2.0.1",
         "scipy==1.6.2",
