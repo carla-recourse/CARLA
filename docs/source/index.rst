@@ -6,6 +6,11 @@ It comes out-of-the box with commonly used datasets and various machine learning
 Designed with extensibility in mind: Easily include your own counterfactual methods,
 new machine learning models or other datasets.
 
+.. image:: images/architecture.pdf
+  :width: 400
+  :alt: architecture
+
+
 Available Datasets
 ------------------
 
