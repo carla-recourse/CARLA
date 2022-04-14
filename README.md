@@ -2,7 +2,9 @@
 
 # CARLA - Counterfactual And Recourse Library
 
-![carla logo](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/carla_logo.png?raw=true)
+![carla logo](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo.png?raw=true)
+
+![motivating example](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/motivating_cartoon.png?raw=true)
 
 CARLA is a python library to benchmark counterfactual explanation and recourse models. It comes out-of-the box with commonly used datasets and various machine learning models. Designed with extensibility in mind: Easily include your own counterfactual methods, new machine learning models or other datasets.
 
