@@ -26,8 +26,6 @@ class GrowingSpheres(RecourseMethod):
     -------
     get_counterfactuals:
         Generate counterfactual examples for given factuals.
-    encode_normalize_order_factuals:
-        Uses encoder and scaler from black-box-model to preprocess data as needed.
 
     Notes
     -----

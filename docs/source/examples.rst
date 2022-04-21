@@ -17,12 +17,12 @@ dataset and black-box-model.
 .. code-block:: python
    :linenos:
 
-    from carla import DataCatalog, MLModelCatalog
+    from carla import OnlineCatalog, MLModelCatalog
     from carla.recourse_methods import GrowingSpheres
 
-    # 1. Load data set from the DataCatalog
+    # 1. Load data set from the OnlineCatalog
     data_name = "adult"
-    dataset = DataCatalog(data_name)
+    dataset = OnlineCatalog(data_name)
 
     # 2. Load pre-trained black-box model from the MLModelCatalog
     model = MLModelCatalog(dataset, "ann")
@@ -44,6 +44,26 @@ implementations would still resemble :ref:`quick`.
 
 Data
 ^^^^
+
+The easiest way to use your own data is using the CsvDataset. For this you need to define the continuous and categorical features, which of those are immutable, and the target. Then you just give the file path to your .csv file and you are good to go!
+
+.. code-block:: python
+   :linenos:
+
+   from carla.data.catalog import CsvCatalog
+
+   continuous = ["age", "fnlwgt", "education-num", "capital-gain","hours-per-week", "capital-loss"]
+   categorical = ["marital-status", "native-country", "occupation", "race", "relationship", "sex", "workclass"]
+   immutable = ["age", "sex"]
+
+   dataset = CsvCatalog(file_path="adult.csv",
+                        continuous=continuous,
+                        categorical=categorical,
+                        immutables=immutable,
+                        target='income')
+
+If you want full control over your dataset, you can also implement it from scratch using our api.
+
 .. code-block:: python
    :linenos:
 
@@ -99,12 +119,6 @@ Black-Box-Model
             # arbitrary black-box-model
             self._mymodel = load_model()
 
-            # Define a fitted sklearn scaler to normalize input data
-            self.scaler = MySklearnScaler().fit()
-
-            # Define a fitted sklearn encoder for binary input data
-            self.encoder = MySklearnEncoder.fit()
-
         # List of the feature order the ml model was trained on
         @property
         def feature_input_order(self):
@@ -130,6 +144,79 @@ Black-Box-Model
         def predict_proba(self, x):
             return self._mymodel.predict_proba(x)
 
+See below a concrete example on how to use a custom model in our framework. Note that the tree_iterator method is specific for tree methods, and is not used for other recourse methods.
+
+.. code-block:: python
+   :linenos:
+
+   from carla import MLModel
+   import xgboost
+
+   class XGBoostModel(MLModel):
+       """The default way of implementing XGBoost
+       https://xgboost.readthedocs.io/en/latest/python/python_intro.html"""
+
+       def __init__(self, data):
+           super().__init__(data)
+
+           # get preprocessed data
+           df_train = self.data.df_train
+           df_test = self.data.df_test
+
+           x_train = df_train[self.data.continuous]
+           y_train = df_train[self.data.target]
+           x_test = df_test[self.data.continuous]
+           y_test = df_test[self.data.target]
+
+           self._feature_input_order = self.data.continuous
+
+           param = {
+               "max_depth": 2,  # determines how deep the tree can go
+               "objective": "binary:logistic",  # determines the loss function
+               "n_estimators": 5,
+           }
+           self._mymodel = xgboost.XGBClassifier(**param)
+           self._mymodel.fit(
+                   x_train,
+                   y_train,
+                   eval_set=[(x_train, y_train), (x_test, y_test)],
+                   eval_metric="logloss",
+                   verbose=True,
+               )
+
+       @property
+       def feature_input_order(self):
+           # List of the feature order the ml model was trained on
+           return self._feature_input_order
+
+       @property
+       def backend(self):
+           # The ML framework the model was trained on
+           return "xgboost"
+
+       @property
+       def raw_model(self):
+           # The black-box model object
+           return self._mymodel
+
+       @property
+       def tree_iterator(self):
+           # make a copy of the trees, else feature names are not saved
+           booster_it = [booster for booster in self.raw_model.get_booster()]
+           # set the feature names
+           for booster in booster_it:
+               booster.feature_names = self.feature_input_order
+           return booster_it
+
+       # The predict function outputs
+       # the continuous prediction of the model
+       def predict(self, x):
+           return self._mymodel.predict(self.get_ordered_features(x))
+
+       # The predict_proba method outputs
+       # the prediction as class probabilities
+       def predict_proba(self, x):
+           return self._mymodel.predict_proba(self.get_ordered_features(x))
 
 .. _cstm_rec:
 
