@@ -20,10 +20,12 @@ def stripplot(diff, factuals, ax):
 
     """
     jitter = 0.3
-
     delta = np.random.uniform(-jitter / 2, jitter / 2, len(diff.melt()["value"]))
 
-    ax = sns.stripplot(
+    """
+    Create the figure
+    """
+    sns.stripplot(
         x=diff.melt()["value"] + delta,
         y=diff.melt()["variable"],
         hue=factuals.melt()["value"],
@@ -31,11 +33,15 @@ def stripplot(diff, factuals, ax):
         jitter=jitter,
         alpha=0.5,
         s=7,
+        ax=ax,
     )
 
     ax.set_xlabel("change")
-    ax.set_ylabel("feature")
+    ax.set_ylabel("")
 
+    """
+    Create the colorbar
+    """
     # Get a mappable object with the same colormap as the data
     points = plt.scatter([], [], c=[], vmin=0.0, vmax=1.0, cmap="coolwarm")
 
