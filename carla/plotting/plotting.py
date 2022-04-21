@@ -50,7 +50,7 @@ def single_sample_plot(factual, counterfactual, figsize=(7, 7)):
     barplot(diff, ax)
 
 
-def summary_plot(factuals, counterfactuals, data, topn, figsize=(15, 7)):
+def summary_plot(factuals, counterfactuals, data, topn=5, figsize=(15, 7)):
     """
     Create a swarmplot for the continuous features, and a stripplot for the categorical features.
 
