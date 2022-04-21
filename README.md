@@ -80,7 +80,7 @@ It is planned to make all recourse methods available for all ML frameworks . The
 pip install carla-recourse
 ```
 
-## Usage Example
+## Quickstart
 
 
 ```python
