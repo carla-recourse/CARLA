@@ -94,6 +94,7 @@ If you use this codebase, please cite: ::
    mlmodel
    recourse
    benchmarking
+   plotting
    license
 
 Indices and tables
