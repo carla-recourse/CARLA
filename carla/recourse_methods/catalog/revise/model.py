@@ -137,6 +137,14 @@ class Revise(RecourseMethod):
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
+        factuals = pd.concat(
+            [
+                self._mlmodel.get_ordered_features(factuals),
+                factuals[self._mlmodel.data.target],
+            ],
+            axis=1,
+        )
+
         # pay attention to categorical features
         encoded_feature_names = self._mlmodel.data.encoder.get_feature_names(
             self._mlmodel.data.categorical
