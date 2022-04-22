@@ -24,7 +24,7 @@ def _most_important_features(diff, topn):
     return importance.sort_values(ascending=False).head(topn).index
 
 
-def single_sample_plot(factual, counterfactual, figsize=(7, 7)):
+def single_sample_plot(factual, counterfactual, data, figsize=(7, 7)):
     """
     Create a bar plot for a single sample.
 
@@ -45,9 +45,15 @@ def single_sample_plot(factual, counterfactual, figsize=(7, 7)):
     """
     fig, ax = plt.subplots(figsize=figsize)
 
+    # Get the continuous and categorical column names
+    cont_cols = data.continuous
+    cat_cols = [
+        c for c in counterfactual.index if c not in data.continuous and c != data.target
+    ]
+
     # Compute difference
     diff = counterfactual - factual
-    barplot(diff, ax)
+    barplot(diff[cont_cols + cat_cols], ax)
 
 
 def summary_plot(factuals, counterfactuals, data, topn=5, figsize=(15, 7)):
@@ -76,9 +82,11 @@ def summary_plot(factuals, counterfactuals, data, topn=5, figsize=(15, 7)):
 
     # Get the continuous and categorical column names
     cont_cols = data.continuous
-    cat_cols = list(
-        set(counterfactuals.columns) - set(data.continuous) - set(data.target)
-    )
+    cat_cols = [
+        c
+        for c in counterfactuals.columns
+        if c not in data.continuous and c != data.target
+    ]
 
     # Compute difference
     diff = counterfactuals - factuals
