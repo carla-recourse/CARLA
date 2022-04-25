@@ -71,7 +71,7 @@ class CRUD(RecourseMethod):
         "optimizer": "RMSprop",
         "lr": 0.008,
         "max_iter": 2000,
-        "binary_cat_features": False,
+        "binary_cat_features": True,
         "vae_params": {
             "layers": None,
             "train": True,

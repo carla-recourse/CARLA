@@ -312,7 +312,7 @@ def test_wachter(model_type):
     factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:10]
 
-    hyperparams = {"loss_type": "BCE", "binary_cat_features": False}
+    hyperparams = {"loss_type": "BCE", "binary_cat_features": True}
     df_cfs = Wachter(model, hyperparams).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
@@ -347,7 +347,7 @@ def test_revise(model_type):
         "max_iter": 1500,
         "target_class": [0, 1],
         "vae_params": vae_params,
-        "binary_cat_features": False,
+        "binary_cat_features": True,
     }
 
     revise = Revise(model, data, hyperparams)
@@ -375,7 +375,7 @@ def test_cchvae(model_type):
         "step": 0.1,
         "max_iter": 1000,
         "clamp": True,
-        "binary_cat_features": False,
+        "binary_cat_features": True,
         "vae_params": {
             "layers": [len(model.feature_input_order), 512, 256, 8],
             "train": True,
@@ -412,7 +412,7 @@ def test_crud(model_type):
         "optimizer": "RMSprop",
         "lr": 0.008,
         "max_iter": 2000,
-        "binary_cat_features": False,
+        "binary_cat_features": True,
         "vae_params": {
             "layers": [len(model.feature_input_order), 16, 8],
             "train": True,
