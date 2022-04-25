@@ -370,4 +370,5 @@ class FeatureTweak(RecourseMethod):
             counterfactuals.append(counterfactual)
 
         counterfactuals_df = check_counterfactuals(self._mlmodel, counterfactuals)
+        counterfactuals_df = self._mlmodel.get_ordered_features(counterfactuals_df)
         return counterfactuals_df
