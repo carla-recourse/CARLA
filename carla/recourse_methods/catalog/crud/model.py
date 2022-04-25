@@ -149,5 +149,5 @@ class CRUD(RecourseMethod):
         cf_df = check_counterfactuals(
             self._mlmodel, df_cfs.drop(self._mlmodel.data.target, axis=1)
         )
-
+        cf_df = self._mlmodel.get_ordered_features(cf_df)
         return cf_df

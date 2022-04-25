@@ -150,7 +150,7 @@ class Revise(RecourseMethod):
         )
 
         cf_df = check_counterfactuals(self._mlmodel, list_cfs)
-
+        cf_df = self._mlmodel.get_ordered_features(cf_df)
         return cf_df
 
     def _counterfactual_optimization(self, cat_features_indices, device, df_fact):
