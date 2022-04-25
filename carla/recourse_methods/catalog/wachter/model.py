@@ -63,7 +63,7 @@ class Wachter(RecourseMethod):
         "t_max_min": 0.5,
         "norm": 1,
         "clamp": True,
-        "loss_type": "MSE",
+        "loss_type": "BCE",
         "y_target": [0, 1],
         "binary_cat_features": True,
     }
