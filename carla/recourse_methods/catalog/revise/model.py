@@ -162,7 +162,7 @@ class Revise(RecourseMethod):
         )
 
         list_cfs = []
-        for query_instance, _ in test_loader:
+        for query_instance in test_loader:
 
             target = torch.FloatTensor(self._target_class).to(device)
             target_prediction = np.argmax(np.array(self._target_class))
