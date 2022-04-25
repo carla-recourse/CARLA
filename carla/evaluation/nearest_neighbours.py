@@ -27,14 +27,15 @@ def yNN(
     number_of_diff_labels = 0
     N = counterfactuals.shape[0]
 
-    nbrs = NearestNeighbors(n_neighbors=y).fit(mlmodel.data.df.values)
+    factuals = mlmodel.get_ordered_features(mlmodel.data.df)
+    nbrs = NearestNeighbors(n_neighbors=y).fit(factuals.values)
 
     for i, row in counterfactuals.iterrows():
         knn = nbrs.kneighbors(row.values.reshape((1, -1)), y, return_distance=False)[0]
         cf_label = row[mlmodel.data.target]
 
         for idx in knn:
-            neighbour = mlmodel.data.df.iloc[idx]
+            neighbour = factuals.iloc[idx]
             neighbour = neighbour.drop(mlmodel.data.target)
             neighbour = neighbour.values.reshape((1, -1))
             neighbour_label = np.argmax(mlmodel.predict_proba(neighbour))

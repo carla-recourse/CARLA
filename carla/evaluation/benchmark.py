@@ -68,7 +68,7 @@ class Benchmark:
         if isinstance(mlmodel, MLModelCatalog):
             self._mlmodel.use_pipeline = False  # type: ignore
 
-        self._factuals = factuals.copy()
+        self._factuals = self._mlmodel.get_ordered_features(factuals.copy())
 
     def compute_ynn(self) -> pd.DataFrame:
         """
