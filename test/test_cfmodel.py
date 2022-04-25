@@ -312,7 +312,7 @@ def test_wachter(model_type):
     factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:10]
 
-    hyperparams = {"loss_type": "BCE", "binary_cat_features": False}
+    hyperparams = {"loss_type": "MSE", "binary_cat_features": True, "y_target": [1]}
     df_cfs = Wachter(model, hyperparams).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]

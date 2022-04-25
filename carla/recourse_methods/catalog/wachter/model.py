@@ -100,6 +100,7 @@ class Wachter(RecourseMethod):
                 self._mlmodel.raw_model,
                 x.reshape((1, -1)),
                 cat_features_indices,
+                y_target=self._y_target,
                 binary_cat_features=self._binary_cat_features,
                 feature_costs=self._feature_costs,
                 lr=self._lr,
