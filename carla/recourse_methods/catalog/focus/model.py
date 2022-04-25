@@ -130,7 +130,7 @@ class FOCUS(RecourseMethod):
 
         def f(best_perturb):
             # doesn't work with categorical features, so they aren't used
-            original_input = factuals[self.model.data.continuous]
+            original_input = self.model.get_ordered_features(factuals)
             original_input = original_input.to_numpy()
             ground_truth = self.model.predict(original_input)
 
