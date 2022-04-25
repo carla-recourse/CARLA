@@ -10,7 +10,7 @@ def test_yNN():
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
-    model_tf = MLModelCatalog(data, "ann")
+    model_tf = MLModelCatalog(data, "ann", backend="pytorch")
     # get factuals
     factuals = predict_negative_instances(model_tf, data.df)
 
@@ -20,6 +20,6 @@ def test_yNN():
     dice = Dice(model_tf, hyperparams)
     cfs = dice.get_counterfactuals(factuals=test_factual)
 
-    ynn = yNN(cfs, dice, model_tf, 5)
+    ynn = yNN(cfs, model_tf, 5, cf_label=1)
 
     assert 0 <= ynn <= 1

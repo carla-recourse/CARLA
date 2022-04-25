@@ -85,10 +85,7 @@ class Benchmark:
         if counterfactuals_without_nans.empty:
             ynn = np.nan
         else:
-            ynn = yNN(
-                counterfactuals_without_nans, self._recourse_method, self._mlmodel, 5
-            )
-
+            ynn = yNN(counterfactuals_without_nans, self._mlmodel, 5, cf_label=1)
         columns = ["y-Nearest-Neighbours"]
 
         return pd.DataFrame([[ynn]], columns=columns)
