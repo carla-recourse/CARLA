@@ -121,6 +121,8 @@ def initialize_recourse_method(
         return Revise(mlmodel, data, hyperparams)
     elif "wachter" in method:
         return Wachter(mlmodel, hyperparams)
+    elif "geco" == method:
+        return GeCo(mlmodel, hyperparams)
     else:
         raise ValueError("Recourse method not known")
 
@@ -159,6 +161,7 @@ parser.add_argument(
         "gs",
         "revise",
         "wachter",
+        "geco",
     ],
     choices=[
         "dice",
@@ -173,6 +176,7 @@ parser.add_argument(
         "gs",
         "revise",
         "wachter",
+        "geco",
     ],
     help="Recourse methods for experiment",
 )
@@ -180,7 +184,7 @@ parser.add_argument(
     "-n",
     "--number_of_samples",
     type=int,
-    default=100,
+    default=5,
     help="Number of instances per dataset",
 )
 parser.add_argument(
@@ -195,7 +199,7 @@ setup = load_setup()
 
 results = pd.DataFrame()
 
-path = args.path
+path =  "results2.csv"
 
 session_models = ["cem", "cem-vae"]
 torch_methods = ["cchvae", "clue", "cruds", "wachter", "revise"]

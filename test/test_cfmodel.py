@@ -18,6 +18,7 @@ from carla.recourse_methods.catalog.focus import FOCUS
 from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
 from carla.recourse_methods.catalog.revise import Revise
 from carla.recourse_methods.catalog.wachter import Wachter
+from carla.recourse_methods.catalog.geco import GeCo
 
 testmodel = ["ann", "linear"]
 
@@ -426,4 +427,23 @@ def test_crud(model_type):
     df_cfs = crud.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
+    assert isinstance(df_cfs, pd.DataFrame)
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_geco(model_type):
+    # Build data and mlmodel
+    data_name = "adult"
+    data = OnlineCatalog(data_name)
+
+    model_tf = MLModelCatalog(data, model_type)
+    # get factuals
+    factuals = predict_negative_instances(model_tf, data.df)
+    test_factual = factuals.iloc[:5]
+
+    geco = GeCo(model_tf)
+    df_cfs = geco.get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
     assert isinstance(df_cfs, pd.DataFrame)

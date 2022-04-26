@@ -15,4 +15,5 @@ from .catalog import (
     GrowingSpheres,
     Revise,
     Wachter,
+    GeCo,
 )
