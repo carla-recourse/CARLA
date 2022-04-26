@@ -171,7 +171,10 @@ class Benchmark:
             redundancies = []
         else:
             redundancies = redundancy(
-                factual_without_nans, counterfactuals_without_nans, self._mlmodel
+                factual_without_nans,
+                counterfactuals_without_nans,
+                self._mlmodel,
+                cf_label=1,
             )
 
         columns = ["Redundancy"]
