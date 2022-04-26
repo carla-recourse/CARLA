@@ -34,7 +34,7 @@ Implemented Counterfactual Methods
 - Feasible and Actionable Counterfactual Explanations (FACE): `FACE <https://arxiv.org/pdf/1909.09369.pdf>`_
 - FeatureTweak: `FeatureTweak <https://arxiv.org/pdf/1706.06691.pdf>`_
 - FOCUS: `FOCUS <https://arxiv.org/pdf/1911.12199.pdf>`_
-- Growing Sphere (GS): `GS <https://arxiv.org/pdf/1910.09398.pdf>`_
+- Growing Sphere (GS): `GS <https://arxiv.org/pdf/1712.08443.pdf>`_
 - Revise: `Revise <https://arxiv.org/pdf/1907.09615.pdf>`_
 - Wachter: `Wachter <https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf>`_
 

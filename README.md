@@ -36,7 +36,7 @@ Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 - CRUDS: [Paper](https://finale.seas.harvard.edu/files/finale/files/cruds-_counterfactual_recourse_using_disentangled_subspaces.pdf)
 - Diverse Counterfactual Explanations (DiCE): [Paper](https://arxiv.org/pdf/1905.07697.pdf)
 - Feasible and Actionable Counterfactual Explanations (FACE): [Paper](https://arxiv.org/pdf/1909.09369.pdf)
-- Growing Sphere (GS): [Paper](https://arxiv.org/pdf/1910.09398.pdf)
+- Growing Sphere (GS): [Paper](https://arxiv.org/pdf/1712.08443.pdf)
 - Revise: [Paper](https://arxiv.org/pdf/1907.09615.pdf)
 - Wachter: [Paper](https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf)
 - FOCUS: [Paper](https://arxiv.org/pdf/1911.12199.pdf)
