@@ -41,7 +41,7 @@ def test_feature_tweak_get_counterfactuals(backend):
     feature_tweak = FeatureTweak(model, hyperparams)
     cfs = feature_tweak.get_counterfactuals(test_factual)
 
-    assert test_factual[data.continuous + [data.target]].shape == cfs.shape
+    assert test_factual[data.continuous].shape == cfs.shape
     assert isinstance(cfs, pd.DataFrame)
 
 
@@ -99,7 +99,7 @@ def test_dice_get_counterfactuals(model_type):
     cfs[data.target] = df_cfs[data.target]
 
     assert test_factual.shape[0] == cfs.shape[0]
-    assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
+    assert (cfs.columns == model_tf.feature_input_order).all()
     assert isinstance(cfs, pd.DataFrame)
 
 
@@ -135,7 +135,7 @@ def test_ar_get_counterfactual(model_type):
     ).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == cfs.shape[0]
-    assert (cfs.columns == model_tf.feature_input_order + [data.target]).all()
+    assert (cfs.columns == model_tf.feature_input_order).all()
     assert isinstance(cfs, pd.DataFrame)
 
 
@@ -178,7 +178,9 @@ def test_cem_get_counterfactuals(model_type):
 
             counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
 
-    assert counterfactuals_df.shape == test_factuals.shape
+    assert (
+        counterfactuals_df.shape == model_ann.get_ordered_features(test_factuals).shape
+    )
     assert isinstance(counterfactuals_df, pd.DataFrame)
 
 
@@ -221,7 +223,9 @@ def test_cem_vae(model_type):
 
             counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
 
-    assert counterfactuals_df.shape == test_factuals.shape
+    assert (
+        counterfactuals_df.shape == model_ann.get_ordered_features(test_factuals).shape
+    )
     assert isinstance(counterfactuals_df, pd.DataFrame)
 
 
@@ -242,14 +246,14 @@ def test_face_get_counterfactuals(model_type):
     df_cfs = face.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
-    assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
+    assert (df_cfs.columns == model_tf.feature_input_order).all()
 
     # Test for epsilon mode
     face.mode = "epsilon"
     df_cfs = face.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
-    assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
+    assert (df_cfs.columns == model_tf.feature_input_order).all()
     assert isinstance(df_cfs, pd.DataFrame)
 
 
@@ -268,7 +272,7 @@ def test_growing_spheres(model_type):
     df_cfs = gs.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
-    assert (df_cfs.columns == model_tf.feature_input_order + [data.target]).all()
+    assert (df_cfs.columns == model_tf.feature_input_order).all()
     assert isinstance(df_cfs, pd.DataFrame)
 
 
@@ -297,7 +301,7 @@ def test_clue(model_type):
     df_cfs = Clue(data, model, hyperparams).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
-    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+    assert (df_cfs.columns == model.feature_input_order).all()
     assert isinstance(df_cfs, pd.DataFrame)
 
 
@@ -316,7 +320,7 @@ def test_wachter(model_type):
     df_cfs = Wachter(model, hyperparams).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
-    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+    assert (df_cfs.columns == model.feature_input_order).all()
     assert isinstance(df_cfs, pd.DataFrame)
 
 
@@ -354,7 +358,7 @@ def test_revise(model_type):
     df_cfs = revise.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
-    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+    assert (df_cfs.columns == model.feature_input_order).all()
     assert isinstance(df_cfs, pd.DataFrame)
 
 
@@ -390,7 +394,7 @@ def test_cchvae(model_type):
     df_cfs = cchvae.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
-    assert (df_cfs.columns == model.feature_input_order + [data.target]).all()
+    assert (df_cfs.columns == model.feature_input_order).all()
     assert isinstance(df_cfs, pd.DataFrame)
 
 
