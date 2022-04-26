@@ -28,7 +28,7 @@ def train_variational_autoencoder(
     lr=1e-3,
     batch_size=32,
 ):
-    df_dataset = data.df[input_order]
+    df_dataset = data.df[input_order + [data.target]]
 
     vae.fit(df_dataset.values, lambda_reg, epochs, lr, batch_size)
     vae.eval()

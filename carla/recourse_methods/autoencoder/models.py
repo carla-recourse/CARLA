@@ -285,7 +285,7 @@ class VariationalAutoencoder(nn.Module):
             train_loss_num = 0
 
             # Train for all the batches
-            for data in train_loader:
+            for data, _ in train_loader:
                 data = data.view(data.shape[0], -1)
 
                 # forward pass

@@ -5,11 +5,12 @@ from torch.utils.data import Dataset
 
 class VAEDataset(Dataset):
     """
-    Reads dataframe all the columns are the features.
+    Reads dataframe where last column is the label and the other columns are the features.
     """
 
     def __init__(self, data: np.ndarray):
-        x = data
+        # all columns except the last
+        x = data[:, :-1]
 
         # PyTorch
         device = "cuda" if torch.cuda.is_available() else "cpu"
