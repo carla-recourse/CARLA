@@ -96,7 +96,6 @@ def test_dice_get_counterfactuals(model_type):
     df_cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
 
     cfs = model_tf.get_ordered_features(df_cfs)
-    cfs[data.target] = df_cfs[data.target]
 
     assert test_factual.shape[0] == cfs.shape[0]
     assert (cfs.columns == model_tf.feature_input_order).all()

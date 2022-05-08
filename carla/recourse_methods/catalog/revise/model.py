@@ -158,11 +158,11 @@ class Revise(RecourseMethod):
     def _counterfactual_optimization(self, cat_features_indices, device, df_fact):
         # prepare data for optimization steps
         test_loader = torch.utils.data.DataLoader(
-            VAEDataset(df_fact.values), batch_size=1, shuffle=False
+            VAEDataset(df_fact.values, with_target=False), batch_size=1, shuffle=False
         )
 
         list_cfs = []
-        for query_instance, _ in test_loader:
+        for query_instance in test_loader:
 
             target = torch.FloatTensor(self._target_class).to(device)
             target_prediction = np.argmax(np.array(self._target_class))
