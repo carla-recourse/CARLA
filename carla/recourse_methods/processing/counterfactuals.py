@@ -3,7 +3,6 @@ from typing import Dict, List, Union
 import numpy as np
 import pandas as pd
 import torch
-from pandas import Index
 
 from carla.models.api import MLModel
 
@@ -11,7 +10,7 @@ from carla.models.api import MLModel
 def check_counterfactuals(
     mlmodel: MLModel,
     counterfactuals: Union[List, pd.DataFrame],
-    factuals_index: Index,
+    factuals_index: pd.Index,
     negative_label: int = 0,
 ) -> pd.DataFrame:
     """
