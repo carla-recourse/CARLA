@@ -6,7 +6,10 @@ import recourse as rs
 from lime.lime_tabular import LimeTabularExplainer
 
 from carla import log
-from carla.recourse_methods.processing import encode_feature_names
+from carla.recourse_methods.processing import (
+    check_counterfactuals,
+    encode_feature_names,
+)
 
 from ...api import RecourseMethod
 from ...processing.counterfactuals import merge_default_parameters
@@ -250,5 +253,6 @@ class ActionableRecourse(RecourseMethod):
         df_cfs[self._mlmodel.data.target] = np.argmax(
             self._mlmodel.predict_proba(cfs), axis=1
         )
-
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
+        df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs
