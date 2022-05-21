@@ -4,6 +4,7 @@ import dice_ml
 import pandas as pd
 
 from carla.models.api import MLModel
+from carla.recourse_methods.processing import check_counterfactuals
 
 from ...api import RecourseMethod
 from ...processing import merge_default_parameters
@@ -91,5 +92,6 @@ class Dice(RecourseMethod):
 
         list_cfs = dice_exp.cf_examples_list
         df_cfs = pd.concat([cf.final_cfs_df for cf in list_cfs], ignore_index=True)
-
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
+        df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs
