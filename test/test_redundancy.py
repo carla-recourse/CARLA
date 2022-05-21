@@ -21,7 +21,7 @@ def test_redundancy():
 
     cfs = Dice(model_tf, hyperparams).get_counterfactuals(factuals=test_factual)
 
-    red = redundancy(factuals, cfs, model_tf)
+    red = redundancy(factuals, cfs, model_tf, cf_label=1)
 
     expected = (5, 1)
     actual = np.array(red).shape
