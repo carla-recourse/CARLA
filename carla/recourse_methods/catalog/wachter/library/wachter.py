@@ -40,7 +40,7 @@ def wachter_recourse(
     feature_costs: List with costs per feature
     lr: learning rate for gradient descent
     lambda_param: weight factor for feature_cost
-    y_target: List of one-hot-encoded target class
+    y_target: Tuple of class probabilities (BCE loss) or [Float] for logit score (MSE loss).
     n_iter: maximum number of iteration
     t_max_min: maximum time of search
     norm: L-norm to calculate cost
@@ -70,18 +70,32 @@ def wachter_recourse(
     )
 
     optimizer = optim.Adam([x_new], lr, amsgrad=True)
-    softmax = nn.Softmax()
 
     if loss_type == "MSE":
+        if len(y_target) != 1:
+            raise ValueError(f"y_target {y_target} is not a single logit score")
+
+        # If logit is above 0.0 we want class 1, else class 0
+        target_class = int(y_target[0] > 0.0)
         loss_fn = torch.nn.MSELoss()
-        f_x_new = softmax(torch_model(x_new))[1]
-    else:
+    elif loss_type == "BCE":
+        if y_target[0] + y_target[1] != 1.0:
+            raise ValueError(
+                f"y_target {y_target} does not contain 2 valid class probabilities"
+            )
+
+        # [0, 1] for class 1, [1, 0] for class 0
+        # target is the class probability of class 1
+        target_class = y_target[1]
         loss_fn = torch.nn.BCELoss()
-        f_x_new = torch_model(x_new)[:, 1]
+    else:
+        raise ValueError(f"loss_type {loss_type} not supported")
+
+    # get the probablity of the target class
+    f_x_new = torch_model(x_new)[:, target_class]
 
     t0 = datetime.datetime.now()
     t_max = datetime.timedelta(minutes=t_max_min)
-
     while f_x_new <= DECISION_THRESHOLD:
         it = 0
         while f_x_new <= 0.5 and it < n_iter:
@@ -90,8 +104,17 @@ def wachter_recourse(
                 x_new, cat_feature_indices, binary_cat_features
             )
             # use x_new_enc for prediction results to ensure constraints
-            f_x_new = softmax(torch_model(x_new_enc))[:, 1]
-            f_x_new_binary = torch_model(x_new_enc).squeeze(axis=0)
+            # get the probablity of the target class
+            f_x_new = torch_model(x_new_enc)[:, target_class]
+
+            if loss_type == "MSE":
+                # single logit score for the target class for MSE loss
+                f_x_loss = torch.log(f_x_new / (1 - f_x_new))
+            elif loss_type == "BCE":
+                # tuple output for BCE loss
+                f_x_loss = torch_model(x_new_enc).squeeze(axis=0)
+            else:
+                raise ValueError(f"loss_type {loss_type} not supported")
 
             cost = (
                 torch.dist(x_new_enc, x, norm)
@@ -99,7 +122,7 @@ def wachter_recourse(
                 else torch.norm(feature_costs * (x_new_enc - x), norm)
             )
 
-            loss = loss_fn(f_x_new_binary, y_target) + lamb * cost
+            loss = loss_fn(f_x_loss, y_target) + lamb * cost
             loss.backward()
             optimizer.step()
             # clamp potential CF
