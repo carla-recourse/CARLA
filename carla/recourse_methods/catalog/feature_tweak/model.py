@@ -357,7 +357,7 @@ class FeatureTweak(RecourseMethod):
         instances = instances.reset_index(drop=True)
 
         # only works for continuous data
-        instances = instances[self.data.continuous]
+        instances = self.model.get_ordered_features(instances)
 
         class_labels = [0, 1]
 
@@ -370,4 +370,5 @@ class FeatureTweak(RecourseMethod):
             counterfactuals.append(counterfactual)
 
         counterfactuals_df = check_counterfactuals(self._mlmodel, counterfactuals)
+        counterfactuals_df = self._mlmodel.get_ordered_features(counterfactuals_df)
         return counterfactuals_df
