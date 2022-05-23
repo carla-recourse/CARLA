@@ -184,7 +184,7 @@ parser.add_argument(
     "-n",
     "--number_of_samples",
     type=int,
-    default=5,
+    default=100,
     help="Number of instances per dataset",
 )
 parser.add_argument(
