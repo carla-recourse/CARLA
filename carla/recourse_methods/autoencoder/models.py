@@ -261,7 +261,7 @@ class VariationalAutoencoder(nn.Module):
     def fit(
         self, xtrain: np.ndarray, lambda_reg=1e-6, epochs=5, lr=1e-3, batch_size=32
     ):
-        train_set = VAEDataset(xtrain)
+        train_set = VAEDataset(xtrain, with_target=True)
 
         train_loader = torch.utils.data.DataLoader(
             train_set, batch_size=batch_size, shuffle=True

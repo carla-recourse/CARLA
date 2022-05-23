@@ -7,6 +7,10 @@ CARLA is a python library to benchmark counterfactual explanation and recourse m
 Find extensive documentation [here](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/)!
 Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 
+### Notebooks / Examples
+
+- Plotting (notebook): [Source](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/feature-plotting/notebooks/plotting_example.html)
+
 ### Available Datasets
 
 - Adult Data Set: [Source](https://archive.ics.uci.edu/ml/datasets/adult)

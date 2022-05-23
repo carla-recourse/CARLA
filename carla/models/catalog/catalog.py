@@ -370,11 +370,6 @@ class MLModelCatalog(MLModel):
             x_train = self.get_ordered_features(x_train)
             x_test = self.get_ordered_features(x_test)
 
-            # TODO for now only forest recourse with continuous features is supported
-            if self.model_type == "forest":
-                x_train = df_train[self._continuous]
-                x_test = df_test[self._continuous]
-
             self._model = train_model(
                 self,
                 x_train,

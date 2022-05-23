@@ -37,46 +37,6 @@ class LinearModel(nn.Module):
 
         return output
 
-    def proba(self, data):
-        """
-        Computes probabilistic output for two classes
-        :param data: torch tabular input
-        :return: np.array
-        """
-        if not torch.is_tensor(data):
-            input = torch.from_numpy(np.array(data)).float()
-            # input = torch.squeeze(input)
-        else:
-            input = torch.squeeze(data)
-
-        class_1 = 1 - self.forward(input)
-        class_2 = self.forward(input)
-
-        return list(zip(class_1, class_2))
-
-    def prob_predict(self, data):
-        """
-        Computes probabilistic output for two classes
-        :param data: torch tabular input
-        :return: np.array
-        """
-        if not torch.is_tensor(data):
-            input = torch.from_numpy(np.array(data)).float()
-            # input = torch.squeeze(input)
-        else:
-            input = torch.squeeze(data)
-
-        class_1 = 1 - self.forward(input).detach().numpy().squeeze()
-        class_2 = self.forward(input).detach().numpy().squeeze()
-
-        # For single prob prediction it happens, that class_1 is casted into float after 1 - prediction
-        # Additionally class_1 and class_2 have to be at least shape 1
-        if not isinstance(class_1, np.ndarray):
-            class_1 = np.array(class_1).reshape(1)
-            class_2 = class_2.reshape(1)
-
-        return np.array(list(zip(class_1, class_2)))
-
     def predict(self, data):
         """
         predict method for CFE-Models which need this method.

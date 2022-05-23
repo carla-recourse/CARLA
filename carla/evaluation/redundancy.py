@@ -7,7 +7,10 @@ from carla.models.api import MLModel
 
 
 def redundancy(
-    factuals: pd.DataFrame, counterfactuals: pd.DataFrame, mlmodel: MLModel
+    factuals: pd.DataFrame,
+    counterfactuals: pd.DataFrame,
+    mlmodel: MLModel,
+    cf_label: int,
 ) -> List[List[int]]:
     """
     Computes Redundancy measure for every counterfactual
@@ -17,6 +20,7 @@ def redundancy(
     factuals: Encoded and normalized factual samples
     counterfactuals: Encoded and normalized counterfactual samples
     mlmodel: Black-box-model we want to discover
+    cf_label: The target counterfactual label
 
     Returns
     -------
@@ -26,11 +30,9 @@ def redundancy(
     df_enc_norm_fact = factuals.reset_index(drop=True)
     df_cfs = counterfactuals.reset_index(drop=True)
 
-    labels = df_cfs[mlmodel.data.target]
-    df_cfs = df_cfs.drop(mlmodel.data.target, axis=1)
     df_cfs["redundancy"] = df_cfs.apply(
         lambda x: compute_redundancy(
-            df_enc_norm_fact.iloc[x.name].values, x.values, mlmodel, labels.iloc[x.name]
+            df_enc_norm_fact.iloc[x.name].values, x.values, mlmodel, cf_label
         ),
         axis=1,
     )
