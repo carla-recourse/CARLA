@@ -10,6 +10,7 @@ from carla.models.api import MLModel
 def check_counterfactuals(
     mlmodel: MLModel,
     counterfactuals: Union[List, pd.DataFrame],
+    factuals_index: pd.Index,
     negative_label: int = 0,
 ) -> pd.DataFrame:
     """
@@ -21,6 +22,7 @@ def check_counterfactuals(
     ----------
     mlmodel: Black-box-model we want to discover
     counterfactuals: List or DataFrame of generated samples from recourse method
+    factuals_index: Index of the original factuals DataFrame
     negative_label: Defines the negative label.
 
     Returns
@@ -29,7 +31,9 @@ def check_counterfactuals(
     """
     if isinstance(counterfactuals, list):
         df_cfs = pd.DataFrame(
-            np.array(counterfactuals), columns=mlmodel.feature_input_order
+            np.array(counterfactuals),
+            columns=mlmodel.feature_input_order,
+            index=factuals_index.copy(),
         )
     else:
         df_cfs = counterfactuals.copy()

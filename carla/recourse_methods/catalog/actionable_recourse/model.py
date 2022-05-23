@@ -253,6 +253,6 @@ class ActionableRecourse(RecourseMethod):
         df_cfs[self._mlmodel.data.target] = np.argmax(
             self._mlmodel.predict_proba(cfs), axis=1
         )
-        df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs, factuals.index)
         df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs
