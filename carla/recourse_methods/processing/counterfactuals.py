@@ -29,6 +29,7 @@ def check_counterfactuals(
     -------
     pd.DataFrame
     """
+
     if isinstance(counterfactuals, list):
         df_cfs = pd.DataFrame(
             np.array(counterfactuals),
