@@ -62,4 +62,3 @@ function get_explanations(orig_instances_pd, X, classifier, immutables)
     end
     return Pandas.DataFrame(orig_instances_df[lengths+1:lengths*2, :])
 end
-

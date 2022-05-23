@@ -111,6 +111,3 @@ function selection!(manager::DataManager, k::Int64, orig_instance::DataFrameRow,
 
     return res
 end
-
-
-

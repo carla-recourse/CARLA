@@ -194,6 +194,3 @@ function ground(kw)
 
     generated_func
 end
-
-
-

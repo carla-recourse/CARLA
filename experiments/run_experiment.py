@@ -199,7 +199,7 @@ setup = load_setup()
 
 results = pd.DataFrame()
 
-path =  "results2.csv"
+path = args.path
 
 session_models = ["cem", "cem-vae"]
 torch_methods = ["cchvae", "clue", "cruds", "wachter", "revise"]

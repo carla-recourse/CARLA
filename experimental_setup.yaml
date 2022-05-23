@@ -107,3 +107,8 @@ recourse_methods:
       binary_cat_features: True
   geco:
     hyperparams:
+      desired_class: 1
+      max_num_generations: 100
+      min_num_generations: 3
+      max_num_samples: 5
+      norm_ratio: [ 0.25, 0.25, 0.25, 0.25 ]
