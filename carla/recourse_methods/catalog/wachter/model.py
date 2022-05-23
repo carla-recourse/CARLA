@@ -63,7 +63,7 @@ class Wachter(RecourseMethod):
         "t_max_min": 0.5,
         "norm": 1,
         "clamp": True,
-        "loss_type": "MSE",
+        "loss_type": "BCE",
         "y_target": [0, 1],
         "binary_cat_features": True,
     }
@@ -100,6 +100,7 @@ class Wachter(RecourseMethod):
                 self._mlmodel.raw_model,
                 x.reshape((1, -1)),
                 cat_features_indices,
+                y_target=self._y_target,
                 binary_cat_features=self._binary_cat_features,
                 feature_costs=self._feature_costs,
                 lr=self._lr,
@@ -115,5 +116,5 @@ class Wachter(RecourseMethod):
         )
 
         df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
-
+        df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs
