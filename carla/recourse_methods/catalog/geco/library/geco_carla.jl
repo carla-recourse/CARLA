@@ -27,7 +27,7 @@ function getPLAF(orig_instance, immutables)
     return plaf
 end
 
-function get_explanations(orig_instances_pd, X, classifier, immutables)
+function get_explanations(orig_instances_pd, X, classifier, immutables, desired_class, max_num_generations, min_num_generations, max_num_samples, norm_ratio)
     orig_instances_df = pd_to_df(orig_instances_pd)
 
     lengths = nrow(orig_instances_df)
@@ -42,7 +42,7 @@ function get_explanations(orig_instances_pd, X, classifier, immutables)
             # build the plaf connstrains
             plaf = getPLAF(orig_instance, immutables)
 
-            explanation, = explain(orig_instance, X, plaf, classifier)
+            explanation, = explain(orig_instance, X, plaf, classifier, desired_class=desired_class, max_num_generations=max_num_generations, min_num_generations=min_num_generations, max_num_samples=max_num_samples, norm_ratio=norm_ratio)
             explanations[row_idx] = explanation
         end
 
@@ -56,7 +56,7 @@ function get_explanations(orig_instances_pd, X, classifier, immutables)
             # build the plaf connstrains
             plaf = getPLAF(orig_instance, immutables)
 
-            explanation, = explain(orig_instance, X, plaf, classifier)
+            explanation, = explain(orig_instance, X, plaf, classifier, desired_class=desired_class, max_num_generations=max_num_generations, min_num_generations=min_num_generations, max_num_samples=max_num_samples, norm_ratio=norm_ratio)
             push!(orig_instances_df, explanation[1,1:num_feature])
         end
     end

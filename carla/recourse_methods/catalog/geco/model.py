@@ -10,6 +10,7 @@ from carla.recourse_methods.processing import (
     check_counterfactuals,
     encode_feature_names,
 )
+from carla.recourse_methods.processing.counterfactuals import merge_default_parameters
 
 jl = Julia(compiled_modules=False)
 jl.eval('include("./carla/recourse_methods/catalog/geco/library/geco_carla.jl")')
@@ -68,16 +69,27 @@ class GeCo(RecourseMethod):
             self._mlmodel.data.immutables, self._mlmodel.feature_input_order
         )
 
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
+        )
+
         Main.encoded_data = self._mlmodel.get_ordered_features(self._mlmodel.data.df)
         self.geco_input = jl.eval("pd_to_df(encoded_data)")
         Main.model = self._mlmodel
         Main.X = self.geco_input
         Main.immutables = self._immutables
+        Main.desired_class = checked_hyperparams["desired_class"]
+        Main.max_num_generations = checked_hyperparams["max_num_generations"]
+        Main.min_num_generations = checked_hyperparams["min_num_generations"]
+        Main.max_num_samples = checked_hyperparams["max_num_samples"]
+        Main.norm_ratio = checked_hyperparams["norm_ratio"]
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         self.df_enc_norm_fact = self._mlmodel.get_ordered_features(factuals)
         Main.factuals = self.df_enc_norm_fact
-        cfs = jl.eval("get_explanations(factuals, X, model, immutables)")
+        cfs = jl.eval(
+            "get_explanations(factuals, X, model, immutables, desired_class, max_num_generations, min_num_generations, max_num_samples, norm_ratio)"
+        )
 
         return self._mlmodel.get_ordered_features(
             check_counterfactuals(self._mlmodel, cfs)
