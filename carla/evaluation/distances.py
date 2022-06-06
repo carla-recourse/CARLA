@@ -53,7 +53,11 @@ def d1_distance(delta: np.ndarray) -> List[float]:
     List[float]
     """
     # compute elements which are greater than 0
-    return np.sum(np.invert(np.isclose(delta, np.zeros_like(delta), atol=1e-05)), axis=1, dtype=np.float).tolist()
+    return np.sum(
+        np.invert(np.isclose(delta, np.zeros_like(delta), atol=1e-05)),
+        axis=1,
+        dtype=np.float,
+    ).tolist()
 
 
 def d2_distance(delta: np.ndarray) -> List[float]:
