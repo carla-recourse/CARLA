@@ -5,9 +5,9 @@
 # - Counterfactual And Recourse Library
 
 
-# CARLA - Counterfactual And Recourse Library
+[//]: # (# CARLA - Counterfactual And Recourse Library)
 
-![CARLA](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo.png?raw=true)
+[//]: # (![CARLA]&#40;https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo.png?raw=true&#41;)
 
 ![motivating example](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/motivating_cartoon.png?raw=true)
 
