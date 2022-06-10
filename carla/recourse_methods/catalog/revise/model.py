@@ -151,7 +151,7 @@ class Revise(RecourseMethod):
             cat_features_indices, device, factuals
         )
 
-        cf_df = check_counterfactuals(self._mlmodel, list_cfs)
+        cf_df = check_counterfactuals(self._mlmodel, list_cfs, factuals.index)
         cf_df = self._mlmodel.get_ordered_features(cf_df)
         return cf_df
 

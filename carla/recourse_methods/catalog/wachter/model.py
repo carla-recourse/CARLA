@@ -115,6 +115,6 @@ class Wachter(RecourseMethod):
             axis=1,
         )
 
-        df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs, factuals.index)
         df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs
