@@ -2,7 +2,7 @@
 
 <img align="left" width="100" height="50" src="https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo.png?raw=true">
 
-# - Counterfactual And Recourse Library
+#   Counterfactual And Recourse Library
 
 
 [//]: # (# CARLA - Counterfactual And Recourse Library)
