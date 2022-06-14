@@ -14,11 +14,7 @@ tf.compat.v1.disable_eager_execution()
 
 
 class VariationalAutoencoder(nn.Module):
-    def __init__(
-        self,
-        data_name: str,
-        layers: List,
-    ):
+    def __init__(self, data_name: str, layers: List, mutable_mask):
         super(VariationalAutoencoder, self).__init__()
 
         if len(layers) < 2:
@@ -38,8 +34,10 @@ class VariationalAutoencoder(nn.Module):
         encoder = nn.Sequential(*lst_encoder)
 
         self._mu_enc = nn.Sequential(encoder, nn.Linear(layers[-2], latent_dim))
-
         self._log_var_enc = nn.Sequential(encoder, nn.Linear(layers[-2], latent_dim))
+
+        # the decoder does use the immutables
+        layers[-1] += np.sum(~mutable_mask)
 
         lst_decoder = []
         for i in range(len(layers) - 2, 0, -1):
@@ -56,6 +54,8 @@ class VariationalAutoencoder(nn.Module):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         self.to(device)
 
+        self.mutable_mask = mutable_mask
+
     def encode(self, x):
         return self._mu_enc(x), self._log_var_enc(x)
 
@@ -68,18 +68,30 @@ class VariationalAutoencoder(nn.Module):
         return mu + std * epsilon
 
     def forward(self, x):
-        mu_z, log_var_z = self.encode(x)
-        z_rep = self.__reparametrization_trick(mu_z, log_var_z)
-        mu_x = self.decode(z_rep)
 
-        return mu_x, mu_z, log_var_z
+        # split up the input in a mutable and immutable part
+        x = x.clone()
+        x_mutable = x[:, self.mutable_mask]
+        x_immutable = x[:, ~self.mutable_mask]
+        # the mutable part gets encoded
+        mu_z, log_var_z = self.encode(x_mutable)
+        z = self.__reparametrization_trick(mu_z, log_var_z)
+        # concatenate the immutable part to the latents and decode both
+        z = torch.cat([z, x_immutable], dim=-1)
+        recon = self.decode(z)
+
+        # add the immutable features to the reconstruction
+        x[:, self.mutable_mask] = recon
+
+        return x, mu_z, log_var_z
 
     def predict(self, data):
         return self.forward(data)
 
     def regenerate(self, z):
-        mu_x = self.decode(z)
-        return mu_x
+        # TODO remove this, same as self.decode
+        recon = self.decode(z)
+        return recon
 
     def kld(self, mu, logvar):
         KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())

@@ -112,9 +112,27 @@ class CCHVAE(RecourseMethod):
     def _load_vae(
         self, data: pd.DataFrame, vae_params: Dict, mlmodel: MLModel, data_name: str
     ) -> VariationalAutoencoder:
+        def get_mutable_mask():
+            # TODO duplicate function in revise/model.py
+            # get categorical features
+            categorical = mlmodel.data.categorical
+            # get the binary encoded categorical features
+            encoded_categorical = mlmodel.data.encoder.get_feature_names(categorical)
+            # get the immutables, where the categorical features are in encoded format
+            immutable = [
+                encoded_categorical[categorical.index(i)] if i in categorical else i
+                for i in mlmodel.data.immutables
+            ]
+            # find the index of the immutables in the feature input order
+            immutable = [mlmodel.feature_input_order.index(col) for col in immutable]
+            # make a mask
+            mutable_mask = np.ones(len(mlmodel.feature_input_order), dtype=bool)
+            # set the immutables to False
+            mutable_mask[immutable] = False
+            return mutable_mask
+
         generative_model = VariationalAutoencoder(
-            data_name,
-            vae_params["layers"],
+            data_name, vae_params["layers"], get_mutable_mask()
         )
 
         if vae_params["train"]:
@@ -130,7 +148,7 @@ class CCHVAE(RecourseMethod):
             )
         else:
             try:
-                generative_model.load(data.shape[1] - 1)
+                generative_model.load(vae_params["layers"][0])
             except FileNotFoundError as exc:
                 raise FileNotFoundError(
                     "Loading of Autoencoder failed. {}".format(str(exc))
@@ -180,8 +198,16 @@ class CCHVAE(RecourseMethod):
         )
 
         # vectorize z
-        z = self._generative_model.encode(torch_fact.float())[0].cpu().detach().numpy()
+        z = self._generative_model.encode(
+            torch_fact[:, self._generative_model.mutable_mask].float()
+        )[0]
+        # add the immutable features to the latents
+        z = torch.cat([z, torch_fact[:, ~self._generative_model.mutable_mask]], dim=-1)
+        z = z.cpu().detach().numpy()
         z_rep = np.repeat(z.reshape(1, -1), self._n_search_samples, axis=0)
+
+        # make copy such that we later easily combine the immutables and the reconstructed mutables
+        fact_rep = np.repeat(torch_fact.reshape(1, -1), self._n_search_samples, axis=0)
 
         candidate_dist: List = []
         x_ce: Union[np.ndarray, torch.Tensor] = np.array([])
@@ -197,6 +223,10 @@ class CCHVAE(RecourseMethod):
                 torch.from_numpy(latent_neighbourhood).to(device).float()
             )
             x_ce = self._generative_model.decode(torch_latent_neighbourhood)
+            # add the immutable features to the reconstruction
+            temp = fact_rep.clone()
+            temp[:, self._generative_model.mutable_mask] = x_ce.double()
+            x_ce = temp
             x_ce = reconstruct_encoding_constraints(
                 x_ce, cat_features_indices, self._params["binary_cat_features"]
             )

@@ -110,10 +110,28 @@ class Revise(RecourseMethod):
         self._target_class = self._params["target_class"]
         self._binary_cat_features = self._params["binary_cat_features"]
 
+        def get_mutable_mask():
+            # TODO duplicate function in cchvae/model.py
+            # get categorical features
+            categorical = mlmodel.data.categorical
+            # get the binary encoded categorical features
+            encoded_categorical = mlmodel.data.encoder.get_feature_names(categorical)
+            # get the immutables, where the categorical features are in encoded format
+            immutable = [
+                encoded_categorical[categorical.index(i)] if i in categorical else i
+                for i in mlmodel.data.immutables
+            ]
+            # find the index of the immutables in the feature input order
+            immutable = [mlmodel.feature_input_order.index(col) for col in immutable]
+            # make a mask
+            mutable_mask = np.ones(len(mlmodel.feature_input_order), dtype=bool)
+            # set the immutables to False
+            mutable_mask[immutable] = False
+            return mutable_mask
+
         vae_params = self._params["vae_params"]
         self.vae = VariationalAutoencoder(
-            self._params["data_name"],
-            vae_params["layers"],
+            self._params["data_name"], vae_params["layers"], get_mutable_mask()
         )
 
         if vae_params["train"]:
