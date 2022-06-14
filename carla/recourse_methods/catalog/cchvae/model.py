@@ -194,7 +194,7 @@ class CCHVAE(RecourseMethod):
             torch_latent_neighbourhood = (
                 torch.from_numpy(latent_neighbourhood).to(device).float()
             )
-            x_ce = self._generative_model.decode(torch_latent_neighbourhood)[0]
+            x_ce = self._generative_model.decode(torch_latent_neighbourhood)
             x_ce = reconstruct_encoding_constraints(
                 x_ce, cat_features_indices, self._params["binary_cat_features"]
             )
