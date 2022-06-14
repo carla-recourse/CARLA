@@ -70,6 +70,6 @@ class GrowingSpheres(RecourseMethod):
             )
             list_cfs.append(counterfactual)
 
-        df_cfs = check_counterfactuals(self._mlmodel, list_cfs)
-
+        df_cfs = check_counterfactuals(self._mlmodel, list_cfs, factuals.index)
+        df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs

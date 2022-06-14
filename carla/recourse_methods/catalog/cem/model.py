@@ -547,5 +547,7 @@ class CEM(RecourseMethod):
         df_cfs = factuals.apply(
             lambda x: self._counterfactual_search(x), axis=1, raw=True
         )
-        df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
+
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs, factuals.index)
+        df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs
