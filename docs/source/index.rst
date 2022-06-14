@@ -101,6 +101,7 @@ Please also cite the original authors' work.
    mlmodel
    recourse
    benchmarking
+   plotting
    license
    tutorial
 

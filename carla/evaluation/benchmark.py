@@ -68,7 +68,7 @@ class Benchmark:
         if isinstance(mlmodel, MLModelCatalog):
             self._mlmodel.use_pipeline = False  # type: ignore
 
-        self._factuals = factuals.copy()
+        self._factuals = self._mlmodel.get_ordered_features(factuals.copy())
 
     def compute_ynn(self) -> pd.DataFrame:
         """
@@ -85,10 +85,7 @@ class Benchmark:
         if counterfactuals_without_nans.empty:
             ynn = np.nan
         else:
-            ynn = yNN(
-                counterfactuals_without_nans, self._recourse_method, self._mlmodel, 5
-            )
-
+            ynn = yNN(counterfactuals_without_nans, self._mlmodel, 5, cf_label=1)
         columns = ["y-Nearest-Neighbours"]
 
         return pd.DataFrame([[ynn]], columns=columns)
@@ -174,7 +171,10 @@ class Benchmark:
             redundancies = []
         else:
             redundancies = redundancy(
-                factual_without_nans, counterfactuals_without_nans, self._mlmodel
+                factual_without_nans,
+                counterfactuals_without_nans,
+                self._mlmodel,
+                cf_label=1,
             )
 
         columns = ["Redundancy"]

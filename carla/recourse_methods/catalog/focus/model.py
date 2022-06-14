@@ -16,6 +16,7 @@ from carla.models.api import MLModel
 from carla.models.catalog import trees
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.focus.distances import distance_func
+from carla.recourse_methods.processing import check_counterfactuals
 
 
 def _filter_hinge_loss(n_class, mask_vector, features, sigma, temperature, model_fn):
@@ -130,7 +131,7 @@ class FOCUS(RecourseMethod):
 
         def f(best_perturb):
             # doesn't work with categorical features, so they aren't used
-            original_input = factuals[self.model.data.continuous]
+            original_input = self.model.get_ordered_features(factuals)
             original_input = original_input.to_numpy()
             ground_truth = self.model.predict(original_input)
 
@@ -224,7 +225,10 @@ class FOCUS(RecourseMethod):
             pf = tfe.py_func(f, [best_perturb], tf.float32)
             best_perturb = sess.run(pf)
 
-        return pd.DataFrame(best_perturb, columns=self.model.data.continuous)
+        df_cfs = pd.DataFrame(best_perturb, columns=self.model.data.continuous)
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs, factuals.index)
+        df_cfs = self._mlmodel.get_ordered_features(df_cfs)
+        return df_cfs
 
     def _prob_from_input(self, perturbed, sigma, temperature):
         feat_columns = self.model.data.continuous

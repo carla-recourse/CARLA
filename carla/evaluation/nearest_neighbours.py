@@ -3,22 +3,22 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
 from carla.models.api import MLModel
-from carla.recourse_methods.api import RecourseMethod
 
 
 def yNN(
     counterfactuals: pd.DataFrame,
-    recourse_method: RecourseMethod,
     mlmodel: MLModel,
     y: int,
+    cf_label: int,
 ) -> float:
     """
 
     Parameters
     ----------
     counterfactuals: Generated counterfactual examples
-    recourse_method: Method we want to benchmark
-    y: Number of
+    mlmodel: Classification model
+    y: Number of neighbors
+    cf_label: The target counterfactual label
 
     Returns
     -------
@@ -27,15 +27,17 @@ def yNN(
     number_of_diff_labels = 0
     N = counterfactuals.shape[0]
 
-    nbrs = NearestNeighbors(n_neighbors=y).fit(mlmodel.data.df.values)
+    factuals = mlmodel.get_ordered_features(mlmodel.data.df)
+    nbrs = NearestNeighbors(n_neighbors=y).fit(factuals.values)
 
     for i, row in counterfactuals.iterrows():
-        knn = nbrs.kneighbors(row.values.reshape((1, -1)), y, return_distance=False)[0]
-        cf_label = row[mlmodel.data.target]
 
+        if np.any(row.isna()):
+            raise ValueError(f"row {i} did not contain a valid counterfactual")
+
+        knn = nbrs.kneighbors(row.values.reshape((1, -1)), y, return_distance=False)[0]
         for idx in knn:
-            neighbour = mlmodel.data.df.iloc[idx]
-            neighbour = neighbour.drop(mlmodel.data.target)
+            neighbour = factuals.iloc[idx]
             neighbour = neighbour.values.reshape((1, -1))
             neighbour_label = np.argmax(mlmodel.predict_proba(neighbour))
 

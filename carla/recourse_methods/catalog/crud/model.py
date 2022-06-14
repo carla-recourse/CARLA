@@ -71,7 +71,7 @@ class CRUD(RecourseMethod):
         "optimizer": "RMSprop",
         "lr": 0.008,
         "max_iter": 2000,
-        "binary_cat_features": False,
+        "binary_cat_features": True,
         "vae_params": {
             "layers": None,
             "train": True,
@@ -121,6 +121,14 @@ class CRUD(RecourseMethod):
 
     def get_counterfactuals(self, factuals: pd.DataFrame):
 
+        factuals = pd.concat(
+            [
+                self._mlmodel.get_ordered_features(factuals),
+                factuals[self._mlmodel.data.target],
+            ],
+            axis=1,
+        )
+
         # pay attention to categorical features
         encoded_feature_names = self._mlmodel.data.encoder.get_feature_names(
             self._mlmodel.data.categorical
@@ -147,7 +155,9 @@ class CRUD(RecourseMethod):
         )
 
         cf_df = check_counterfactuals(
-            self._mlmodel, df_cfs.drop(self._mlmodel.data.target, axis=1)
+            self._mlmodel,
+            df_cfs.drop(self._mlmodel.data.target, axis=1),
+            factuals.index,
         )
-
+        cf_df = self._mlmodel.get_ordered_features(cf_df)
         return cf_df

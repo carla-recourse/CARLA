@@ -137,6 +137,8 @@ class Revise(RecourseMethod):
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
+        factuals = self._mlmodel.get_ordered_features(factuals)
+
         # pay attention to categorical features
         encoded_feature_names = self._mlmodel.data.encoder.get_feature_names(
             self._mlmodel.data.categorical
@@ -149,18 +151,18 @@ class Revise(RecourseMethod):
             cat_features_indices, device, factuals
         )
 
-        cf_df = check_counterfactuals(self._mlmodel, list_cfs)
-
+        cf_df = check_counterfactuals(self._mlmodel, list_cfs, factuals.index)
+        cf_df = self._mlmodel.get_ordered_features(cf_df)
         return cf_df
 
     def _counterfactual_optimization(self, cat_features_indices, device, df_fact):
         # prepare data for optimization steps
         test_loader = torch.utils.data.DataLoader(
-            VAEDataset(df_fact.values), batch_size=1, shuffle=False
+            VAEDataset(df_fact.values, with_target=False), batch_size=1, shuffle=False
         )
 
         list_cfs = []
-        for query_instance, _ in test_loader:
+        for query_instance in test_loader:
 
             target = torch.FloatTensor(self._target_class).to(device)
             target_prediction = np.argmax(np.array(self._target_class))
