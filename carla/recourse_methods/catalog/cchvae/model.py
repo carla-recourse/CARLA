@@ -86,6 +86,7 @@ class CCHVAE(RecourseMethod):
         "vae_params": {
             "layers": None,
             "train": True,
+            "kl_weight": 0.3,
             "lambda_reg": 1e-6,
             "epochs": 5,
             "lr": 1e-3,
@@ -121,6 +122,7 @@ class CCHVAE(RecourseMethod):
                 generative_model,
                 mlmodel.data,
                 mlmodel.feature_input_order,
+                kl_weight=vae_params["kl_weight"],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
