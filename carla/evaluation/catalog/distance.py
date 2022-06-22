@@ -3,7 +3,8 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-from carla.evaluation.evaluation import Evaluation, remove_nans
+from carla.evaluation import remove_nans
+from carla.evaluation.api import Evaluation
 
 
 def l0_distance(delta: np.ndarray) -> List[float]:
@@ -107,64 +108,62 @@ def get_delta(factual: np.ndarray, counterfactual: np.ndarray) -> np.ndarray:
     return counterfactual - factual
 
 
+def get_distances(factual: np.ndarray, counterfactual: np.ndarray) -> List[List[float]]:
+    """
+    Computes distances.
+    All features have to be in the same order (without target label).
+
+    Parameters
+    ----------
+    factual: np.ndarray
+        Normalized and encoded array with factual data.
+        Shape: NxM
+    counterfactual: np.ndarray
+        Normalized and encoded array with counterfactual data
+        Shape: NxM
+
+    Returns
+    -------
+    list: distances 1 to 4
+    """
+    if factual.shape != counterfactual.shape:
+        raise ValueError("Shapes of factual and counterfactual have to be the same")
+    if len(factual.shape) != 2:
+        raise ValueError(
+            "Shapes of factual and counterfactual have to be 2-dimensional"
+        )
+
+    # get difference between original and counterfactual
+    delta = get_delta(factual, counterfactual)
+
+    d1 = l0_distance(delta)
+    d2 = l1_distance(delta)
+    d3 = l2_distance(delta)
+    d4 = linf_distance(delta)
+
+    return [[d1[i], d2[i], d3[i], d4[i]] for i in range(len(d1))]
+
+
 class Distance(Evaluation):
-    def __init__(self):
-        super().__init__(None)
-
-    def get_distances(
-        self, factual: np.ndarray, counterfactual: np.ndarray
-    ) -> List[List[float]]:
-        """
-        Computes distances.
-        All features have to be in the same order (without target label).
-
-        Parameters
-        ----------
-        factual: np.ndarray
-            Normalized and encoded array with factual data.
-            Shape: NxM
-        counterfactual: np.ndarray
-            Normalized and encoded array with counterfactual data
-            Shape: NxM
-
-        Returns
-        -------
-        list: distances 1 to 4
-        """
-        if factual.shape != counterfactual.shape:
-            raise ValueError("Shapes of factual and counterfactual have to be the same")
-        if len(factual.shape) != 2:
-            raise ValueError(
-                "Shapes of factual and counterfactual have to be 2-dimensional"
-            )
-
-        # get difference between original and counterfactual
-        delta = get_delta(factual, counterfactual)
-
-        d1 = l0_distance(delta)
-        d2 = l1_distance(delta)
-        d3 = l2_distance(delta)
-        d4 = linf_distance(delta)
-
-        return [[d1[i], d2[i], d3[i], d4[i]] for i in range(len(d1))]
+    def __init__(self, mlmodel):
+        super().__init__(mlmodel)
+        self.columns = ["L0_distance", "L1_distance", "L2_distance", "Linf_distance"]
 
     def get_evaluation(self, factuals, counterfactuals):
-        counterfactuals_without_nans, factual_without_nans = remove_nans(
+        # only keep the rows for which counterfactuals could be found
+        counterfactuals_without_nans, factuals_without_nans = remove_nans(
             counterfactuals, factuals
         )
 
-        columns = ["Distance_1", "Distance_2", "Distance_3", "Distance_4"]
-
+        # return empty dataframe if no successful counterfactuals
         if counterfactuals_without_nans.empty:
-            return pd.DataFrame(columns=columns)
+            return pd.DataFrame(columns=self.columns)
 
-        arr_f = self.mlmodel.get_ordered_features(factual_without_nans).to_numpy()
+        arr_f = self.mlmodel.get_ordered_features(factuals_without_nans).to_numpy()
         arr_cf = self.mlmodel.get_ordered_features(
             counterfactuals_without_nans
         ).to_numpy()
 
-        distances = self.get_distances(arr_f, arr_cf)
+        distances = get_distances(arr_f, arr_cf)
 
-        output = pd.DataFrame(distances, columns=columns)
-
-        return output
+        return pd.DataFrame(distances, columns=self.columns)

@@ -1,17 +1,19 @@
-from abc import ABC, abstractmethod
+from typing import Tuple, Union
 
 import pandas as pd
 
 
-def remove_nans(counterfactuals: pd.DataFrame, factuals: pd.DataFrame = None):
-    """
+def remove_nans(
+    counterfactuals: pd.DataFrame, factuals: pd.DataFrame = None
+) -> Union[Tuple[pd.DataFrame, pd.DataFrame], pd.DataFrame]:
+    """Remove instances for which a counterfactual could not be found.
 
     Parameters
     ----------
     counterfactuals:
-        Has to be the same shape as factuals
+        Has to be the same shape as factuals.
     factuals:
-        Has to be the same shape as counterfactuals
+        Has to be the same shape as counterfactuals. (optional)
 
     Returns
     -------
@@ -27,20 +29,8 @@ def remove_nans(counterfactuals: pd.DataFrame, factuals: pd.DataFrame = None):
             raise ValueError(
                 "Counterfactuals and factuals should contain the same amount of samples"
             )
-
         output_factuals = factuals.copy()
         output_factuals = output_factuals.drop(index=nan_idx)
-
         return output_counterfactuals, output_factuals
 
     return output_counterfactuals
-
-
-class Evaluation(ABC):
-    def __init__(self, mlmodel, hyperparameters=None):
-        self.mlmodel = mlmodel
-        self.hyperparameters = hyperparameters
-
-    @abstractmethod
-    def get_evaluation(self, factuals, counterfactuals):
-        """Compute evaluation measure"""

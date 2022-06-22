@@ -1,294 +1,115 @@
-import numpy as np
-import pandas as pd
+from functools import lru_cache
 
+import carla.evaluation.catalog as evaluation_catalog
 from carla.data.catalog import OnlineCatalog
 from carla.evaluation import Benchmark
-from carla.evaluation.evaluation import remove_nans
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods.catalog.dice import Dice
-from carla.recourse_methods.processing import get_drop_columns_binary
 
 
-def make_benchmark():
-    # Build data and mlmodel
-    data_name = "adult"
+@lru_cache(maxsize=None)
+def make_benchmark(data_name="adult", model_name="ann"):
+    # get data and mlmodel
     data = OnlineCatalog(data_name)
+    mlmodel = MLModelCatalog(data, model_name)
 
-    model_tf = MLModelCatalog(data, "ann")
     # get factuals
-    factuals = predict_negative_instances(model_tf, data.df)
-
-    hyperparams = {"num": 1, "desired_class": 1}
+    factuals = predict_negative_instances(mlmodel, data.df)
     test_factual = factuals.iloc[:5]
 
-    dice = Dice(model_tf, hyperparams)
+    # get recourse method
+    hyperparams = {"num": 1, "desired_class": 1}
+    recourse_method = Dice(mlmodel, hyperparams)
 
-    benchmark = Benchmark(model_tf, dice, test_factual)
+    # make benchmark object
+    benchmark = Benchmark(mlmodel, recourse_method, test_factual)
 
     return benchmark
 
 
+@lru_cache(maxsize=None)
+def run_benchmark():
+    benchmark = make_benchmark()
+    evaluation_measures = [
+        evaluation_catalog.YNN(benchmark.mlmodel, {"y": 5, "cf_label": 1}),
+        evaluation_catalog.Distance(benchmark.mlmodel),
+        evaluation_catalog.SuccessRate(),
+        evaluation_catalog.Redundancy(benchmark.mlmodel, {"cf_label": 1}),
+        evaluation_catalog.ConstraintViolation(benchmark.mlmodel),
+        evaluation_catalog.AvgTime({"time": benchmark.timer}),
+    ]
+    df_benchmark = benchmark.run_benchmark(evaluation_measures)
+    return df_benchmark, evaluation_measures
+
+
 def test_benchmarks():
     # Build data and mlmodel
-    benchmark = make_benchmark()
-    df_benchmark = benchmark.run_benchmark()
+    benchmark, _ = run_benchmark()
 
     expected = (5, 9)
-    actual = df_benchmark.shape
+    actual = benchmark.shape
     assert expected == actual
 
 
 def test_ynn():
-    # Build data and mlmodel
-    benchmark = make_benchmark()
-    yNN = benchmark.compute_ynn()
+    benchmark, evaluation_measures = run_benchmark()
+
+    ynn = evaluation_measures[0]
+    ynn_benchmark = benchmark[ynn.columns].dropna()
 
     expected = (1, 1)
-    actual = yNN.shape
+    actual = ynn_benchmark.shape
+    assert expected == actual
+    assert 0 <= ynn_benchmark.values <= 1
+
+
+def test_distances():
+    benchmark, evaluation_measures = run_benchmark()
+    distance = evaluation_measures[1]
+    distance_benchmark = benchmark[distance.columns]
+
+    expected = (5, 4)
+    actual = distance_benchmark.shape
+    assert expected == actual
+
+
+def test_success_rate():
+    benchmark, evaluation_measures = run_benchmark()
+    success_rate = evaluation_measures[2]
+    sr_benchmark = benchmark[success_rate.columns].dropna()
+
+    expected = (1, 1)
+    actual = sr_benchmark.shape
+    assert expected == actual
+
+
+def test_redundancy():
+    benchmark, evaluation_measures = run_benchmark()
+    redundancy = evaluation_measures[3]
+    redundancy_benchmark = benchmark[redundancy.columns]
+
+    expected = (5, 1)
+    actual = redundancy_benchmark.shape
+    assert expected == actual
+
+
+def test_violation():
+    benchmark, evaluation_measures = run_benchmark()
+    constraint_violation = evaluation_measures[4]
+    violation_benchmark = benchmark[constraint_violation.columns]
+
+    expected = (5, 1)
+    actual = violation_benchmark.shape
     assert expected == actual
 
 
 def test_time():
     # Build data and mlmodel
-    benchmark = make_benchmark()
-    df_time = benchmark.compute_average_time()
+    benchmark, evaluation_measures = run_benchmark()
+    time_measure = evaluation_measures[5]
+    time_benchmark = benchmark[time_measure].dropna()
 
     expected = (1, 1)
-    actual = df_time.shape
+    actual = time_benchmark.shape
     assert expected == actual
-
-
-def test_distances():
-    # Build data and mlmodel
-    benchmark = make_benchmark()
-    df_distances = benchmark.compute_distances()
-
-    expected = (5, 4)
-    actual = df_distances.shape
-    assert expected == actual
-
-
-def test_drop_binary():
-    test_columns = [
-        "workclass_Non-Private",
-        "workclass_Private",
-        "marital-status_Married",
-        "marital-status_Non-Married",
-        "occupation_Managerial-Specialist",
-        "occupation_Other",
-        "relationship_Husband",
-        "relationship_Non-Husband",
-        "race_Non-White",
-        "race_White",
-        "sex_Female",
-        "sex_Male",
-        "native-country_Non-US",
-        "native-country_US",
-    ]
-    test_categorical = [
-        "workclass",
-        "marital-status",
-        "occupation",
-        "relationship",
-        "race",
-        "sex",
-        "native-country",
-    ]
-    expected = [
-        "workclass_Non-Private",
-        "marital-status_Married",
-        "occupation_Managerial-Specialist",
-        "relationship_Husband",
-        "race_Non-White",
-        "sex_Female",
-        "native-country_Non-US",
-    ]
-
-    actual = get_drop_columns_binary(test_categorical, test_columns)
-
-    assert actual == expected
-
-
-def test_success_rate():
-    # Build data and mlmodel
-    benchmark = make_benchmark()
-    rate = benchmark.compute_success_rate()
-
-    expected = (1, 1)
-    actual = rate.shape
-    assert expected == actual
-
-
-def test_redundancy():
-    # Build data and mlmodel
-    benchmark = make_benchmark()
-    df_redundancy = benchmark.compute_redundancy()
-
-    expected = (5, 1)
-    actual = df_redundancy.shape
-
-    assert expected == actual
-
-
-def test_violation():
-    # Build data and mlmodel
-    benchmark = make_benchmark()
-    df_violation = benchmark.compute_constraint_violation()
-
-    expected = (5, 1)
-    actual = df_violation.shape
-
-    assert expected == actual
-
-
-def test_removing_nans():
-    columns = [
-        "age",
-        "workclass",
-        "fnlwgt",
-        "education-num",
-        "marital-status",
-        "occupation",
-        "relationship",
-        "race",
-        "sex",
-        "capital-gain",
-        "capital-loss",
-        "hours-per-week",
-        "native-country",
-        "income",
-    ]
-    test_factual = [
-        [
-            45,
-            "Non-Private",
-            77516,
-            13,
-            "Non-Married",
-            "Managerial-Specialist",
-            "Non-Husband",
-            "White",
-            "Female",
-            2174,
-            0,
-            40,
-            "US",
-            0,
-        ],
-        [
-            50,
-            "Non-Private",
-            83311,
-            13,
-            "Married",
-            "Managerial-Specialist",
-            "Husband",
-            "White",
-            "Male",
-            0,
-            0,
-            13,
-            "US",
-            0,
-        ],
-        [
-            18,
-            "Private",
-            215646,
-            9,
-            "Non-Married",
-            "Other",
-            "Non-Husband",
-            "White",
-            "Male",
-            0,
-            0,
-            40,
-            "US",
-            0,
-        ],
-    ]
-    test_counterfactual = [
-        [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-        ],
-        [
-            50,
-            "Non-Private",
-            83311,
-            13,
-            "Married",
-            "Managerial-Specialist",
-            "Husband",
-            "White",
-            "Male",
-            0,
-            0,
-            13,
-            "US",
-            0,
-        ],
-        [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-        ],
-    ]
-    test_factual = pd.DataFrame(
-        test_factual,
-        columns=columns,
-    )
-    test_counterfactual = pd.DataFrame(
-        test_counterfactual,
-        columns=columns,
-    )
-    actual_counterfactual, actual_factual = remove_nans(
-        test_counterfactual, test_factual
-    )
-
-    expected = [
-        [
-            50,
-            "Non-Private",
-            83311,
-            13,
-            "Married",
-            "Managerial-Specialist",
-            "Husband",
-            "White",
-            "Male",
-            0,
-            0,
-            13,
-            "US",
-            0,
-        ],
-    ]
-
-    assert actual_factual.values.tolist() == expected
-    assert actual_counterfactual.values.tolist() == expected
