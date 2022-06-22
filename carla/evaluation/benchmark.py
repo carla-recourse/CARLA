@@ -1,15 +1,9 @@
 import timeit
 from typing import Union
 
-import numpy as np
 import pandas as pd
 
-from carla.evaluation.distances import get_distances
-from carla.evaluation.nearest_neighbours import yNN
-from carla.evaluation.process_nans import remove_nans
-from carla.evaluation.redundancy import redundancy
-from carla.evaluation.success_rate import success_rate
-from carla.evaluation.violations import constraint_violation
+from carla.evaluation import YNN, ConstraintViolation, Distance, Redundancy, SuccessRate
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.api import RecourseMethod
@@ -59,16 +53,12 @@ class Benchmark:
 
         self._mlmodel = mlmodel
         self._recourse_method = recourse_method
+        self._factuals = self._mlmodel.get_ordered_features(factuals.copy())
+
         start = timeit.default_timer()
         self._counterfactuals = recourse_method.get_counterfactuals(factuals)
         stop = timeit.default_timer()
         self._timer = stop - start
-
-        # Avoid using scaling and normalizing more than once
-        if isinstance(mlmodel, MLModelCatalog):
-            self._mlmodel.use_pipeline = False  # type: ignore
-
-        self._factuals = self._mlmodel.get_ordered_features(factuals.copy())
 
     def compute_ynn(self) -> pd.DataFrame:
         """
@@ -78,17 +68,9 @@ class Benchmark:
         -------
         pd.DataFrame
         """
-        _, counterfactuals_without_nans = remove_nans(
-            self._factuals, self._counterfactuals
+        return YNN(self._mlmodel, {"y": 5, "cf_label": 1}).get_evaluation(
+            counterfactuals=self._counterfactuals, factuals=self._factuals
         )
-
-        if counterfactuals_without_nans.empty:
-            ynn = np.nan
-        else:
-            ynn = yNN(counterfactuals_without_nans, self._mlmodel, 5, cf_label=1)
-        columns = ["y-Nearest-Neighbours"]
-
-        return pd.DataFrame([[ynn]], columns=columns)
 
     def compute_average_time(self) -> pd.DataFrame:
         """
@@ -113,25 +95,10 @@ class Benchmark:
         -------
         pd.DataFrame
         """
-        factual_without_nans, counterfactuals_without_nans = remove_nans(
-            self._factuals, self._counterfactuals
+        return Distance().get_evaluation(
+            factuals=self._factuals,
+            counterfactuals=self._counterfactuals,
         )
-
-        columns = ["Distance_1", "Distance_2", "Distance_3", "Distance_4"]
-
-        if counterfactuals_without_nans.empty:
-            return pd.DataFrame(columns=columns)
-
-        arr_f = self._mlmodel.get_ordered_features(factual_without_nans).to_numpy()
-        arr_cf = self._mlmodel.get_ordered_features(
-            counterfactuals_without_nans
-        ).to_numpy()
-
-        distances = get_distances(arr_f, arr_cf)
-
-        output = pd.DataFrame(distances, columns=columns)
-
-        return output
 
     def compute_constraint_violation(self) -> pd.DataFrame:
         """
@@ -141,19 +108,10 @@ class Benchmark:
         -------
         pd.Dataframe
         """
-        factual_without_nans, counterfactuals_without_nans = remove_nans(
-            self._factuals, self._counterfactuals
+        return ConstraintViolation(self._mlmodel).get_evaluation(
+            counterfactuals=self._counterfactuals,
+            factuals=self._factuals,
         )
-
-        if counterfactuals_without_nans.empty:
-            violations = []
-        else:
-            violations = constraint_violation(
-                self._mlmodel.data, counterfactuals_without_nans, factual_without_nans
-            )
-        columns = ["Constraint_Violation"]
-
-        return pd.DataFrame(violations, columns=columns)
 
     def compute_redundancy(self) -> pd.DataFrame:
         """
@@ -163,23 +121,10 @@ class Benchmark:
         -------
         pd.Dataframe
         """
-        factual_without_nans, counterfactuals_without_nans = remove_nans(
-            self._factuals, self._counterfactuals
+        return Redundancy(self._mlmodel, {"cf_label": 1}).get_evaluation(
+            counterfactuals=self._counterfactuals,
+            factuals=self._factuals,
         )
-
-        if counterfactuals_without_nans.empty:
-            redundancies = []
-        else:
-            redundancies = redundancy(
-                factual_without_nans,
-                counterfactuals_without_nans,
-                self._mlmodel,
-                cf_label=1,
-            )
-
-        columns = ["Redundancy"]
-
-        return pd.DataFrame(redundancies, columns=columns)
 
     def compute_success_rate(self) -> pd.DataFrame:
         """
@@ -189,11 +134,9 @@ class Benchmark:
         -------
         pd.Dataframe
         """
-
-        rate = success_rate(self._counterfactuals)
-        columns = ["Success_Rate"]
-
-        return pd.DataFrame([[rate]], columns=columns)
+        return SuccessRate(self._mlmodel).get_evaluation(
+            counterfactuals=self._counterfactuals, factuals=self._factuals
+        )
 
     def run_benchmark(self) -> pd.DataFrame:
         """

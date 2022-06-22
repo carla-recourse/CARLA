@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 
 from carla.data.catalog import OnlineCatalog
-from carla.evaluation import Benchmark, remove_nans
+from carla.evaluation import Benchmark
+from carla.evaluation.evaluation import remove_nans
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
 from carla.recourse_methods.catalog.dice import Dice
@@ -266,8 +267,8 @@ def test_removing_nans():
         test_counterfactual,
         columns=columns,
     )
-    actual_factual, actual_counterfactual = remove_nans(
-        test_factual, test_counterfactual
+    actual_counterfactual, actual_factual = remove_nans(
+        test_counterfactual, test_factual
     )
 
     expected = [
