@@ -108,7 +108,7 @@ def test_time():
     # Build data and mlmodel
     benchmark, evaluation_measures = run_benchmark()
     time_measure = evaluation_measures[5]
-    time_benchmark = benchmark[time_measure].dropna()
+    time_benchmark = benchmark[time_measure.columns].dropna()
 
     expected = (1, 1)
     actual = time_benchmark.shape
