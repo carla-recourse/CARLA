@@ -3,6 +3,7 @@ import os
 from typing import List
 
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import torch
 import torch.nn as nn
@@ -161,6 +162,8 @@ class CSVAE(nn.Module):
         return eps.mul(std).add_(mu)
 
     def fit(self, data, lambda_reg=None, epochs=100, lr=1e-3, batch_size=32):
+        if isinstance(data, pd.DataFrame):
+            data = data.values
         x_train = data[:, :-1]
 
         if self._labels_dim == 2:
@@ -226,6 +229,8 @@ class CSVAE(nn.Module):
 
         self.save()
         log.info("... finished training of CSVAE")
+
+        self.eval()
 
     def save(self):
         cache_path = get_home()

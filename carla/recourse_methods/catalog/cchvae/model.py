@@ -8,10 +8,7 @@ from numpy import linalg as LA
 from carla import log
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.autoencoder import (
-    VariationalAutoencoder,
-    train_variational_autoencoder,
-)
+from carla.recourse_methods.autoencoder import VariationalAutoencoder
 from carla.recourse_methods.processing import (
     check_counterfactuals,
     merge_default_parameters,
@@ -136,10 +133,8 @@ class CCHVAE(RecourseMethod):
         )
 
         if vae_params["train"]:
-            generative_model = train_variational_autoencoder(
-                generative_model,
-                mlmodel.data,
-                mlmodel.feature_input_order,
+            generative_model.fit(
+                xtrain=data[mlmodel.feature_input_order + [mlmodel.data.target]].values,
                 kl_weight=vae_params["kl_weight"],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],

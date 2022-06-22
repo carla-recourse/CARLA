@@ -2,6 +2,7 @@ import os
 from typing import List
 
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import torch
 import torch.nn as nn
@@ -106,6 +107,8 @@ class VariationalAutoencoder(nn.Module):
         lr=1e-3,
         batch_size=32,
     ):
+        if isinstance(xtrain, pd.DataFrame):
+            xtrain = xtrain.values
         train_set = VAEDataset(xtrain, with_target=True)
 
         train_loader = torch.utils.data.DataLoader(
@@ -166,6 +169,8 @@ class VariationalAutoencoder(nn.Module):
 
         self.save()
         log.info("... finished training of Variational Autoencoder.")
+
+        self.eval()
 
     def load(self, input_shape):
         cache_path = get_home()

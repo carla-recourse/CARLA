@@ -1,7 +1,7 @@
 import pandas as pd
 
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.autoencoder import CSVAE, train_variational_autoencoder
+from carla.recourse_methods.autoencoder import CSVAE
 from carla.recourse_methods.catalog.crud.library import counterfactual_search
 from carla.recourse_methods.processing import (
     check_counterfactuals,
@@ -102,10 +102,11 @@ class CRUD(RecourseMethod):
         )
 
         if vae_params["train"]:
-            self._vae = train_variational_autoencoder(
-                self._vae,
-                self._mlmodel.data,
-                self._mlmodel.feature_input_order,
+            assert mlmodel == self._mlmodel
+            self._vae.fit(
+                data=mlmodel.data.df[
+                    mlmodel.feature_input_order + [mlmodel.data.target]
+                ],
                 lambda_reg=None,
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
