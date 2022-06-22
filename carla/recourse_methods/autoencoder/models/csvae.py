@@ -227,6 +227,8 @@ class CSVAE(nn.Module):
         self.save()
         log.info("... finished training of CSVAE")
 
+        self.eval()
+
     def save(self):
         cache_path = get_home()
 

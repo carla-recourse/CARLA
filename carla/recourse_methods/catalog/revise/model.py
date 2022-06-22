@@ -9,11 +9,7 @@ from carla import log
 from carla.data.api import Data
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.autoencoder import (
-    VAEDataset,
-    VariationalAutoencoder,
-    train_variational_autoencoder,
-)
+from carla.recourse_methods.autoencoder import VAEDataset, VariationalAutoencoder
 from carla.recourse_methods.processing.counterfactuals import (
     check_counterfactuals,
     merge_default_parameters,
@@ -117,10 +113,10 @@ class Revise(RecourseMethod):
         )
 
         if vae_params["train"]:
-            self.vae = train_variational_autoencoder(
-                self.vae,
-                self._mlmodel.data,
-                self._mlmodel.feature_input_order,
+            assert data == self._mlmodel.data
+            assert mlmodel == self._mlmodel
+            self.vae.fit(
+                xtrain=data.df[mlmodel.feature_input_order + [data.target]].values,
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],

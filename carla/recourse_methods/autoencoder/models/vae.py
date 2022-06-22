@@ -163,6 +163,8 @@ class VariationalAutoencoder(nn.Module):
         self.save()
         log.info("... finished training of Variational Autoencoder.")
 
+        self.eval()
+
     def load(self, input_shape):
         cache_path = get_home()
 
