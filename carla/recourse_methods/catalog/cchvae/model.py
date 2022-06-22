@@ -114,7 +114,6 @@ class CCHVAE(RecourseMethod):
         )
 
         if vae_params["train"]:
-            assert data == mlmodel.data.df
             generative_model.fit(
                 xtrain=data[mlmodel.feature_input_order + [mlmodel.data.target]].values,
                 lambda_reg=vae_params["lambda_reg"],

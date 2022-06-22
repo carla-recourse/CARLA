@@ -2,6 +2,7 @@ import os
 from typing import List
 
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import torch
 import torch.nn as nn
@@ -100,6 +101,8 @@ class VariationalAutoencoder(nn.Module):
     def fit(
         self, xtrain: np.ndarray, lambda_reg=1e-6, epochs=5, lr=1e-3, batch_size=32
     ):
+        if isinstance(xtrain, pd.DataFrame):
+            xtrain = xtrain.values
         train_set = VAEDataset(xtrain, with_target=True)
 
         train_loader = torch.utils.data.DataLoader(

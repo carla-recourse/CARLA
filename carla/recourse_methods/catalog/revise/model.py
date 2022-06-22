@@ -113,8 +113,6 @@ class Revise(RecourseMethod):
         )
 
         if vae_params["train"]:
-            assert data == self._mlmodel.data
-            assert mlmodel == self._mlmodel
             self.vae.fit(
                 xtrain=data.df[mlmodel.feature_input_order + [data.target]].values,
                 lambda_reg=vae_params["lambda_reg"],
