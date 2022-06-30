@@ -106,6 +106,12 @@ class FOCUS(RecourseMethod):
 
     def __init__(self, mlmodel: MLModel, hyperparams: Dict) -> None:
 
+        supported_backends = ["sklearn", "xgboost"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
         self.model = mlmodel
 

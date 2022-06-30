@@ -82,6 +82,12 @@ class CausalRecourse(RecourseMethod):
 
     def __init__(self, mlmodel: MLModelCatalog, hyperparams: Dict):
 
+        supported_backends = ["tensorflow", "pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         self._mlmodel = mlmodel
         self._dataset = mlmodel.data
 
