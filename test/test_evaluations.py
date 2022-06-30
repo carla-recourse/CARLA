@@ -4,7 +4,7 @@ import pandas as pd
 from carla.data.catalog import OnlineCatalog
 from carla.evaluation import remove_nans
 from carla.evaluation.catalog import distance
-from carla.evaluation.catalog.success_rate import success_rate
+from carla.evaluation.catalog.success_rate import _success_rate
 from carla.evaluation.catalog.violations import constraint_violation
 from carla.recourse_methods.processing import get_drop_columns_binary
 
@@ -14,13 +14,13 @@ def test_l0():
     test_input_2 = np.array([[1, 0]])
     test_input_3 = np.concatenate((test_input_1, test_input_2), axis=0)
 
-    delta = distance.get_delta(test_input_1, test_input_1)
+    delta = distance._get_delta(test_input_1, test_input_1)
     actual = distance.l0_distance(delta)
     expected = [0.0]
 
     assert actual == expected
 
-    delta = distance.get_delta(test_input_1, test_input_2)
+    delta = distance._get_delta(test_input_1, test_input_2)
     actual = distance.l0_distance(delta)
     expected = [2.0]
 
@@ -90,7 +90,7 @@ def test_distances():
     test_input_2 = np.array([[1, 0, 0, 0, 0, 1, 1, 0], [1, 0, 1, 0, 0, 1, 1, 0]])
 
     expected = [[1.0, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 0.0]]
-    actual = distance.get_distances(test_input_1, test_input_2)
+    actual = distance._get_distances(test_input_1, test_input_2)
     assert actual == expected
 
 
@@ -166,7 +166,7 @@ def test_success_rate():
         columns=columns,
     )
 
-    actual = success_rate(test_counterfactual)
+    actual = _success_rate(test_counterfactual)
     expected = 1 / 3
 
     assert actual == expected
