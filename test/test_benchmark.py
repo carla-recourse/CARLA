@@ -14,16 +14,16 @@ def make_benchmark():
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
-    model_tf = MLModelCatalog(data, "ann")
+    model = MLModelCatalog(data, "ann", backend="tensorflow")
     # get factuals
-    factuals = predict_negative_instances(model_tf, data.df)
+    factuals = predict_negative_instances(model, data.df)
 
     hyperparams = {"num": 1, "desired_class": 1}
     test_factual = factuals.iloc[:5]
 
-    dice = Dice(model_tf, hyperparams)
+    dice = Dice(model, hyperparams)
 
-    benchmark = Benchmark(model_tf, dice, test_factual)
+    benchmark = Benchmark(model, dice, test_factual)
 
     return benchmark
 

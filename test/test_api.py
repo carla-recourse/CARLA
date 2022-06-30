@@ -27,7 +27,7 @@ def test_mlmodel(model_type):
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
-    model_catalog = MLModelCatalog(data, model_type)
+    model_catalog = MLModelCatalog(data, model_type, backend="tensorflow")
 
     assert issubclass(MLModelCatalog, MLModel)
     assert isinstance(model_catalog, MLModel)
@@ -39,7 +39,7 @@ def test_cfmodel():
     data_catalog = OnlineCatalog(data_name)
 
     hyperparams = {"num": 1, "desired_class": 1}
-    model_catalog = MLModelCatalog(data_catalog, "ann")
+    model_catalog = MLModelCatalog(data_catalog, "ann", backend="tensorflow")
 
     dice = Dice(model_catalog, hyperparams)
 

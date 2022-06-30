@@ -100,7 +100,7 @@ def test_autoencoder():
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
-    model = MLModelCatalog(data, "ann")
+    model = MLModelCatalog(data, "ann", backend="tensorflow")
     test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
 
     ae = Autoencoder(data_name, [len(model.feature_input_order), 20, 10, 5])
@@ -156,7 +156,7 @@ def test_save_and_load():
         data_name = "adult"
         data = OnlineCatalog(data_name)
 
-        model = MLModelCatalog(data, "ann")
+        model = MLModelCatalog(data, "ann", backend="tensorflow")
         test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
 
         ae = Autoencoder(data_name, [len(model.feature_input_order), 20, 10, 5])
