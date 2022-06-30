@@ -10,3 +10,11 @@ Benchmarking
 .. automodule:: evaluation.benchmark
    :members:
    :undoc-members:
+
+.. _ar:
+
+Distances
+^^^^^^^^^^^^^^^^^^^
+.. automodule:: evaluation.catalog.distance
+   :members:
+   :undoc-members:

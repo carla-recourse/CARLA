@@ -88,7 +88,7 @@ def linf_distance(delta: np.ndarray) -> List[float]:
     return distance
 
 
-def get_delta(factual: np.ndarray, counterfactual: np.ndarray) -> np.ndarray:
+def _get_delta(factual: np.ndarray, counterfactual: np.ndarray) -> np.ndarray:
     """
     Compute difference between original factual and counterfactual
 
@@ -108,7 +108,9 @@ def get_delta(factual: np.ndarray, counterfactual: np.ndarray) -> np.ndarray:
     return counterfactual - factual
 
 
-def get_distances(factual: np.ndarray, counterfactual: np.ndarray) -> List[List[float]]:
+def _get_distances(
+    factual: np.ndarray, counterfactual: np.ndarray
+) -> List[List[float]]:
     """
     Computes distances.
     All features have to be in the same order (without target label).
@@ -134,7 +136,7 @@ def get_distances(factual: np.ndarray, counterfactual: np.ndarray) -> List[List[
         )
 
     # get difference between original and counterfactual
-    delta = get_delta(factual, counterfactual)
+    delta = _get_delta(factual, counterfactual)
 
     d1 = l0_distance(delta)
     d2 = l1_distance(delta)
@@ -145,6 +147,10 @@ def get_distances(factual: np.ndarray, counterfactual: np.ndarray) -> List[List[
 
 
 class Distance(Evaluation):
+    """
+    Calculates the L0, L1, L2, and L-infty distance measures.
+    """
+
     def __init__(self, mlmodel):
         super().__init__(mlmodel)
         self.columns = ["L0_distance", "L1_distance", "L2_distance", "Linf_distance"]
@@ -164,6 +170,6 @@ class Distance(Evaluation):
             counterfactuals_without_nans
         ).to_numpy()
 
-        distances = get_distances(arr_f, arr_cf)
+        distances = _get_distances(arr_f, arr_cf)
 
         return pd.DataFrame(distances, columns=self.columns)

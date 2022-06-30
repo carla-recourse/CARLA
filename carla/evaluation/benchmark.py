@@ -19,11 +19,11 @@ class Benchmark:
     Parameters
     ----------
     mlmodel: carla.models.MLModel
-        Black Box model we want to explain
-    recmodel: carla.recourse_methods.RecourseMethod
-        Recourse method we want to benchmark
+        Black Box model we want to explain.
+    recourse_method: carla.recourse_methods.RecourseMethod
+        Recourse method we want to benchmark.
     factuals: pd.DataFrame
-        Instances we want to find counterfactuals
+        Instances we want to find counterfactuals.
 
     Methods
     -------
@@ -32,7 +32,6 @@ class Benchmark:
     compute_average_time:
         Computes average time for generated counterfactual
     compute_distances:
-        Calculates the distance measure and returns it as dataframe
     compute_constraint_violation:
         Computes the constraint violation per factual as dataframe
     compute_redundancy:
