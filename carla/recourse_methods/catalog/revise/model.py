@@ -98,7 +98,7 @@ class Revise(RecourseMethod):
         },
     }
 
-    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
+    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict = None) -> None:
         super().__init__(mlmodel)
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 

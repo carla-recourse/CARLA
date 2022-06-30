@@ -1,11 +1,7 @@
 from carla.data.causal_model import CausalModel
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
-from carla.recourse_methods.catalog.causal_recourse import (
-    CausalRecourse,
-    constraints,
-    samplers,
-)
+from carla.recourse_methods.catalog.causal_recourse import CausalRecourse
 
 
 def test_causal_recourse():
@@ -28,11 +24,7 @@ def test_causal_recourse():
     assert len(factuals) > 0
 
     hyperparams = {
-        "optimization_approach": "brute_force",
-        "num_samples": 10,
         "scm": scm,
-        "constraint_handle": constraints.point_constraint,
-        "sampler_handle": samplers.sample_true_m0,
     }
     cfs = CausalRecourse(model, hyperparams).get_counterfactuals(factuals)
 

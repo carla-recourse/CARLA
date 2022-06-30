@@ -17,35 +17,48 @@ def wachter_recourse(
     torch_model,
     x: np.ndarray,
     cat_feature_indices: List[int],
-    binary_cat_features: bool = True,
-    feature_costs: Optional[List[float]] = None,
-    lr: float = 0.01,
-    lambda_param: float = 0.01,
-    y_target: List[int] = [0, 1],
-    n_iter: int = 1000,
-    t_max_min: float = 0.5,
-    norm: int = 1,
-    clamp: bool = True,
-    loss_type: str = "MSE",
+    binary_cat_features: bool,
+    feature_costs: Optional[List[float]],
+    lr: float,
+    lambda_param: float,
+    y_target: List[int],
+    n_iter: int,
+    t_max_min: float,
+    norm: int,
+    clamp: bool,
+    loss_type: str,
 ) -> np.ndarray:
     """
     Generates counterfactual example according to Wachter et.al for input instance x
 
     Parameters
     ----------
-    torch_model: black-box-model to discover
-    x: factual to explain
-    cat_feature_indices: list of positions of categorical features in x
-    binary_cat_features: If true, the encoding of x is done by drop_if_binary
-    feature_costs: List with costs per feature
-    lr: learning rate for gradient descent
-    lambda_param: weight factor for feature_cost
-    y_target: Tuple of class probabilities (BCE loss) or [Float] for logit score (MSE loss).
-    n_iter: maximum number of iteration
-    t_max_min: maximum time of search
-    norm: L-norm to calculate cost
-    clamp: If true, feature values will be clamped to (0, 1)
-    loss_type: String for loss function (MSE or BCE)
+    torch_model:
+        black-box-model to discover
+    x:
+        Factual instance to explain.
+    cat_feature_indices:
+        List of positions of categorical features in x.
+    binary_cat_features:
+        If true, the encoding of x is done by drop_if_binary.
+    feature_costs:
+        List with costs per feature.
+    lr:
+        Learning rate for gradient descent.
+    lambda_param:
+        Weight factor for feature_cost.
+    y_target:
+        Tuple of class probabilities (BCE loss) or [Float] for logit score (MSE loss).
+    n_iter:
+        Maximum number of iterations.
+    t_max_min:
+        Maximum time amount of search.
+    norm:
+        L-norm to calculate cost.
+    clamp:
+        If true, feature values will be clamped to intverval [0, 1].
+    loss_type:
+        String for loss function ("MSE" or "BCE").
 
     Returns
     -------

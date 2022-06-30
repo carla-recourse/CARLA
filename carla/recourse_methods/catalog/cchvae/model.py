@@ -93,7 +93,7 @@ class CCHVAE(RecourseMethod):
         },
     }
 
-    def __init__(self, mlmodel: MLModel, hyperparams: Dict) -> None:
+    def __init__(self, mlmodel: MLModel, hyperparams: Dict = None) -> None:
         super().__init__(mlmodel)
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Dict, Optional
 
 import pandas as pd
 
@@ -43,9 +43,9 @@ class Face(RecourseMethod):
             of the AAAI/ACM Conference on AI, Ethics, and Society (AIES)
     """
 
-    _DEFAULT_HYPERPARAMS = {"mode": None, "fraction": 0.1}
+    _DEFAULT_HYPERPARAMS = {"mode": "knn", "fraction": 0.05}
 
-    def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
+    def __init__(self, mlmodel: MLModel, hyperparams: Optional[Dict] = None) -> None:
         super().__init__(mlmodel)
 
         checked_hyperparams = merge_default_parameters(

@@ -74,12 +74,12 @@ class Clue(RecourseMethod):
         "depth": 3,
         "latent_dim": 12,
         "batch_size": 64,
-        "epochs": 1,
+        "epochs": 10,
         "lr": 0.001,
         "early_stop": 10,
     }
 
-    def __init__(self, data: Data, mlmodel: MLModel, hyperparams: Dict) -> None:
+    def __init__(self, data: Data, mlmodel: MLModel, hyperparams: Dict = None) -> None:
         super().__init__(mlmodel)
 
         # get hyperparameter

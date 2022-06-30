@@ -50,7 +50,7 @@ class MLModelCatalog(MLModel):
         self,
         data: DataCatalog,
         model_type: str,
-        backend: str = "tensorflow",
+        backend: str,
         cache: bool = True,
         models_home: str = None,
         load_online: bool = True,

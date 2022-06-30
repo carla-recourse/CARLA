@@ -4,7 +4,7 @@ https://github.com/upura/featureTweakPy
 """
 
 import copy
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -15,7 +15,10 @@ import xgboost.core
 from carla.models.catalog import MLModelCatalog
 from carla.models.catalog.parse_xgboost import parse_booster
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.processing import check_counterfactuals
+from carla.recourse_methods.processing import (
+    check_counterfactuals,
+    merge_default_parameters,
+)
 
 
 def _L1_cost_func(a, b):
@@ -236,18 +239,23 @@ class FeatureTweak(RecourseMethod):
             knowledge discovery and data mining (pp. 465-474).
     """
 
+    _DEFAULT_HYPERPARAMS = {"eps": 0.1}
+
     def __init__(
         self,
         mlmodel: MLModelCatalog,
-        hyperparams: Dict,
+        hyperparams: Optional[Dict] = None,
         cost_func=_L2_cost_func,
     ):
-
         super().__init__(mlmodel)
+
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
+        )
 
         self.model = mlmodel
         self.data = mlmodel.data
-        self.eps = hyperparams["eps"]
+        self.eps = checked_hyperparams["eps"]
         self.target_col = self.data.target
         self.cost_func = cost_func
 
