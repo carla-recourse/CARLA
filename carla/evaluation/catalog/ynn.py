@@ -26,7 +26,7 @@ class YNN(Evaluation):
         self.cf_label = self.hyperparameters["cf_label"]
         self.columns = ["y-Nearest-Neighbours"]
 
-    def ynn(self, counterfactuals):
+    def _ynn(self, counterfactuals):
 
         factuals = self.mlmodel.get_ordered_features(self.mlmodel.data.df)
 
@@ -53,6 +53,6 @@ class YNN(Evaluation):
         if counterfactuals_without_nans.empty:
             ynn = np.nan
         else:
-            ynn = self.ynn(counterfactuals=counterfactuals_without_nans)
+            ynn = self._ynn(counterfactuals=counterfactuals_without_nans)
 
         return pd.DataFrame([[ynn]], columns=self.columns)

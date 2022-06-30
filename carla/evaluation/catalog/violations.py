@@ -8,7 +8,7 @@ from carla.evaluation import remove_nans
 from carla.evaluation.api import Evaluation
 
 
-def intersection(list1: List, list2: List):
+def _intersection(list1: List, list2: List):
     """Compute the intersection between two lists"""
     return list(set(list1) & set(list2))
 
@@ -40,10 +40,10 @@ def constraint_violation(
     """
     # check continuous using np.isclose to allow for very small numerical differences
     cfs_continuous_immutable = df_decoded_cfs[
-        intersection(data.continuous, data.immutables)
+        _intersection(data.continuous, data.immutables)
     ]
     factual_continuous_immutable = df_factuals[
-        intersection(data.continuous, data.immutables)
+        _intersection(data.continuous, data.immutables)
     ]
 
     continuous_violations = np.invert(
@@ -58,10 +58,10 @@ def constraint_violation(
     """
     # check categorical by boolean comparison
     cfs_categorical_immutable = df_decoded_cfs[
-        intersection(data.categorical, data.immutables)
+        _intersection(data.categorical, data.immutables)
     ]
     factual_categorical_immutable = df_factuals[
-        intersection(data.categorical, data.immutables)
+        _intersection(data.categorical, data.immutables)
     ]
 
     categorical_violations = cfs_categorical_immutable != factual_categorical_immutable

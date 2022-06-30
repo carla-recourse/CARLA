@@ -17,7 +17,7 @@ class Redundancy(Evaluation):
         self.cf_label = self.hyperparameters["cf_label"]
         self.columns = ["Redundancy"]
 
-    def compute_redundancy(
+    def _compute_redundancy(
         self, factual: np.ndarray, counterfactual: np.ndarray
     ) -> int:
         redundancy = 0
@@ -34,7 +34,7 @@ class Redundancy(Evaluation):
                     redundancy += 1
         return redundancy
 
-    def redundancy(
+    def _redundancy(
         self,
         factuals: pd.DataFrame,
         counterfactuals: pd.DataFrame,
@@ -57,7 +57,7 @@ class Redundancy(Evaluation):
         df_cfs = counterfactuals.reset_index(drop=True)
 
         df_cfs["redundancy"] = df_cfs.apply(
-            lambda x: self.compute_redundancy(
+            lambda x: self._compute_redundancy(
                 df_enc_norm_fact.iloc[x.name].values,
                 x.values,
             ),
@@ -73,7 +73,7 @@ class Redundancy(Evaluation):
         if counterfactuals_without_nans.empty:
             redundancies = []
         else:
-            redundancies = self.redundancy(
+            redundancies = self._redundancy(
                 factual_without_nans,
                 counterfactuals_without_nans,
             )

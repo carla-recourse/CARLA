@@ -3,7 +3,7 @@ import pandas as pd
 from carla.evaluation.api.evaluation import Evaluation
 
 
-def success_rate(counterfactuals: pd.DataFrame) -> float:
+def _success_rate(counterfactuals: pd.DataFrame) -> float:
     """
     Computes success rate for all counterfactuals.
 
@@ -32,5 +32,5 @@ class SuccessRate(Evaluation):
         self.columns = ["Success_Rate"]
 
     def get_evaluation(self, factuals, counterfactuals):
-        rate = success_rate(counterfactuals)
+        rate = _success_rate(counterfactuals)
         return pd.DataFrame([[rate]], columns=self.columns)

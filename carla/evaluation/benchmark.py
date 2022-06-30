@@ -23,7 +23,7 @@ class Benchmark:
     recourse_method: carla.recourse_methods.RecourseMethod
         Recourse method we want to benchmark.
     factuals: pd.DataFrame
-        Instances we want to find counterfactuals.
+        Instances for which we want to find counterfactuals.
     """
 
     def __init__(
