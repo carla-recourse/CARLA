@@ -8,6 +8,10 @@ from carla.evaluation.api import Evaluation
 
 
 class Redundancy(Evaluation):
+    """
+    Computes redundancy for each counterfactual
+    """
+
     def __init__(self, mlmodel, hyperparameters):
         super().__init__(mlmodel, hyperparameters)
         self.cf_label = self.hyperparameters["cf_label"]

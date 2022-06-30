@@ -8,6 +8,8 @@ from carla.evaluation.api import Evaluation
 
 class YNN(Evaluation):
     """
+    Computes y-Nearest-Neighbours for generated counterfactuals
+
     Notes
     -----
     - Hyperparams

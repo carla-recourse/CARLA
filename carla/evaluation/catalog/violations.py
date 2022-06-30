@@ -74,6 +74,10 @@ def constraint_violation(
 
 
 class ConstraintViolation(Evaluation):
+    """
+    Computes the constraint violation per factual as dataframe
+    """
+
     def __init__(self, mlmodel):
         super().__init__(mlmodel)
         self.columns = ["Constraint_Violation"]

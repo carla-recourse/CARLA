@@ -24,22 +24,6 @@ class Benchmark:
         Recourse method we want to benchmark.
     factuals: pd.DataFrame
         Instances we want to find counterfactuals.
-
-    Methods
-    -------
-    compute_ynn:
-        Computes y-Nearest-Neighbours for generated counterfactuals
-    compute_average_time:
-        Computes average time for generated counterfactual
-    compute_distances:
-    compute_constraint_violation:
-        Computes the constraint violation per factual as dataframe
-    compute_redundancy:
-        Computes redundancy for each counterfactual
-    compute_success_rate:
-        Computes success rate for the whole recourse method.
-    run_benchmark:
-        Runs every measurement and returns every value as dict.
     """
 
     def __init__(
@@ -61,6 +45,11 @@ class Benchmark:
     def run_benchmark(self, measures: List[Evaluation]) -> pd.DataFrame:
         """
         Runs every measurement and returns every value as dict.
+
+        Parameters
+        ----------
+        measures : List[Evaluation]
+            List of Evaluation measures that will be computed.
 
         Returns
         -------

@@ -4,6 +4,10 @@ from carla.evaluation.api import Evaluation
 
 
 class AvgTime(Evaluation):
+    """
+    Computes average time for generated counterfactual
+    """
+
     def __init__(self, hyperparameters):
         super().__init__(hyperparameters)
         self.time = hyperparameters["time"]

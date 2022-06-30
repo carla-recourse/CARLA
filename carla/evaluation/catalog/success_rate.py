@@ -23,6 +23,10 @@ def success_rate(counterfactuals: pd.DataFrame) -> float:
 
 
 class SuccessRate(Evaluation):
+    """
+    Computes success rate for the whole recourse method.
+    """
+
     def __init__(self):
         super().__init__(None)
         self.columns = ["Success_Rate"]
