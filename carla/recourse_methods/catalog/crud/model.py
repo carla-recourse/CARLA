@@ -1,3 +1,5 @@
+from typing import Dict
+
 import pandas as pd
 
 from carla.recourse_methods.api import RecourseMethod
@@ -81,7 +83,14 @@ class CRUD(RecourseMethod):
         },
     }
 
-    def __init__(self, mlmodel, hyperparams):
+    def __init__(self, mlmodel, hyperparams: Dict = None):
+
+        supported_backends = ["pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
 
         checked_hyperparams = merge_default_parameters(

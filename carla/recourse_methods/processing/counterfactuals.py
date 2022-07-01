@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -108,7 +108,7 @@ def reconstruct_encoding_constraints(
     return x_enc
 
 
-def merge_default_parameters(hyperparams: Dict, default: Dict) -> Dict:
+def merge_default_parameters(hyperparams: Optional[Dict], default: Dict) -> Dict:
     """
     Checks if the input parameter hyperparams contains every necessary key and if not, uses default values or
     raises a ValueError if no default value is given.
@@ -116,7 +116,7 @@ def merge_default_parameters(hyperparams: Dict, default: Dict) -> Dict:
     Parameters
     ----------
     hyperparams: dict
-        Hyperparameter as passed to the recuorse method.
+        Hyperparameter as passed to the recourse method.
     default: dict
         Dictionary with every necessary key and default value.
         If key has no default value and hyperparams has no value for it, raise a ValueError
@@ -126,6 +126,9 @@ def merge_default_parameters(hyperparams: Dict, default: Dict) -> Dict:
     dict
         Dictionary with every necessary key.
     """
+    if hyperparams is None:
+        return default
+
     keys = default.keys()
     dict_output = dict()
 
