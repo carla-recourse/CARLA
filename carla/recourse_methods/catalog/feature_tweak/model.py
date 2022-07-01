@@ -242,6 +242,11 @@ class FeatureTweak(RecourseMethod):
         hyperparams: Dict,
         cost_func=_L2_cost_func,
     ):
+        supported_backends = ["sklearn", "xgboost"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
 
         super().__init__(mlmodel)
 

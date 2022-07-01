@@ -46,6 +46,13 @@ class Face(RecourseMethod):
     _DEFAULT_HYPERPARAMS = {"mode": None, "fraction": 0.1}
 
     def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
+
+        supported_backends = ["tensorflow", "pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
 
         checked_hyperparams = merge_default_parameters(
