@@ -26,7 +26,7 @@ def wachter_recourse(
     t_max_min: float = 0.5,
     norm: int = 1,
     clamp: bool = True,
-    loss_type: str = "MSE",
+    loss_type: str = "BCE",
 ) -> np.ndarray:
     """
     Generates counterfactual example according to Wachter et.al for input instance x
@@ -86,7 +86,8 @@ def wachter_recourse(
 
         # [0, 1] for class 1, [1, 0] for class 0
         # target is the class probability of class 1
-        target_class = y_target[1]
+        # target_class is the class with the highest probability
+        target_class = torch.round(y_target[1]).int()
         loss_fn = torch.nn.BCELoss()
     else:
         raise ValueError(f"loss_type {loss_type} not supported")
