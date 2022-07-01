@@ -14,7 +14,7 @@ def test_properties():
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
-    model_tf_adult = MLModelCatalog(data, "ann")
+    model_tf_adult = MLModelCatalog(data, "ann", backend="tensorflow")
 
     exp_backend_tf = "tensorflow"
     exp_feature_order_adult = [
@@ -41,7 +41,7 @@ def test_forest_properties():
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
-    model = MLModelCatalog(data, "forest", "sklearn")
+    model = MLModelCatalog(data, "forest", backend="sklearn")
 
     assert model is not None
 
@@ -87,7 +87,7 @@ def test_transform():
 def test_predictions_tf(model_type, data_name):
     data = OnlineCatalog(data_name)
 
-    model_tf_adult = MLModelCatalog(data, model_type)
+    model_tf_adult = MLModelCatalog(data, model_type, backend="tensorflow")
 
     single_sample = data.df.iloc[22]
     single_sample = single_sample[model_tf_adult.feature_input_order].values.reshape(
@@ -120,7 +120,7 @@ def test_predictions_tf(model_type, data_name):
 def test_predictions_with_pipeline(model_type, data_name):
     data = OnlineCatalog(data_name)
 
-    model_tf_adult = MLModelCatalog(data, model_type)
+    model_tf_adult = MLModelCatalog(data, model_type, backend="tensorflow")
     model_tf_adult.use_pipeline = True
 
     single_sample = data.df.iloc[22].to_frame().T

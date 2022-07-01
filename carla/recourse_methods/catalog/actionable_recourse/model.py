@@ -71,7 +71,7 @@ class ActionableRecourse(RecourseMethod):
     def __init__(
         self,
         mlmodel,
-        hyperparams: Dict,
+        hyperparams: Optional[Dict] = None,
         coeffs: Optional[np.ndarray] = None,
         intercepts: Optional[np.ndarray] = None,
     ) -> None:

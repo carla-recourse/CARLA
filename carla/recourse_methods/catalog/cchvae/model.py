@@ -93,7 +93,7 @@ class CCHVAE(RecourseMethod):
         },
     }
 
-    def __init__(self, mlmodel: MLModel, hyperparams: Dict) -> None:
+    def __init__(self, mlmodel: MLModel, hyperparams: Dict = None) -> None:
 
         supported_backends = ["pytorch"]
         if mlmodel.backend not in supported_backends:

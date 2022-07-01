@@ -12,18 +12,18 @@ from carla.recourse_methods.catalog.dice import Dice
 def make_benchmark(data_name="adult", model_name="ann"):
     # get data and mlmodel
     data = OnlineCatalog(data_name)
-    mlmodel = MLModelCatalog(data, model_name)
+    model = MLModelCatalog(data, model_name, backend="tensorflow")
 
     # get factuals
-    factuals = predict_negative_instances(mlmodel, data.df)
+    factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
     # get recourse method
     hyperparams = {"num": 1, "desired_class": 1}
-    recourse_method = Dice(mlmodel, hyperparams)
+    recourse_method = Dice(model, hyperparams)
 
     # make benchmark object
-    benchmark = Benchmark(mlmodel, recourse_method, test_factual)
+    benchmark = Benchmark(model, recourse_method, test_factual)
 
     return benchmark
 
