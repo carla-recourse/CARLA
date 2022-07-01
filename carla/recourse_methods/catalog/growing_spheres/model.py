@@ -38,6 +38,13 @@ class GrowingSpheres(RecourseMethod):
     """
 
     def __init__(self, mlmodel: MLModel, hyperparams=None) -> None:
+
+        supported_backends = ["tensorflow", "pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
 
         self._immutables = encode_feature_names(

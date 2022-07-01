@@ -271,7 +271,15 @@ def test_wachter(model_type):
     factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:10]
 
-    df_cfs = Wachter(model).get_counterfactuals(test_factual)
+    hyperparams = {"loss_type": "MSE", "y_target": [1]}
+    df_cfs = Wachter(model, hyperparams).get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order).all()
+    assert isinstance(df_cfs, pd.DataFrame)
+
+    hyperparams = {"loss_type": "BCE", "y_target": [0, 1]}
+    df_cfs = Wachter(model, hyperparams).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order).all()

@@ -108,6 +108,13 @@ class CEM(RecourseMethod):
     }
 
     def __init__(self, sess, mlmodel: MLModel, hyperparams: Dict = None):
+
+        supported_backends = ["tensorflow"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         self.sess = sess  # Tensorflow session
         self._hyperparams = merge_default_parameters(
             hyperparams, self._DEFAULT_HYPERPARAMS
