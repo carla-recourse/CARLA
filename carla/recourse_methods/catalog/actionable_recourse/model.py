@@ -71,10 +71,17 @@ class ActionableRecourse(RecourseMethod):
     def __init__(
         self,
         mlmodel,
-        hyperparams: Dict,
+        hyperparams: Optional[Dict] = None,
         coeffs: Optional[np.ndarray] = None,
         intercepts: Optional[np.ndarray] = None,
     ) -> None:
+
+        supported_backends = ["tensorflow", "pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
         self._data = mlmodel.data
 

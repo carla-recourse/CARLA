@@ -55,7 +55,7 @@ def test_variational_autoencoder():
 
     vae = VariationalAutoencoder(data_name, layers=[test_input.shape[1], 512, 256, 8])
 
-    vae.fit(xtrain=data.df[model.feature_input_order + [data.target]])
+    vae.fit(xtrain=data.df[model.feature_input_order])
 
     test_reconstructed, _, _, _, _ = vae.predict(test_input)
 
@@ -85,7 +85,7 @@ def test_variational_autoencoder_length():
     for layer in layers:
         vae = VariationalAutoencoder(data_name, layer)
 
-        vae.fit(xtrain=data.df[model.feature_input_order + [data.target]])
+        vae.fit(xtrain=data.df[model.feature_input_order])
 
         test_reconstructed, _, _, _, _ = vae.predict(test_input)
 
@@ -97,7 +97,7 @@ def test_autoencoder():
     data_name = "adult"
     data = OnlineCatalog(data_name)
 
-    model = MLModelCatalog(data, "ann")
+    model = MLModelCatalog(data, "ann", backend="tensorflow")
     test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
 
     ae = Autoencoder(data_name, [len(model.feature_input_order), 20, 10, 5])
@@ -153,7 +153,7 @@ def test_save_and_load():
         data_name = "adult"
         data = OnlineCatalog(data_name)
 
-        model = MLModelCatalog(data, "ann")
+        model = MLModelCatalog(data, "ann", backend="tensorflow")
         test_input = tf.Variable(np.zeros((1, 13)), dtype=tf.float32)
 
         ae = Autoencoder(data_name, [len(model.feature_input_order), 20, 10, 5])

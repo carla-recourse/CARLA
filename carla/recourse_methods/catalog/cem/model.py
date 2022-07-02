@@ -19,7 +19,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple, Union
+from typing import Dict, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -104,10 +104,17 @@ class CEM(RecourseMethod):
         "gamma": 0.0,
         "mode": "PN",
         "num_classes": 2,
-        "ae_params": {"hidden_layer": None, "train_ae": True, "epochs": 5},
+        "ae_params": {"hidden_layer": [20, 10, 7], "train_ae": True, "epochs": 5},
     }
 
-    def __init__(self, sess, mlmodel: MLModel, hyperparams):
+    def __init__(self, sess, mlmodel: MLModel, hyperparams: Dict = None):
+
+        supported_backends = ["tensorflow"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         self.sess = sess  # Tensorflow session
         self._hyperparams = merge_default_parameters(
             hyperparams, self._DEFAULT_HYPERPARAMS

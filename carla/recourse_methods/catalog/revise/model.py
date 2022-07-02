@@ -9,7 +9,7 @@ from carla import log
 from carla.data.api import Data
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.autoencoder import VAEDataset, VariationalAutoencoder
+from carla.recourse_methods.autoencoder import VariationalAutoencoder
 from carla.recourse_methods.processing.counterfactuals import (
     check_counterfactuals,
     merge_default_parameters,
@@ -94,7 +94,14 @@ class Revise(RecourseMethod):
         },
     }
 
-    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
+    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict = None) -> None:
+
+        supported_backends = ["pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
@@ -114,7 +121,7 @@ class Revise(RecourseMethod):
 
         if vae_params["train"]:
             self.vae.fit(
-                xtrain=data.df[mlmodel.feature_input_order + [data.target]].values,
+                xtrain=data.df[mlmodel.feature_input_order],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
@@ -151,9 +158,7 @@ class Revise(RecourseMethod):
 
     def _counterfactual_optimization(self, cat_features_indices, device, df_fact):
         # prepare data for optimization steps
-        test_loader = torch.utils.data.DataLoader(
-            VAEDataset(df_fact.values, with_target=False), batch_size=1, shuffle=False
-        )
+        test_loader = torch.utils.data.DataLoader(df_fact, batch_size=1, shuffle=False)
 
         list_cfs = []
         for query_instance in test_loader:

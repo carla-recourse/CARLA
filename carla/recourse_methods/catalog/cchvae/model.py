@@ -91,7 +91,14 @@ class CCHVAE(RecourseMethod):
         },
     }
 
-    def __init__(self, mlmodel: MLModel, hyperparams: Dict) -> None:
+    def __init__(self, mlmodel: MLModel, hyperparams: Dict = None) -> None:
+
+        supported_backends = ["pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
@@ -116,7 +123,7 @@ class CCHVAE(RecourseMethod):
 
         if vae_params["train"]:
             generative_model.fit(
-                xtrain=data[mlmodel.feature_input_order + [mlmodel.data.target]].values,
+                xtrain=data[mlmodel.feature_input_order],
                 kl_weight=vae_params["kl_weight"],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],

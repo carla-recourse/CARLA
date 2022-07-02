@@ -4,7 +4,7 @@ code adapted from:
 https://github.com/a-lucic/focus
 """
 
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,10 @@ from carla.models.api import MLModel
 from carla.models.catalog import trees
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.focus.distances import distance_func
-from carla.recourse_methods.processing import check_counterfactuals
+from carla.recourse_methods.processing import (
+    check_counterfactuals,
+    merge_default_parameters,
+)
 
 
 def _filter_hinge_loss(n_class, mask_vector, features, sigma, temperature, model_fn):
@@ -71,7 +74,7 @@ class FOCUS(RecourseMethod):
     ----------
     mlmodel : carla.model.MLModel
         Black-Box-Model
-    hyperparams : dict
+    checked_hyperparams : dict
         Dictionary containing hyperparameters. See notes below for its contents.
 
     Methods
@@ -104,26 +107,47 @@ class FOCUS(RecourseMethod):
             explanations for tree ensembles. arXiv preprint arXiv:1910.12199.
     """
 
-    def __init__(self, mlmodel: MLModel, hyperparams: Dict) -> None:
+    _DEFAULT_HYPERPARAMS = {
+        "optimizer": "adam",
+        "lr": 0.001,
+        "n_class": 2,
+        "n_iter": 1000,
+        "sigma": 1.0,
+        "temperature": 1.0,
+        "distance_weight": 0.01,
+        "distance_func": "l1",
+    }
+
+    def __init__(self, mlmodel: MLModel, hyperparams: Optional[Dict] = None) -> None:
+
+        supported_backends = ["sklearn", "xgboost"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
 
         super().__init__(mlmodel)
         self.model = mlmodel
 
-        if hyperparams["optimizer"] == "adam":
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
+        )
+
+        if checked_hyperparams["optimizer"] == "adam":
             self.optimizer = tf.compat.v1.train.AdamOptimizer(
-                learning_rate=hyperparams["lr"]
+                learning_rate=checked_hyperparams["lr"]
             )
-        elif hyperparams["optimizer"] == "gd":
+        elif checked_hyperparams["optimizer"] == "gd":
             self.optimizer = tf.train.GradientDescentOptimizer(
-                learning_rate=hyperparams["lr"]
+                learning_rate=checked_hyperparams["lr"]
             )
 
-        self.n_class = hyperparams["n_class"]
-        self.n_iter = hyperparams["n_iter"]
-        self.sigma_val = hyperparams["sigma"]
-        self.temp_val = hyperparams["temperature"]
-        self.distance_weight_val = hyperparams["distance_weight"]
-        self.distance_function = hyperparams["distance_func"]
+        self.n_class = checked_hyperparams["n_class"]
+        self.n_iter = checked_hyperparams["n_iter"]
+        self.sigma_val = checked_hyperparams["sigma"]
+        self.temp_val = checked_hyperparams["temperature"]
+        self.distance_weight_val = checked_hyperparams["distance_weight"]
+        self.distance_function = checked_hyperparams["distance_func"]
 
     def get_counterfactuals(self, factuals: pd.DataFrame) -> pd.DataFrame:
 
