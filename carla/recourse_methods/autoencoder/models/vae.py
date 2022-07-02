@@ -105,6 +105,9 @@ class VariationalAutoencoder(nn.Module):
         lr=1e-3,
         batch_size=32,
     ):
+        if isinstance(xtrain, pd.DataFrame):
+            xtrain = xtrain.values
+
         train_loader = torch.utils.data.DataLoader(
             xtrain, batch_size=batch_size, shuffle=True
         )
@@ -129,6 +132,7 @@ class VariationalAutoencoder(nn.Module):
             # Train for all the batches
             for data in train_loader:
                 data = data.view(data.shape[0], -1)
+                data = data.float()
 
                 # forward pass
                 MU_X_eval, LOG_VAR_X_eval, Z_ENC_eval, MU_Z_eval, LOG_VAR_Z_eval = self(
