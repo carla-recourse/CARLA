@@ -105,25 +105,24 @@ class CRUD(RecourseMethod):
         self._binary_cat_features = checked_hyperparams["binary_cat_features"]
 
         vae_params = checked_hyperparams["vae_params"]
-        self._vae = CSVAE(
+        self._csvae = CSVAE(
             checked_hyperparams["data_name"],
             vae_params["layers"],
         )
 
         if vae_params["train"]:
             assert mlmodel == self._mlmodel
-            self._vae.fit(
+            self._csvae.fit(
                 data=mlmodel.data.df[
                     mlmodel.feature_input_order + [mlmodel.data.target]
                 ],
-                lambda_reg=None,
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
                 batch_size=vae_params["batch_size"],
             )
         else:
             try:
-                self._vae.load(self._mlmodel.data.df.shape[1] - 1)
+                self._csvae.load(self._mlmodel.data.df.shape[1] - 1)
             except FileNotFoundError as exc:
                 raise FileNotFoundError(
                     "Loading of Autoencoder failed. {}".format(str(exc))
@@ -150,7 +149,7 @@ class CRUD(RecourseMethod):
         df_cfs = factuals.apply(
             lambda x: counterfactual_search(
                 self._mlmodel,
-                self._vae,
+                self._csvae,
                 x.reshape((1, -1)),
                 cat_features_indices,
                 self._binary_cat_features,
