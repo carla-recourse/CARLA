@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -8,7 +8,6 @@ import torch
 import torch.nn as nn
 
 from carla import log
-from carla.recourse_methods.autoencoder.dataloader import VAEDataset
 from carla.recourse_methods.autoencoder.save_load import get_home
 
 tf.compat.v1.disable_eager_execution()
@@ -99,14 +98,15 @@ class VariationalAutoencoder(nn.Module):
         return MSE + KLD
 
     def fit(
-        self, xtrain: np.ndarray, lambda_reg=1e-6, epochs=5, lr=1e-3, batch_size=32
+        self,
+        xtrain: Union[pd.DataFrame, np.ndarray],
+        lambda_reg=1e-6,
+        epochs=5,
+        lr=1e-3,
+        batch_size=32,
     ):
-        if isinstance(xtrain, pd.DataFrame):
-            xtrain = xtrain.values
-        train_set = VAEDataset(xtrain, with_target=True)
-
         train_loader = torch.utils.data.DataLoader(
-            train_set, batch_size=batch_size, shuffle=True
+            xtrain, batch_size=batch_size, shuffle=True
         )
 
         optimizer = torch.optim.Adam(
@@ -127,7 +127,7 @@ class VariationalAutoencoder(nn.Module):
             train_loss_num = 0
 
             # Train for all the batches
-            for data, _ in train_loader:
+            for data in train_loader:
                 data = data.view(data.shape[0], -1)
 
                 # forward pass

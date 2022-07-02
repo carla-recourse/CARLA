@@ -122,7 +122,7 @@ class CCHVAE(RecourseMethod):
 
         if vae_params["train"]:
             generative_model.fit(
-                xtrain=data[mlmodel.feature_input_order + [mlmodel.data.target]].values,
+                xtrain=data[mlmodel.feature_input_order],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
