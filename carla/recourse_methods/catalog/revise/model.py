@@ -168,7 +168,12 @@ class Revise(RecourseMethod):
             target = torch.FloatTensor(self._target_class).to(device)
             target_prediction = np.argmax(np.array(self._target_class))
 
-            z = self.vae.encode(query_instance)[0].clone().detach().requires_grad_(True)
+            z = (
+                self.vae.encode(query_instance.float())[0]
+                .clone()
+                .detach()
+                .requires_grad_(True)
+            )
 
             if self._optimizer == "adam":
                 optim = torch.optim.Adam([z], self._lr)
