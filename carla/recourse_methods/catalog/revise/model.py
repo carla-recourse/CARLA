@@ -158,7 +158,9 @@ class Revise(RecourseMethod):
 
     def _counterfactual_optimization(self, cat_features_indices, device, df_fact):
         # prepare data for optimization steps
-        test_loader = torch.utils.data.DataLoader(df_fact, batch_size=1, shuffle=False)
+        test_loader = torch.utils.data.DataLoader(
+            df_fact.values, batch_size=1, shuffle=False
+        )
 
         list_cfs = []
         for query_instance in test_loader:
