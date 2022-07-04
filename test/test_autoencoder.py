@@ -57,7 +57,7 @@ def test_variational_autoencoder():
 
     vae.fit(xtrain=data.df[model.feature_input_order])
 
-    test_reconstructed, _, _, _, _ = vae.predict(test_input)
+    test_reconstructed, _, _ = vae.predict(test_input)
 
     assert test_reconstructed.shape == test_input.shape
 
