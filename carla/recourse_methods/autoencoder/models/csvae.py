@@ -161,7 +161,7 @@ class CSVAE(nn.Module):
         eps = torch.FloatTensor(std.size()).normal_().to(mu.device)
         return eps.mul(std).add_(mu)
 
-    def fit(self, data, lambda_reg=None, epochs=100, lr=1e-3, batch_size=32):
+    def fit(self, data, epochs=100, lr=1e-3, batch_size=32):
         if isinstance(data, pd.DataFrame):
             data = data.values
         x_train = data[:, :-1]
