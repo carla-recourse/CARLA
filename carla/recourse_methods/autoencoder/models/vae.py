@@ -15,6 +15,18 @@ tf.compat.v1.disable_eager_execution()
 
 class VariationalAutoencoder(nn.Module):
     def __init__(self, data_name: str, layers: List, mutable_mask):
+        """
+
+        Parameters
+        ----------
+        data_name:
+            Name of the dataset, used for the name when saving and loading the model.
+        layers:
+            List of layer sizes.
+        mutable_mask:
+            Mask that indicates which feature columns are mutable, and which are immutable. Setting
+            all columns to mutable, results in the standard case.
+        """
         super(VariationalAutoencoder, self).__init__()
 
         if len(layers) < 2:
