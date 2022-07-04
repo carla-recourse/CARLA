@@ -36,7 +36,7 @@ class VariationalAutoencoder(nn.Module):
         self._mu_enc = nn.Sequential(encoder, nn.Linear(layers[-2], latent_dim))
         self._log_var_enc = nn.Sequential(encoder, nn.Linear(layers[-2], latent_dim))
 
-        # the decoder does use the immutables
+        # the decoder does use the immutables, so need to increase layer size accordingly.
         layers[-1] += np.sum(~mutable_mask)
 
         lst_decoder = []
@@ -87,11 +87,6 @@ class VariationalAutoencoder(nn.Module):
 
     def predict(self, data):
         return self.forward(data)
-
-    def regenerate(self, z):
-        # TODO remove this, same as self.decode
-        recon = self.decode(z)
-        return recon
 
     def kld(self, mu, logvar):
         KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())

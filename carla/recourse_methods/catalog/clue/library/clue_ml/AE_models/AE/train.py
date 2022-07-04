@@ -127,7 +127,7 @@ def train_VAE(
 
             if train_plot:
                 zz = net.recongnition(x).sample()
-                o = net.regenerate(zz)
+                o = net.decode(zz)
                 try:
                     o = o.cpu()
                 except:
@@ -148,7 +148,7 @@ def train_VAE(
                     plt.show()
 
                 z_sample = normal(loc=0.0, scale=1.0, size=(36, net.latent_dim))
-                x_rec = net.regenerate(z_sample)
+                x_rec = net.decode(z_sample)
                 try:
                     x_rec = x_rec.cpu()
                 except:

@@ -246,7 +246,7 @@ class CLUE(BaseNet):
 
     def uncertainty_from_z(self):
         # We dont use unflatten option because BNNs always take flattened input and unflatten doesnt support grad
-        x = self.VAE.regenerate(self.z, grad=True)
+        x = self.VAE.decode(self.z, grad=True)
 
         if self.flatten_BNN:
             to_BNN = x.view(x.shape[0], -1)
@@ -388,7 +388,7 @@ class CLUE(BaseNet):
 
         #  Generate final (or resulting s sample)
 
-        x = self.VAE.regenerate(self.z, grad=False).data
+        x = self.VAE.decode(self.z, grad=False).data
         x_vec.append(x)
         x_vec = [i.cpu().numpy() for i in x_vec]  # convert x to numpy
         x_vec = np.stack(x_vec)
@@ -702,7 +702,7 @@ class conditional_CLUE(CLUE):
 
     def uncertainty_from_z(self):
 
-        x = self.VAEAC.regenerate(self.z, grad=True)
+        x = self.VAEAC.decode(self.z, grad=True)
         x = x * self.cond_mask + self.original_x * (1 - self.cond_mask)
 
         if self.flatten_BNN:
@@ -778,7 +778,7 @@ class conditional_CLUE(CLUE):
 
         #  Generate final (or resulting s sample)
 
-        x = self.VAE.regenerate(self.z, grad=False).data
+        x = self.VAE.decode(self.z, grad=False).data
         x = x * self.cond_mask + self.original_x * (1 - self.cond_mask)
         x_vec.append(x)
         x_vec = [i.cpu().numpy() for i in x_vec]  # convert x to numpy
