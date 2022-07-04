@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Dict, Optional
 
 import dice_ml
 import pandas as pd
@@ -49,7 +49,14 @@ class Dice(RecourseMethod):
 
     _DEFAULT_HYPERPARAMS = {"num": 1, "desired_class": 1, "posthoc_sparsity_param": 0.1}
 
-    def __init__(self, mlmodel: MLModel, hyperparams: Dict[str, Any]) -> None:
+    def __init__(self, mlmodel: MLModel, hyperparams: Optional[Dict] = None) -> None:
+
+        supported_backends = ["tensorflow", "pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
         self._continuous = mlmodel.data.continuous
         self._categorical = mlmodel.data.categorical

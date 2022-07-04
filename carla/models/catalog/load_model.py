@@ -16,7 +16,7 @@ XGBOOST_EXT = "xgjoblib"
 def load_online_model(
     name: str,
     dataset: str,
-    ext: str = "h5",
+    ext: str,
     cache: bool = True,
     models_home: Optional[str] = None,
     **kws,
