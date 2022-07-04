@@ -10,7 +10,6 @@ from carla.recourse_methods.autoencoder import (
     Autoencoder,
     VariationalAutoencoder,
     train_autoencoder,
-    train_variational_autoencoder,
 )
 
 
@@ -27,11 +26,9 @@ def test_cs_vae():
 
     csvae = CSVAE(data_name, layers=[test_input.shape[1], 16, 8])
 
-    fitted_csvae = train_variational_autoencoder(
-        csvae, data, model.feature_input_order, epochs=1
-    )
+    csvae.fit(data=data.df[model.feature_input_order + [data.target]], epochs=1)
 
-    output = fitted_csvae.predict(test_input, test_class)
+    output = csvae.predict(test_input, test_class)
     test_reconstructed = output[0]
 
     assert test_reconstructed.shape == test_input.shape
@@ -58,9 +55,9 @@ def test_variational_autoencoder():
 
     vae = VariationalAutoencoder(data_name, layers=[test_input.shape[1], 512, 256, 8])
 
-    fitted_vae = train_variational_autoencoder(vae, data, model.feature_input_order)
+    vae.fit(xtrain=data.df[model.feature_input_order])
 
-    test_reconstructed, _, _, _, _ = fitted_vae.predict(test_input)
+    test_reconstructed, _, _, _, _ = vae.predict(test_input)
 
     assert test_reconstructed.shape == test_input.shape
 
@@ -88,9 +85,9 @@ def test_variational_autoencoder_length():
     for layer in layers:
         vae = VariationalAutoencoder(data_name, layer)
 
-        fitted_vae = train_variational_autoencoder(vae, data, model.feature_input_order)
+        vae.fit(xtrain=data.df[model.feature_input_order])
 
-        test_reconstructed, _, _, _, _ = fitted_vae.predict(test_input)
+        test_reconstructed, _, _, _, _ = vae.predict(test_input)
 
         assert test_reconstructed.shape == test_input.shape
 

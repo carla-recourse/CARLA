@@ -9,11 +9,7 @@ from carla import log
 from carla.data.api import Data
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.autoencoder import (
-    VAEDataset,
-    VariationalAutoencoder,
-    train_variational_autoencoder,
-)
+from carla.recourse_methods.autoencoder import VariationalAutoencoder
 from carla.recourse_methods.processing.counterfactuals import (
     check_counterfactuals,
     merge_default_parameters,
@@ -124,10 +120,8 @@ class Revise(RecourseMethod):
         )
 
         if vae_params["train"]:
-            self.vae = train_variational_autoencoder(
-                self.vae,
-                self._mlmodel.data,
-                self._mlmodel.feature_input_order,
+            self.vae.fit(
+                xtrain=data.df[mlmodel.feature_input_order],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
@@ -165,7 +159,7 @@ class Revise(RecourseMethod):
     def _counterfactual_optimization(self, cat_features_indices, device, df_fact):
         # prepare data for optimization steps
         test_loader = torch.utils.data.DataLoader(
-            VAEDataset(df_fact.values, with_target=False), batch_size=1, shuffle=False
+            df_fact.values, batch_size=1, shuffle=False
         )
 
         list_cfs = []
@@ -174,7 +168,12 @@ class Revise(RecourseMethod):
             target = torch.FloatTensor(self._target_class).to(device)
             target_prediction = np.argmax(np.array(self._target_class))
 
-            z = self.vae.encode(query_instance)[0].clone().detach().requires_grad_(True)
+            z = (
+                self.vae.encode(query_instance.float())[0]
+                .clone()
+                .detach()
+                .requires_grad_(True)
+            )
 
             if self._optimizer == "adam":
                 optim = torch.optim.Adam([z], self._lr)

@@ -3,7 +3,7 @@ from typing import Dict
 import pandas as pd
 
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.autoencoder import CSVAE, train_variational_autoencoder
+from carla.recourse_methods.autoencoder import CSVAE
 from carla.recourse_methods.catalog.crud.library import counterfactual_search
 from carla.recourse_methods.processing import (
     check_counterfactuals,
@@ -105,24 +105,24 @@ class CRUD(RecourseMethod):
         self._binary_cat_features = checked_hyperparams["binary_cat_features"]
 
         vae_params = checked_hyperparams["vae_params"]
-        self._vae = CSVAE(
+        self._csvae = CSVAE(
             checked_hyperparams["data_name"],
             vae_params["layers"],
         )
 
         if vae_params["train"]:
-            self._vae = train_variational_autoencoder(
-                self._vae,
-                self._mlmodel.data,
-                self._mlmodel.feature_input_order,
-                lambda_reg=None,
+            assert mlmodel == self._mlmodel
+            self._csvae.fit(
+                data=mlmodel.data.df[
+                    mlmodel.feature_input_order + [mlmodel.data.target]
+                ],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
                 batch_size=vae_params["batch_size"],
             )
         else:
             try:
-                self._vae.load(self._mlmodel.data.df.shape[1] - 1)
+                self._csvae.load(self._mlmodel.data.df.shape[1] - 1)
             except FileNotFoundError as exc:
                 raise FileNotFoundError(
                     "Loading of Autoencoder failed. {}".format(str(exc))
@@ -149,7 +149,7 @@ class CRUD(RecourseMethod):
         df_cfs = factuals.apply(
             lambda x: counterfactual_search(
                 self._mlmodel,
-                self._vae,
+                self._csvae,
                 x.reshape((1, -1)),
                 cat_features_indices,
                 self._binary_cat_features,
