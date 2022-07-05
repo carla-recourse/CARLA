@@ -83,6 +83,7 @@ class CCHVAE(RecourseMethod):
         "vae_params": {
             "layers": None,
             "train": True,
+            "kl_weight": 0.3,
             "lambda_reg": 1e-6,
             "epochs": 5,
             "lr": 1e-3,
@@ -123,6 +124,7 @@ class CCHVAE(RecourseMethod):
         if vae_params["train"]:
             generative_model.fit(
                 xtrain=data[mlmodel.feature_input_order],
+                kl_weight=vae_params["kl_weight"],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
@@ -196,7 +198,7 @@ class CCHVAE(RecourseMethod):
             torch_latent_neighbourhood = (
                 torch.from_numpy(latent_neighbourhood).to(device).float()
             )
-            x_ce = self._generative_model.decode(torch_latent_neighbourhood)[0]
+            x_ce = self._generative_model.decode(torch_latent_neighbourhood)
             x_ce = reconstruct_encoding_constraints(
                 x_ce, cat_features_indices, self._params["binary_cat_features"]
             )

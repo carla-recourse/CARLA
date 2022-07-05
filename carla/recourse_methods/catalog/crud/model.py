@@ -111,7 +111,6 @@ class CRUD(RecourseMethod):
         )
 
         if vae_params["train"]:
-            assert mlmodel == self._mlmodel
             self._csvae.fit(
                 data=mlmodel.data.df[
                     mlmodel.feature_input_order + [mlmodel.data.target]

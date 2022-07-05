@@ -34,7 +34,6 @@ class VariationalAutoencoder(nn.Module):
         lst_encoder = []
         for i in range(1, len(layers) - 1):
             lst_encoder.append(nn.Linear(layers[i - 1], layers[i]))
-            lst_encoder.append(nn.BatchNorm1d(layers[i]))
             lst_encoder.append(nn.ReLU())
         encoder = nn.Sequential(*lst_encoder)
 
@@ -45,21 +44,12 @@ class VariationalAutoencoder(nn.Module):
         lst_decoder = []
         for i in range(len(layers) - 2, 0, -1):
             lst_decoder.append(nn.Linear(layers[i + 1], layers[i]))
-            lst_decoder.append(nn.BatchNorm1d(layers[i]))
             lst_decoder.append((nn.ReLU()))
         decoder = nn.Sequential(*lst_decoder)
 
         self.mu_dec = nn.Sequential(
             decoder,
             nn.Linear(layers[1], self._input_dim),
-            nn.BatchNorm1d(self._input_dim),
-            nn.Sigmoid(),
-        )
-
-        self.log_var_dec = nn.Sequential(
-            decoder,
-            nn.Linear(layers[1], self._input_dim),
-            nn.BatchNorm1d(self._input_dim),
             nn.Sigmoid(),
         )
 
@@ -70,7 +60,7 @@ class VariationalAutoencoder(nn.Module):
         return self._mu_enc(x), self._log_var_enc(x)
 
     def decode(self, z):
-        return self.mu_dec(z), self.log_var_dec(z)
+        return self.mu_dec(z)
 
     def __reparametrization_trick(self, mu, log_var):
         std = torch.exp(0.5 * log_var)
@@ -80,26 +70,25 @@ class VariationalAutoencoder(nn.Module):
     def forward(self, x):
         mu_z, log_var_z = self.encode(x)
         z_rep = self.__reparametrization_trick(mu_z, log_var_z)
-        mu_x, log_var_x = self.decode(z_rep)
+        mu_x = self.decode(z_rep)
 
-        return mu_x, log_var_x, z_rep, mu_z, log_var_z
+        return mu_x, mu_z, log_var_z
 
     def predict(self, data):
         return self.forward(data)
 
     def regenerate(self, z):
-        mu_x, log_var_x = self.decode(z)
+        mu_x = self.decode(z)
         return mu_x
 
-    def VAE_loss(self, mse_loss, mu, logvar):
-        MSE = mse_loss
+    def kld(self, mu, logvar):
         KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-
-        return MSE + KLD
+        return KLD
 
     def fit(
         self,
         xtrain: Union[pd.DataFrame, np.ndarray],
+        kl_weight=0.3,
         lambda_reg=1e-6,
         epochs=5,
         lr=1e-3,
@@ -118,12 +107,14 @@ class VariationalAutoencoder(nn.Module):
             weight_decay=lambda_reg,
         )
 
-        criterion = nn.MSELoss()
+        criterion = nn.BCELoss(reduction="sum")
 
         # Train the VAE with the new prior
         ELBO = np.zeros((epochs, 1))
         log.info("Start training of Variational Autoencoder...")
         for epoch in range(epochs):
+
+            beta = epoch * kl_weight / epochs
 
             # Initialize the losses
             train_loss = 0
@@ -135,13 +126,11 @@ class VariationalAutoencoder(nn.Module):
                 data = data.float()
 
                 # forward pass
-                MU_X_eval, LOG_VAR_X_eval, Z_ENC_eval, MU_Z_eval, LOG_VAR_Z_eval = self(
-                    data
-                )
+                reconstruction, mu, log_var = self(data)
 
-                reconstruction = MU_X_eval
-                mse_loss = criterion(reconstruction, data)
-                loss = self.VAE_loss(mse_loss, MU_Z_eval, LOG_VAR_Z_eval)
+                recon_loss = criterion(reconstruction, data)
+                kld_loss = self.kld(mu, log_var)
+                loss = recon_loss + beta * kld_loss
 
                 # Update the parameters
                 optimizer.zero_grad()
@@ -164,8 +153,6 @@ class VariationalAutoencoder(nn.Module):
 
             ELBO_train = ELBO[epoch, 0].round(2)
             log.info("[ELBO train: " + str(ELBO_train) + "]")
-        del MU_X_eval, MU_Z_eval, Z_ENC_eval
-        del LOG_VAR_X_eval, LOG_VAR_Z_eval
 
         self.save()
         log.info("... finished training of Variational Autoencoder.")
