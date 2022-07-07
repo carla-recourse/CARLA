@@ -187,7 +187,7 @@ class Revise(RecourseMethod):
             all_loss = []
 
             for idx in range(self._max_iter):
-                cf = self.vae.decode(z)[0]
+                cf = self.vae.decode(z)
                 cf = reconstruct_encoding_constraints(
                     cf, cat_features_indices, self._params["binary_cat_features"]
                 )
