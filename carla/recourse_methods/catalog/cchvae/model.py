@@ -207,10 +207,12 @@ class CCHVAE(RecourseMethod):
                 torch.from_numpy(latent_neighbourhood).to(device).float()
             )
             x_ce = self._generative_model.decode(torch_latent_neighbourhood)
+
             # add the immutable features to the reconstruction
             temp = fact_rep.clone()
             temp[:, self._generative_model.mutable_mask] = x_ce.double()
             x_ce = temp
+
             x_ce = reconstruct_encoding_constraints(
                 x_ce, cat_features_indices, self._params["binary_cat_features"]
             )

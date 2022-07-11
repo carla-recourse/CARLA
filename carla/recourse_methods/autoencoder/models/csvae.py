@@ -18,7 +18,7 @@ tf.compat.v1.disable_eager_execution()
 
 
 class CSVAE(nn.Module):
-    def __init__(self, data_name: str, layers: List[int]) -> None:
+    def __init__(self, data_name: str, layers: List[int], mutable_mask) -> None:
         super(CSVAE, self).__init__()
         self._input_dim = layers[0]
         self.z_dim = layers[-1]
@@ -72,6 +72,8 @@ class CSVAE(nn.Module):
         )
 
         # decoder
+        # the decoder does use the immutables, so need to increase layer size accordingly.
+        layers[-1] += np.sum(~mutable_mask)
         lst_decoder_zw_to_x = []
         for i in range(len(layers) - 2, 0, -1):
             if i == len(layers) - 2:
@@ -90,10 +92,12 @@ class CSVAE(nn.Module):
         )
 
         lst_decoder_z_to_y = copy.deepcopy(lst_decoder_zw_to_x)
-        lst_decoder_z_to_y[0] = nn.Linear(self.z_dim, layers[-2])
+        lst_decoder_z_to_y[0] = nn.Linear(self.z_dim + np.sum(~mutable_mask), layers[-2])
         lst_decoder_z_to_y.append(nn.Linear(layers[1], self._labels_dim))
         lst_decoder_z_to_y.append(nn.Sigmoid())
         self.decoder_z_to_y = nn.Sequential(*lst_decoder_z_to_y)
+
+        self.mutable_mask = mutable_mask
 
     def q_zw(self, x, y):
         xy = torch.cat([x, y], dim=1)
@@ -125,6 +129,12 @@ class CSVAE(nn.Module):
         return mu, logvar
 
     def forward(self, x, y):
+
+        # split up the input in a mutable and immutable part
+        x = x.clone()
+        x_mutable = x[:, self.mutable_mask]
+        x_immutable = x[:, ~self.mutable_mask]
+
         (
             w_mu_encoder,
             w_logvar_encoder,
@@ -132,13 +142,27 @@ class CSVAE(nn.Module):
             w_logvar_prior,
             z_mu,
             z_logvar,
-        ) = self.q_zw(x, y)
+        ) = self.q_zw(x_mutable, y)
+
         w_encoder = self.reparameterize(w_mu_encoder, w_logvar_encoder)
         z = self.reparameterize(z_mu, z_logvar)
+
+        # concatenate the immutable part to the latents
+        z = torch.cat([z, x_immutable], dim=-1)
+
         zw = torch.cat([z, w_encoder], dim=1)
 
         x_mu, x_logvar = self.p_x(z, w_encoder)
         y_pred = self.decoder_z_to_y(z)
+
+        # add the immutable features to the reconstruction
+        x[:, self.mutable_mask] = x_mu
+        x_mu = x
+
+        # set variance to zero (one in log space) for immutable features
+        temp = torch.ones_like(x)
+        temp[:, self.mutable_mask] = x_logvar
+        x_logvar = temp
 
         return (
             x_mu,
@@ -236,8 +260,7 @@ class CSVAE(nn.Module):
         cache_path = get_home()
 
         save_path = os.path.join(
-            cache_path,
-            "csvae_{}_{}.{}".format(self._data_name, self._input_dim, "pt"),
+            cache_path, "csvae_{}_{}.{}".format(self._data_name, self._input_dim, "pt"),
         )
 
         torch.save(self.state_dict(), save_path)
@@ -246,8 +269,7 @@ class CSVAE(nn.Module):
         cache_path = get_home()
 
         load_path = os.path.join(
-            cache_path,
-            "csvae_{}_{}.{}".format(self._data_name, input_shape, "pt"),
+            cache_path, "csvae_{}_{}.{}".format(self._data_name, input_shape, "pt"),
         )
 
         self.load_state_dict(torch.load(load_path))

@@ -108,6 +108,7 @@ class CRUD(RecourseMethod):
         self._csvae = CSVAE(
             checked_hyperparams["data_name"],
             vae_params["layers"],
+            mlmodel.get_mutable_mask()
         )
 
         if vae_params["train"]:

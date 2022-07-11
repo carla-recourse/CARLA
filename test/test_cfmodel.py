@@ -297,7 +297,7 @@ def test_revise(model_type):
     test_factual = factuals.iloc[:5]
 
     vae_params = {
-        "layers": [len(model.feature_input_order), 512, 256, 8],
+        "layers": [sum(model.get_mutable_mask()), 512, 256, 8],
         "epochs": 1,
     }
 
@@ -328,7 +328,7 @@ def test_cchvae(model_type):
         "data_name": data_name,
         "n_search_samples": 100,
         "vae_params": {
-            "layers": [len(model.feature_input_order), 512, 256, 8],
+            "layers": [sum(model.get_mutable_mask()), 512, 256, 8],
         },
     }
 
@@ -354,7 +354,7 @@ def test_crud(model_type):
     hyperparams = {
         "data_name": data_name,
         "vae_params": {
-            "layers": [len(model.feature_input_order), 16, 8],
+            "layers": [sum(model.get_mutable_mask()), 16, 8],
         },
     }
 
