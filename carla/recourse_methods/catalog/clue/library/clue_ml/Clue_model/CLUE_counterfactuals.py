@@ -778,7 +778,7 @@ class conditional_CLUE(CLUE):
 
         #  Generate final (or resulting s sample)
 
-        x = self.VAE.renerate(self.z, grad=False).data
+        x = self.VAE.regenerate(self.z, grad=False).data
         x = x * self.cond_mask + self.original_x * (1 - self.cond_mask)
         x_vec.append(x)
         x_vec = [i.cpu().numpy() for i in x_vec]  # convert x to numpy
