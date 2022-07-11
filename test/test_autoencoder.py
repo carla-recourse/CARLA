@@ -38,7 +38,7 @@ def test_cs_vae():
         data_name, layers=[11, 16, 8], mutable_mask=model.get_mutable_mask()
     )
 
-    new_csvae.load(test_input.shape[1])
+    new_csvae.load(11)
 
 
 def test_variational_autoencoder():
@@ -67,7 +67,7 @@ def test_variational_autoencoder():
         data_name, layers=[11, 512, 256, 8], mutable_mask=model.get_mutable_mask()
     )
 
-    new_vae.load(test_input.shape[1])
+    new_vae.load(11)
 
 
 def test_variational_autoencoder_length():
