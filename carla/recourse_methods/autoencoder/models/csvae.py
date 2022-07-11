@@ -92,7 +92,9 @@ class CSVAE(nn.Module):
         )
 
         lst_decoder_z_to_y = copy.deepcopy(lst_decoder_zw_to_x)
-        lst_decoder_z_to_y[0] = nn.Linear(self.z_dim + np.sum(~mutable_mask), layers[-2])
+        lst_decoder_z_to_y[0] = nn.Linear(
+            self.z_dim + np.sum(~mutable_mask), layers[-2]
+        )
         lst_decoder_z_to_y.append(nn.Linear(layers[1], self._labels_dim))
         lst_decoder_z_to_y.append(nn.Sigmoid())
         self.decoder_z_to_y = nn.Sequential(*lst_decoder_z_to_y)
@@ -260,7 +262,8 @@ class CSVAE(nn.Module):
         cache_path = get_home()
 
         save_path = os.path.join(
-            cache_path, "csvae_{}_{}.{}".format(self._data_name, self._input_dim, "pt"),
+            cache_path,
+            "csvae_{}_{}.{}".format(self._data_name, self._input_dim, "pt"),
         )
 
         torch.save(self.state_dict(), save_path)
@@ -269,7 +272,8 @@ class CSVAE(nn.Module):
         cache_path = get_home()
 
         load_path = os.path.join(
-            cache_path, "csvae_{}_{}.{}".format(self._data_name, input_shape, "pt"),
+            cache_path,
+            "csvae_{}_{}.{}".format(self._data_name, input_shape, "pt"),
         )
 
         self.load_state_dict(torch.load(load_path))
