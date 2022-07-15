@@ -24,7 +24,7 @@ def test_cs_vae():
     test_input = torch.Tensor(test_input)
     test_class = torch.Tensor(np.array([[0, 0]]))
 
-    csvae = CSVAE(data_name, layers=[test_input.shape[1], 16, 8])
+    csvae = CSVAE(data_name, layers=[11, 16, 8], mutable_mask=model.get_mutable_mask())
 
     csvae.fit(data=data.df[model.feature_input_order + [data.target]], epochs=1)
 
@@ -35,11 +35,10 @@ def test_cs_vae():
 
     # test loading vae
     new_csvae = CSVAE(
-        data_name,
-        layers=[test_input.shape[1], 16, 8],
+        data_name, layers=[11, 16, 8], mutable_mask=model.get_mutable_mask()
     )
 
-    new_csvae.load(test_input.shape[1])
+    new_csvae.load(11)
 
 
 def test_variational_autoencoder():
@@ -53,7 +52,9 @@ def test_variational_autoencoder():
     test_input = np.zeros((1, 13))
     test_input = torch.Tensor(test_input).to(device)
 
-    vae = VariationalAutoencoder(data_name, layers=[test_input.shape[1], 512, 256, 8])
+    vae = VariationalAutoencoder(
+        data_name, layers=[11, 512, 256, 8], mutable_mask=model.get_mutable_mask()
+    )
 
     vae.fit(xtrain=data.df[model.feature_input_order])
 
@@ -63,11 +64,10 @@ def test_variational_autoencoder():
 
     # test loading vae
     new_vae = VariationalAutoencoder(
-        data_name,
-        layers=[test_input.shape[1], 512, 256, 8],
+        data_name, layers=[11, 512, 256, 8], mutable_mask=model.get_mutable_mask()
     )
 
-    new_vae.load(test_input.shape[1])
+    new_vae.load(11)
 
 
 def test_variational_autoencoder_length():
@@ -81,9 +81,9 @@ def test_variational_autoencoder_length():
     test_input = np.zeros((1, 13))
     test_input = torch.Tensor(test_input).to(device)
 
-    layers = [[test_input.shape[1], 8], [test_input.shape[1], 2, 3, 4, 5, 6, 8]]
+    layers = [[11, 8], [11, 2, 3, 4, 5, 6, 8]]
     for layer in layers:
-        vae = VariationalAutoencoder(data_name, layer)
+        vae = VariationalAutoencoder(data_name, layer, model.get_mutable_mask())
 
         vae.fit(xtrain=data.df[model.feature_input_order])
 

@@ -20,10 +20,14 @@ def check_counterfactuals(
 
     Parameters
     ----------
-    mlmodel: Black-box-model we want to discover
-    counterfactuals: List or DataFrame of generated samples from recourse method
-    factuals_index: Index of the original factuals DataFrame
-    negative_label: Defines the negative label.
+    mlmodel:
+        Black-box-model we want to discover.
+    counterfactuals:
+        List or DataFrame of generated samples from recourse method.
+    factuals_index:
+        Index of the original factuals DataFrame.
+    negative_label:
+        Defines the negative label.
 
     Returns
     -------
@@ -76,9 +80,12 @@ def reconstruct_encoding_constraints(
 
     Parameters
     ----------
-    x: instance where we want to reconstruct categorical constraints
-    feature_pos: list with positions of categorical features in x
-    binary_cat: If true, categorical datas are encoded with drop_if_binary
+    x:
+        Instance where we want to reconstruct categorical constraints.
+    feature_pos:
+        List with positions of categorical features in x.
+    binary_cat:
+        If True, categorical datas are encoded with drop_if_binary.
 
     Returns
     -------
