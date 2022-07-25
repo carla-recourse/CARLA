@@ -139,9 +139,7 @@ def test_cem_get_counterfactuals(model_type):
             test_factuals = factuals.iloc[:5]
 
             recourse = CEM(
-                sess=ann_sess,
-                mlmodel=model_ann,
-                hyperparams=hyperparams_cem,
+                sess=ann_sess, mlmodel=model_ann, hyperparams=hyperparams_cem,
             )
 
             counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
@@ -178,9 +176,7 @@ def test_cem_vae(model_type):
             test_factuals = factuals.iloc[:5]
 
             recourse = CEM(
-                sess=ann_sess,
-                mlmodel=model_ann,
-                hyperparams=hyperparams_cem,
+                sess=ann_sess, mlmodel=model_ann, hyperparams=hyperparams_cem,
             )
 
             counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
@@ -328,9 +324,7 @@ def test_cchvae(model_type):
     hyperparams = {
         "data_name": data_name,
         "n_search_samples": 100,
-        "vae_params": {
-            "layers": [sum(model.get_mutable_mask()), 512, 256, 8],
-        },
+        "vae_params": {"layers": [sum(model.get_mutable_mask()), 512, 256, 8],},
     }
 
     cchvae = CCHVAE(model, hyperparams)
@@ -354,9 +348,7 @@ def test_crud(model_type):
 
     hyperparams = {
         "data_name": data_name,
-        "vae_params": {
-            "layers": [sum(model.get_mutable_mask()), 16, 8],
-        },
+        "vae_params": {"layers": [sum(model.get_mutable_mask()), 16, 8],},
     }
 
     crud = CRUD(model, hyperparams)
@@ -364,6 +356,7 @@ def test_crud(model_type):
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert isinstance(df_cfs, pd.DataFrame)
+
 
 @pytest.mark.parametrize("model_type", testmodel)
 def test_expect(model_type):
@@ -381,3 +374,9 @@ def test_expect(model_type):
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert isinstance(df_cfs, pd.DataFrame)
+
+
+def test_expect_tree():
+    # Build data and mlmodel
+    data_name = "adult"
+    data = OnlineCatalog(data_name)
