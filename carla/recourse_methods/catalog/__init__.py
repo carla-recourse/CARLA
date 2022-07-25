@@ -7,6 +7,7 @@ from .cem import CEM
 from .clue import Clue
 from .crud import CRUD
 from .dice import Dice
+from .expect import EXPECT
 from .face import Face
 from .feature_tweak import FeatureTweak
 from .focus import FOCUS

@@ -11,6 +11,7 @@ from carla.recourse_methods.catalog.cchvae import CCHVAE
 from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.crud import CRUD
+from carla.recourse_methods.catalog.expect import EXPECT
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
 from carla.recourse_methods.catalog.feature_tweak import FeatureTweak
@@ -360,6 +361,23 @@ def test_crud(model_type):
 
     crud = CRUD(model, hyperparams)
     df_cfs = crud.get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert isinstance(df_cfs, pd.DataFrame)
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_expect(model_type):
+    # Build data and mlmodel
+    data_name = "adult"
+    data = OnlineCatalog(data_name)
+
+    model = MLModelCatalog(data, model_type, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data.df)
+    test_factual = factuals.iloc[:5]
+
+    expect = EXPECT(model)
+    df_cfs = expect.get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert isinstance(df_cfs, pd.DataFrame)
