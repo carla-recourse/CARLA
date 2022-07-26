@@ -1,21 +1,66 @@
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
 import torch
-from torch.distributions import Normal
+from sklearn.model_selection import GridSearchCV
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree._tree import TREE_UNDEFINED
+from torch.distributions import Normal
 
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.processing import (
-    merge_default_parameters,
     check_counterfactuals,
+    merge_default_parameters,
 )
 
-from .hypercube import get_classes_for_hypercubes, HypercubeInfo
+from .hypercube import get_classes_for_hypercubes, get_hypercubes
 
 INF = torch.tensor(float("inf"))
+
+
+def random_uniform_grid(n_samples, min_vals, max_vals):
+    # generate independent uniform samples for each dimension
+    grid = [
+        np.random.uniform(low, high, n_samples) for low, high in zip(min_vals, max_vals)
+    ]
+    # combine independent 1-d samples into multi-d samples
+    grid = np.vstack(grid).T
+    return grid
+
+
+def get_distilled_model(model_rf, plot_step=0.1, include_training_data=True):
+    data_df = model_rf.data.df
+    X = data_df[model_rf.feature_input_order].to_numpy()
+    y = data_df[model_rf.data.target].to_numpy()
+
+    # TODO adapt for different normalization
+    min_vals = np.min(X, axis=0)  # min values per feature
+    max_vals = np.max(X, axis=0)  # max values per feature
+    grid = random_uniform_grid(len(X), min_vals, max_vals)
+
+    # Get labels
+    if include_training_data:
+        # augmented data + training data
+        X = np.concatenate((X, grid))
+        y = model_rf.predict(X)
+    else:
+        # only augmented data
+        X = grid
+        y = model_rf.predict(X)
+
+    parameters = {
+        "max_depth": [None],
+        "min_samples_leaf": [5, 10, 15],
+        "min_samples_split": [3, 5, 10, 15],
+    }
+    model = GridSearchCV(DecisionTreeClassifier(), parameters, n_jobs=4)
+    model.fit(X=X, y=y)
+    print(model.best_score_, model.best_params_)
+    model_distilled = model.best_estimator_
+
+    return model_distilled
 
 
 # TODO move this to trees.py?
@@ -36,13 +81,15 @@ def get_rules(tree, feature_names: list, class_names: list, verbose=False) -> li
 
     """
 
-    def recurse(node, path, paths):
+    def recurse(node, path: List, paths: List):
         if tree_.feature[node] != TREE_UNDEFINED:
             name = feature_name[node]
             threshold = tree_.threshold[node]
             p1, p2 = list(path), list(path)
+
             p1 += [f"|{name} <= {np.round(threshold, 3)}|"]
             recurse(tree_.children_left[node], p1, paths)
+
             p2 += [f"|{name} > {np.round(threshold, 3)}|"]
             recurse(tree_.children_right[node], p2, paths)
         else:
@@ -54,8 +101,8 @@ def get_rules(tree, feature_names: list, class_names: list, verbose=False) -> li
         feature_names[i] if i != TREE_UNDEFINED else "undefined!" for i in tree_.feature
     ]
 
-    paths = []
-    path = []
+    paths: List = []
+    path: List = []
     recurse(0, path, paths)
 
     # sort by samples count
@@ -76,10 +123,10 @@ def get_rules(tree, feature_names: list, class_names: list, verbose=False) -> li
             rule += "response: " + str(np.round(path[-1][0][0][0], 3))
         else:
             classes = path[-1][0][0]
-            l = np.argmax(classes)
-            rule += f"class: {class_names[l]}"
+            i = np.argmax(classes)
+            rule += f"class: {class_names[i]}"
             if verbose:
-                rule += f" | (proba: {np.round(100.0 * classes[l] / np.sum(classes), 2)}% of class {class_names[l]})"
+                rule += f" | (proba: {np.round(100.0 * classes[i] / np.sum(classes), 2)}% of class {class_names[i]})"
 
         if verbose:
             rule += f" | based on {path[-1][1]:,} samples"
@@ -118,6 +165,7 @@ class EXPECT_tree(RecourseMethod):
         "upper_bound": INF,
         "lower_bound": -INF,
         "var": 0.25,
+        "target_names": [1, 0],
     }
 
     def __init__(self, mlmodel: MLModel, hyperparams: Dict = None):
@@ -133,23 +181,23 @@ class EXPECT_tree(RecourseMethod):
         self.lower_bound = self.hyperparams["lower_bound"]
 
         # Get Hypercubes
-        rules = get_rules(mlmodel, mlmodel.feature_input_order, mlmodel.data.target)
-        self.all_intervals = HypercubeInfo(
-            mlmodel, mlmodel.feature_input_order, mlmodel.data.target
-        ).get_hypercubes(rules)
+        model = get_distilled_model(mlmodel)
+        self.feature_names = mlmodel.feature_input_order
+        rules = get_rules(model, self.feature_names, self.hyperparams["target_names"])
+        self.all_intervals = get_hypercubes(
+            self.feature_names, rules, self.lower_bound, self.upper_bound
+        )
         self.classes = get_classes_for_hypercubes(rules)
 
-    def invalidation_loss(
-        self, x, verbose: bool = False,
-    ):
-        """
+    def invalidation_loss(self, x, verbose=False):
+        """Compute the invalidation loss.
 
         Parameters
         ----------
         x:
-            Input for which we want to find invalidation.
+            Input for which we want to find invalidation loss.
         verbose:
-            Print or not.
+            Print or not print.
 
         Returns
         -------
@@ -172,6 +220,7 @@ class EXPECT_tree(RecourseMethod):
                 interval_range = torch.tensor(interval[j][0][1])
 
                 # replace upper and lower bounds due to data constrains
+                # TODO should this depend on data normalization (e.g. min max vs scaled)
                 if INF in interval_range:
                     interval_range = [
                         y if y != np.inf else self.upper_bound for y in interval_range
@@ -189,7 +238,7 @@ class EXPECT_tree(RecourseMethod):
                     interval_upper,
                     interval_lower,
                     input_value,
-                    sigma_sq=self.hyperparams["var"],
+                    sigma_sq=torch.tensor(self.hyperparams["var"]),
                 )
 
                 product_cdf_diff *= d_cdf
@@ -204,9 +253,7 @@ class EXPECT_tree(RecourseMethod):
 
         return invalidation_rate
 
-    def optimization(
-        self, x: torch.tensor, all_intervals: list, classes: list,
-    ):
+    def optimization(self, x: torch.tensor, n_iter=50):
         x_check = torch.tensor(x, requires_grad=True, dtype=torch.float)
 
         if self.hyperparams["optimizer"] == "adam":
@@ -214,10 +261,10 @@ class EXPECT_tree(RecourseMethod):
         else:
             optim = torch.optim.RMSprop([x_check], self.lr)
 
-        for i in range(50):
+        for i in range(n_iter):
             x_check.requires_grad = True
 
-            invalidation_rate = self.invalidation_loss(x_check, all_intervals, classes)
+            invalidation_rate = self.invalidation_loss(x_check)
 
             # Compute & update losses
             loss_invalidation = invalidation_rate - self.invalidation_target
@@ -246,7 +293,9 @@ class EXPECT_tree(RecourseMethod):
         factuals = self._mlmodel.get_ordered_features(factuals)
 
         df_cfs = factuals.apply(
-            lambda x: self.optimization(torch.from_numpy(x)), raw=True, axis=1
+            lambda x: self.optimization(torch.from_numpy(x)),
+            raw=True,
+            axis=1,
         )
 
         df_cfs = check_counterfactuals(self._mlmodel, df_cfs, factuals.index)

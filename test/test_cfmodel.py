@@ -11,8 +11,8 @@ from carla.recourse_methods.catalog.cchvae import CCHVAE
 from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.crud import CRUD
-from carla.recourse_methods.catalog.expect import EXPECT
 from carla.recourse_methods.catalog.dice import Dice
+from carla.recourse_methods.catalog.expect import EXPECT, EXPECT_tree
 from carla.recourse_methods.catalog.face import Face
 from carla.recourse_methods.catalog.feature_tweak import FeatureTweak
 from carla.recourse_methods.catalog.focus import FOCUS
@@ -139,7 +139,9 @@ def test_cem_get_counterfactuals(model_type):
             test_factuals = factuals.iloc[:5]
 
             recourse = CEM(
-                sess=ann_sess, mlmodel=model_ann, hyperparams=hyperparams_cem,
+                sess=ann_sess,
+                mlmodel=model_ann,
+                hyperparams=hyperparams_cem,
             )
 
             counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
@@ -176,7 +178,9 @@ def test_cem_vae(model_type):
             test_factuals = factuals.iloc[:5]
 
             recourse = CEM(
-                sess=ann_sess, mlmodel=model_ann, hyperparams=hyperparams_cem,
+                sess=ann_sess,
+                mlmodel=model_ann,
+                hyperparams=hyperparams_cem,
             )
 
             counterfactuals_df = recourse.get_counterfactuals(factuals=test_factuals)
@@ -324,7 +328,9 @@ def test_cchvae(model_type):
     hyperparams = {
         "data_name": data_name,
         "n_search_samples": 100,
-        "vae_params": {"layers": [sum(model.get_mutable_mask()), 512, 256, 8],},
+        "vae_params": {
+            "layers": [sum(model.get_mutable_mask()), 512, 256, 8],
+        },
     }
 
     cchvae = CCHVAE(model, hyperparams)
@@ -348,7 +354,9 @@ def test_crud(model_type):
 
     hyperparams = {
         "data_name": data_name,
-        "vae_params": {"layers": [sum(model.get_mutable_mask()), 16, 8],},
+        "vae_params": {
+            "layers": [sum(model.get_mutable_mask()), 16, 8],
+        },
     }
 
     crud = CRUD(model, hyperparams)
@@ -376,7 +384,21 @@ def test_expect(model_type):
     assert isinstance(df_cfs, pd.DataFrame)
 
 
-def test_expect_tree():
+@pytest.mark.parametrize("backend", ["sklearn", "xgboost"])
+def test_expect_tree(backend):
     # Build data and mlmodel
     data_name = "adult"
     data = OnlineCatalog(data_name)
+
+    model = MLModelCatalog(data, "forest", backend, load_online=False)
+    model.train(max_depth=2, n_estimators=5)
+
+    # get factuals
+    factuals = predict_negative_instances(model, data.df)
+    test_factual = factuals.iloc[:5]
+
+    expect = EXPECT_tree(model)
+    cfs = expect.get_counterfactuals(test_factual)
+
+    assert test_factual[data.continuous].shape == cfs.shape
+    assert isinstance(cfs, pd.DataFrame)
