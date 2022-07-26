@@ -94,7 +94,7 @@ class Revise(RecourseMethod):
         },
     }
 
-    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict = None) -> None:
+    def __init__(self, mlmodel: MLModel, hyperparams: Dict = None) -> None:
 
         supported_backends = ["pytorch"]
         if mlmodel.backend not in supported_backends:
@@ -105,7 +105,7 @@ class Revise(RecourseMethod):
         super().__init__(mlmodel)
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
-        self._target_column = data.target
+        self._target_column =mlmodel.data.target
         self._lambda = self._params["lambda"]
         self._optimizer = self._params["optimizer"]
         self._lr = self._params["lr"]
@@ -120,7 +120,7 @@ class Revise(RecourseMethod):
 
         if vae_params["train"]:
             self.vae.fit(
-                xtrain=data.df[mlmodel.feature_input_order],
+                xtrain=mlmodel.data.df[mlmodel.feature_input_order],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
@@ -128,7 +128,7 @@ class Revise(RecourseMethod):
             )
         else:
             try:
-                self.vae.load(data.df.shape[1] - 1)
+                self.vae.load(mlmodel.data.df.shape[1] - 1)
             except FileNotFoundError as exc:
                 raise FileNotFoundError(
                     "Loading of Autoencoder failed. {}".format(str(exc))
@@ -197,7 +197,7 @@ class Revise(RecourseMethod):
                 cf = reconstruct_encoding_constraints(
                     cf, cat_features_indices, self._params["binary_cat_features"]
                 )
-                output = self._mlmodel.predict_proba(cf)[0]
+                output = self._mlmodel.predict_proba(cf, return_tensor=True)[0]
                 _, predicted = torch.max(output, 0)
 
                 z.requires_grad = True
@@ -231,7 +231,7 @@ class Revise(RecourseMethod):
     def _compute_loss(self, cf_initialize, query_instance, target):
 
         loss_function = nn.BCELoss()
-        output = self._mlmodel.predict_proba(cf_initialize)[0]
+        output = self._mlmodel.predict_proba(cf_initialize, return_tensor = True)[0]
 
         # classification loss
         loss1 = loss_function(output, target)

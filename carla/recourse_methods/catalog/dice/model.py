@@ -84,7 +84,6 @@ class Dice(RecourseMethod):
         # Prepare factuals
         querry_instances = factuals.copy()
         querry_instances = self._model.get_ordered_features(querry_instances)
-
         # check if querry_instances are not empty
         if not querry_instances.shape[0] > 0:
             raise ValueError("Factuals should not be empty")
@@ -99,6 +98,7 @@ class Dice(RecourseMethod):
 
         list_cfs = dice_exp.cf_examples_list
         df_cfs = pd.concat([cf.final_cfs_df for cf in list_cfs], ignore_index=True)
+        df_cfs = df_cfs.drop(columns=[self._mlmodel.data.target])
         df_cfs = check_counterfactuals(self._mlmodel, df_cfs, factuals.index)
         df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs
