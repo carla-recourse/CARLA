@@ -1,7 +1,12 @@
+from typing import List
+
 import numpy as np
 import tensorflow as tf
 import xgboost.core
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree._tree import TREE_UNDEFINED
 
 from carla.models.catalog.parse_xgboost import parse_booster
 
@@ -150,3 +155,137 @@ def get_prob_classification_forest(
     softmax = expits / tf.reduce_sum(expits, axis=1)[:, None]
 
     return softmax
+
+
+def get_distilled_model(model_rf, include_training_data=True):
+    """Distill random forest model to single decision tree.
+
+    Parameters
+    ----------
+    model_rf:
+        Random forest model.
+    include_training_data:
+        Include training data when training the single decision tree.
+
+    Returns
+    -------
+    Distilled DecisionTreeClassifier
+
+    """
+
+    def random_uniform_grid(n_samples, min_vals, max_vals):
+        # generate independent uniform samples for each dimension
+        grid = [
+            np.random.uniform(low, high, n_samples)
+            for low, high in zip(min_vals, max_vals)
+        ]
+        # combine independent 1-d samples into multi-d samples
+        grid = np.vstack(grid).T
+        return grid
+
+    data_df = model_rf.data.df
+    x = data_df[model_rf.feature_input_order].to_numpy()
+    y = data_df[model_rf.data.target].to_numpy()
+
+    # TODO adapt for different normalization
+    min_vals = np.min(x, axis=0)  # min values per feature
+    max_vals = np.max(x, axis=0)  # max values per feature
+    grid = random_uniform_grid(len(x), min_vals, max_vals)
+
+    # Get labels
+    if include_training_data:
+        # augmented data + training data
+        x = np.concatenate((x, grid))
+        y = model_rf.predict(x)
+    else:
+        # only augmented data
+        x = grid
+        y = model_rf.predict(x)
+
+    parameters = {
+        "max_depth": [None],
+        "min_samples_leaf": [5, 10, 15],
+        "min_samples_split": [3, 5, 10, 15],
+    }
+    model = GridSearchCV(DecisionTreeClassifier(), parameters, n_jobs=4)
+    model.fit(X=x, y=y)
+    print(model.best_score_, model.best_params_)
+    model_distilled = model.best_estimator_
+
+    return model_distilled
+
+
+def get_rules(tree, feature_names: List, class_names: List, verbose=False) -> List:
+    """
+    solution from:
+    https://stackoverflow.com/questions/20224526/how-to-extract-the-decision-rules-from-scikit-learn-decision-tree
+
+    Parameters
+    ----------
+    tree:
+        Tree to get rules for.
+    feature_names:
+        Names of the features.
+    class_names:
+        Names of the classes, e.g. [1, 0].
+    verbose:
+        Print flag.
+
+    Returns
+    -------
+
+    """
+
+    def recurse(node, path: List, paths: List):
+        if tree_.feature[node] != TREE_UNDEFINED:
+            name = feature_name[node]
+            threshold = tree_.threshold[node]
+            p1, p2 = list(path), list(path)
+
+            p1 += [f"|{name} <= {np.round(threshold, 3)}|"]
+            recurse(tree_.children_left[node], p1, paths)
+
+            p2 += [f"|{name} > {np.round(threshold, 3)}|"]
+            recurse(tree_.children_right[node], p2, paths)
+        else:
+            path += [(tree_.value[node], tree_.n_node_samples[node])]
+            paths += [path]
+
+    tree_ = tree.tree_
+    feature_name = [
+        feature_names[i] if i != TREE_UNDEFINED else "undefined!" for i in tree_.feature
+    ]
+
+    paths: List = []
+    path: List = []
+    recurse(0, path, paths)
+
+    # sort by samples count
+    samples_count = [p[-1][1] for p in paths]
+    ii = list(np.argsort(samples_count))
+    paths = [paths[i] for i in reversed(ii)]
+
+    rules = []
+    for path in paths:
+        rule = "if "
+        for p in path[:-1]:
+            if rule != "if ":
+                rule += " and "
+            rule += str(p)
+        rule += " then "
+
+        if class_names is None:
+            rule += "response: " + str(np.round(path[-1][0][0][0], 3))
+        else:
+            classes = path[-1][0][0]
+            i = np.argmax(classes)
+            rule += f"class: {class_names[i]}"
+            if verbose:
+                rule += f" | (proba: {np.round(100.0 * classes[i] / np.sum(classes), 2)}% of class {class_names[i]})"
+
+        if verbose:
+            rule += f" | based on {path[-1][1]:,} samples"
+
+        rules += [rule]
+
+    return rules
