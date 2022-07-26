@@ -14,7 +14,7 @@ from carla.recourse_methods.processing import (
 
 class EXPECT(RecourseMethod):
     """
-    Implementation of EXPECT from TODO
+    Implementation of EXPECT from Pawelczyk et. al. [1]_.
 
     Parameters
     ----------
@@ -45,11 +45,14 @@ class EXPECT(RecourseMethod):
         * "norm": {1, 2}
             Norm to use to compute distance for counterfactual.
         * "lambda": float
-            Weight for loss term correspoding to distance for counterfactual.
+            Weight for loss term corresponding to distance for counterfactual.
         * "n_samples":
             Number of samples for the invalidation rate samples.
         * "invalidation_target": float
             Target for the invalidation rate.
+
+    .. [1] Pawelczyk, M., Datta, T., van-den-Heuvel, J., Kasneci, G., & Lakkaraju, H. (2022).
+            Algorithmic Recourse in the Face of Noisy Human Responses. arXiv preprint arXiv:2203.06768.
 
     """
 

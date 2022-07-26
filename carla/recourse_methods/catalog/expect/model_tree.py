@@ -39,16 +39,61 @@ def cdf_difference(upper, lower, value, sigma_sq, verbose=False):
 
 
 class EXPECTTree(RecourseMethod):
+    """
+    Implementation of EXPECT from Pawelczyk et. al. [1]_.
+
+    Parameters
+    ----------
+    mlmodel: carla.model.MLModel
+        Black-Box-Model
+    hyperparams: dict
+        Dictionary containing hyperparameters. See notes below for its contents.
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+
+    Notes
+    -----
+    - Hyperparams
+        Hyperparameter contains important information for the recourse method to initialize.
+        Please make sure to pass all values as dict with the following keys.
+
+        * "max_iter": int,
+            Number of optimization steps.
+        * "optimizer": string
+            What optimizer to use.
+        * "learning_rate": float
+            Learning rate for the optimizer.
+        * "var": float
+            Variance for the invalidation rate samples.
+        * "target_names": list
+            List of class names.
+        * "lambda": float
+            Weight for loss term corresponding to distance for counterfactual.
+        * "upper_bound":
+            Upper-bound for the data.
+        * "lower_bound":
+            Lower-bound for the data.
+        * "invalidation_target": float
+            Target for the invalidation rate.
+
+    .. [1] Pawelczyk, M., Datta, T., van-den-Heuvel, J., Kasneci, G., & Lakkaraju, H. (2022).
+            Algorithmic Recourse in the Face of Noisy Human Responses. arXiv preprint arXiv:2203.06768.
+
+    """
 
     _DEFAULT_HYPERPARAMS = {
+        "max_iter": 50,
         "optimizer": "adam",
         "learning_rate": 0.05,
-        "lambda": 0.2,
-        "invalidation_target": 0.4,
-        "upper_bound": INF,
-        "lower_bound": -INF,
         "var": 0.25,
         "target_names": [1, 0],
+        "lambda": 0.2,
+        "upper_bound": INF,
+        "lower_bound": -INF,
+        "invalidation_target": 0.4,
     }
 
     def __init__(self, mlmodel: MLModel, hyperparams: Dict = None):
@@ -62,15 +107,15 @@ class EXPECTTree(RecourseMethod):
         self.invalidation_target = self.hyperparams["invalidation_target"]
         self.upper_bound = self.hyperparams["upper_bound"]
         self.lower_bound = self.hyperparams["lower_bound"]
+        self.feature_names = mlmodel.feature_input_order
 
         # Get Hypercubes
         model = get_distilled_model(mlmodel)
-        self.feature_names = mlmodel.feature_input_order
         rules = get_rules(model, self.feature_names, self.hyperparams["target_names"])
+        self.classes = get_classes_for_hypercubes(rules)
         self.all_intervals = get_hypercubes(
             self.feature_names, rules, self.lower_bound, self.upper_bound
         )
-        self.classes = get_classes_for_hypercubes(rules)
 
     def invalidation_loss(self, x, verbose=False):
         """Compute the invalidation loss.
@@ -135,7 +180,7 @@ class EXPECTTree(RecourseMethod):
 
         return invalidation_rate
 
-    def optimization(self, x: torch.tensor, n_iter=50):
+    def optimization(self, x: torch.tensor):
         x_check = torch.tensor(x, requires_grad=True, dtype=torch.float)
 
         if self.hyperparams["optimizer"] == "adam":
@@ -143,7 +188,7 @@ class EXPECTTree(RecourseMethod):
         else:
             optim = torch.optim.RMSprop([x_check], self.lr)
 
-        for i in range(n_iter):
+        for i in range(self.hyperparams["max_iter"]):
             x_check.requires_grad = True
 
             invalidation_rate = self.invalidation_loss(x_check)
