@@ -12,7 +12,7 @@ from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.crud import CRUD
 from carla.recourse_methods.catalog.dice import Dice
-from carla.recourse_methods.catalog.expect import EXPECT, EXPECT_tree
+from carla.recourse_methods.catalog.expect import EXPECT, EXPECTTree
 from carla.recourse_methods.catalog.face import Face
 from carla.recourse_methods.catalog.feature_tweak import FeatureTweak
 from carla.recourse_methods.catalog.focus import FOCUS
@@ -397,7 +397,7 @@ def test_expect_tree(backend):
     factuals = predict_negative_instances(model, data.df)
     test_factual = factuals.iloc[:5]
 
-    expect = EXPECT_tree(model)
+    expect = EXPECTTree(model)
     cfs = expect.get_counterfactuals(test_factual)
 
     assert test_factual[data.continuous].shape == cfs.shape

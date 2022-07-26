@@ -38,7 +38,8 @@ def cdf_difference(upper, lower, value, sigma_sq, verbose=False):
     return cdf_diff
 
 
-class EXPECT_tree(RecourseMethod):
+class EXPECTTree(RecourseMethod):
+
     _DEFAULT_HYPERPARAMS = {
         "optimizer": "adam",
         "learning_rate": 0.05,
