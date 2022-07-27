@@ -12,6 +12,7 @@ class InvalidationRate(Evaluation):
         self.var = hyperparameters["var"]
         self.n_samples = hyperparameters["n_samples"]
         self.cf_label = hyperparameters["cf_label"]
+        self.columns = ["invalidation_rate"]
 
     def invalidation_rate(self, x):
         x = x.float()
@@ -32,4 +33,4 @@ class InvalidationRate(Evaluation):
         ir_rates = counterfactuals.apply(
             lambda x: self.invalidation_rate(torch.from_numpy(x)), raw=True, axis=1
         )
-        return ir_rates
+        return pd.DataFrame(ir_rates, columns=self.columns)
