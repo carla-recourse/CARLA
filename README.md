@@ -1,10 +1,12 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/carla-recourse?style=for-the-badge)](https://pypi.org/project/carla-recourse/) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/carla-recourse/CARLA/CI?style=for-the-badge) [![Read the Docs](https://img.shields.io/readthedocs/carla-counterfactual-and-recourse-library?style=for-the-badge)](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/?badge=latest) ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)
 
-[//]: # (<img align="left" width="100" height="50" src="https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo.png?raw=true">)
+<img align="left" width="100" height="50" src="https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo.png?raw=true">
 
-# CARLA - Counterfactual And Recourse Library
+# - Counterfactual And Recourse Library
 
 ![logo](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo.png?raw=true)
+
+![logo](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo_flat.png?raw=true)
 
 ![motivating example](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/motivating_cartoon.png?raw=true)
 
