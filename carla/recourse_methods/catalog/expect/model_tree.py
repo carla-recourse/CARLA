@@ -13,7 +13,7 @@ from carla.recourse_methods.processing import (
     merge_default_parameters,
 )
 
-from .hypercube import get_classes_for_hypercubes, get_hypercubes
+from .hypercube import get_classes_from_rules, get_hypercubes
 
 INF = torch.tensor(float("inf"))
 
@@ -91,9 +91,9 @@ class EXPECTTree(RecourseMethod):
         "var": 0.25,
         "target_names": [1, 0],
         "lambda": 0.2,
-        "upper_bound": INF,
-        "lower_bound": -INF,
-        "invalidation_target": 0.4,
+        "upper_bound": 1.0,
+        "lower_bound": 0.0,
+        "invalidation_target": 0.3,
     }
 
     def __init__(self, mlmodel: MLModel, hyperparams: Dict = None):
@@ -112,7 +112,7 @@ class EXPECTTree(RecourseMethod):
         # Get Hypercubes
         model = get_distilled_model(mlmodel)
         rules = get_rules(model, self.feature_names, self.hyperparams["target_names"])
-        self.classes = get_classes_for_hypercubes(rules)
+        self.classes = get_classes_from_rules(rules)
         self.all_intervals = get_hypercubes(
             self.feature_names, rules, self.lower_bound, self.upper_bound
         )
@@ -210,9 +210,9 @@ class EXPECTTree(RecourseMethod):
             loss.backward()
             optim.step()
 
-            print(f"invalidation rate iteration {i}: {invalidation_rate.item()}")
-            print(f"loss at iteration {i}: {loss.item()}")
-            print(f"CE suggestion at iteration {i}: {x_check}")
+            # print(f"invalidation rate iteration {i}: {invalidation_rate.item()}")
+            # print(f"loss at iteration {i}: {loss.item()}")
+            # print(f"CE suggestion at iteration {i}: {x_check}")
 
         return x_check.detach().numpy()
 

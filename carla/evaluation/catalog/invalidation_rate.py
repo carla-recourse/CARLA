@@ -22,6 +22,7 @@ class InvalidationRate(Evaluation):
         random_samples = MultivariateNormal(loc=x, covariance_matrix=Sigma).rsample(
             (self.n_samples,)
         )
+        random_samples = random_samples.cpu().detach().numpy()
         y_hat = self.mlmodel.predict_proba(random_samples)[:, 1]
         invalidation_rate = self.cf_label - np.mean(y_hat)
 

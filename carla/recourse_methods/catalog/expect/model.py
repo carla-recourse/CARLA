@@ -120,7 +120,7 @@ class EXPECT(RecourseMethod):
                 # Hinge loss
                 loss_invalidation[loss_invalidation < 0] = 0
 
-                print(f"invalidation rate iteration {i}: {invalidation_rate.item()}")
+                # print(f"invalidation rate iteration {i}: {invalidation_rate.item()}")
 
                 loss += 2 * loss_invalidation
 
