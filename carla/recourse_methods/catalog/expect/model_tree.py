@@ -18,8 +18,8 @@ from .hypercube import get_classes_for_hypercubes, get_hypercubes
 INF = torch.tensor(float("inf"))
 
 
-def cdf_difference(upper, lower, value, sigma_sq, verbose=False):
-    normal = Normal(loc=value, scale=torch.sqrt(sigma_sq))
+def cdf_difference(upper, lower, value, var, verbose=False):
+    normal = Normal(loc=value, scale=torch.sqrt(var))
     upper_cdf = normal.cdf(upper)
     lower_cdf = normal.cdf(lower)
     cdf_diff = upper_cdf - lower_cdf
@@ -166,7 +166,7 @@ class EXPECTTree(RecourseMethod):
                     interval_upper,
                     interval_lower,
                     input_value,
-                    sigma_sq=torch.tensor(self.hyperparams["var"]),
+                    var=torch.tensor(self.hyperparams["var"]),
                 )
                 product_cdf_diff *= d_cdf
 
