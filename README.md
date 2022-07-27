@@ -4,6 +4,8 @@
 
 #   Counterfactual And Recourse Library
 
+![logo](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo.png?raw=true)
+
 
 [//]: # (# CARLA - Counterfactual And Recourse Library)
 
@@ -24,6 +26,7 @@ Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 - Adding your own ML-Model: [Source](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/examples.html#black-box-model)
 - Adding your own Recourse Method: [Source](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/examples.html#recourse-method)
 - Plotting (notebook): [Source](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/feature-plotting/notebooks/plotting_example.html)
+- Benchmarking (notebook): [Source](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/notebooks/benchmark_example.html)
 
 ### Available Datasets
 
