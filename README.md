@@ -6,6 +6,7 @@
 
 ![logo](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo.png?raw=true)
 
+![logo2](https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo_flat.png?raw=true)
 
 [//]: # (# CARLA - Counterfactual And Recourse Library)
 
