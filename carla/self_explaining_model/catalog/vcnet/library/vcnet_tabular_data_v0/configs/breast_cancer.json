@@ -1,0 +1,13 @@
+{   "name" : "breast_cancer",
+    "lr": 0.0007,
+    "batch_size": 82,
+    "lambda_1": 0.21,
+    "lambda_2": 0.20,
+    "lambda_3": 0.0008,
+    "epochs" : 180,
+    "latent_size" : 34,
+    "latent_size_share" : 498, 
+    "mid_reduce_size" : 249
+}
+
+

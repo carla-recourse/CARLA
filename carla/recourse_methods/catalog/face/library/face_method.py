@@ -46,7 +46,6 @@ def graph_search(
         immutable_constraint_matrix1, immutable_constraint_matrix2 = build_constraints(
             data, i, keys_immutable
         )
-
     # POSITIVE PREDICTIONS
     y_predicted = model.predict_proba(data.values)
     y_predicted = np.argmax(y_predicted, axis=1)

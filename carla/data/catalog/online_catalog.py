@@ -36,10 +36,9 @@ class OnlineCatalog(DataCatalog):
                 self.catalog[key] = []
 
         # Load the raw data
-        raw, train_raw, test_raw = load_dataset(data_name)
-
+        raw, train_raw, test_raw, val_raw = load_dataset(data_name)
         super().__init__(
-            data_name, raw, train_raw, test_raw, scaling_method, encoding_method
+            data_name, raw, train_raw, test_raw, val_raw, scaling_method, encoding_method
         )
 
     @property

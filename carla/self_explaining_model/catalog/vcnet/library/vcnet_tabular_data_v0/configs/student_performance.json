@@ -1,0 +1,11 @@
+{   "name" : "student_performance",
+    "lr": 0.004,
+    "batch_size": 85,
+    "lambda_1": 0.09,
+    "lambda_2": 0.63,
+    "lambda_3": 0.001,
+    "epochs" : 250,
+    "latent_size_share" : 358,
+    "latent_size" : 4,
+    "mid_reduce_size" : 179
+}

@@ -1,0 +1,15 @@
+{   "name" : "churn" ,
+    "lr": 0.0008,
+    "batch_size": 126,
+    "epochs" : 208,
+    "lambda_1": 0.31,
+    "lambda_2": 0.86,
+    "lambda_3": 0.001,
+    "latent_size" : 2,
+    "latent_size_share" : 328, 
+    "mid_reduce_size" : 164
+}
+
+
+
+

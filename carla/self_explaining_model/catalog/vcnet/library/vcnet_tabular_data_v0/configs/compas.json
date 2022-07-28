@@ -1,0 +1,12 @@
+{   "name" : "compas" ,
+    "lr": 1e-3,
+    "batch_size": 128,
+    "epochs" : 50,
+    "lambda_1": 1,
+    "lambda_2": 1,
+    "lambda_3": 1,
+    "latent_size" : 5,
+    "latent_size_share" : 15, 
+    "mid_reduce_size" : 8
+}
+

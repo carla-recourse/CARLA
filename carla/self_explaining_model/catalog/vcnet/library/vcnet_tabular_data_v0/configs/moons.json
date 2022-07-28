@@ -1,0 +1,15 @@
+{   
+    "name" : "moons" ,
+    "lr": 1e-3,
+    "batch_size": 128,
+    "epochs" : 300,
+    "lambda_1": 1,
+    "lambda_2": 1,
+    "lambda_3": 100,
+    "latent_size" : 2,
+    "latent_size_share" : 2, 
+    "mid_reduce_size" : 2
+
+}
+
+

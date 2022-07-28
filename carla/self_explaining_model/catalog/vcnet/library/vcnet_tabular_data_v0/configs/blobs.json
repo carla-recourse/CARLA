@@ -1,0 +1,13 @@
+{   "name" : "blobs" ,
+    "lr": 1e-5,
+    "batch_size": 128,
+    "epochs" : 500,
+    "lambda_1": 1,
+    "lambda_2": 1,
+    "lambda_3": 10,
+    "latent_size" : 6,
+    "latent_size_share" : 1024, 
+    "mid_reduce_size" : 512
+}
+
+

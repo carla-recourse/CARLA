@@ -2,6 +2,7 @@ import os
 import re
 from typing import Any, List
 from urllib.request import urlopen, urlretrieve
+from sklearn.model_selection import train_test_split
 
 import pandas as pd
 
@@ -66,8 +67,8 @@ def load_dataset(
 
     # TODO: Only until NANs are not longer in the dataset (issue #28)
     df = df.dropna()
-
-    return df, df_train, df_test
+    df_train, df_val = train_test_split(df_train, test_size=0.25, random_state=1)
+    return df, df_train, df_test, df_val
 
 
 def get_dataset_names() -> List[Any]:

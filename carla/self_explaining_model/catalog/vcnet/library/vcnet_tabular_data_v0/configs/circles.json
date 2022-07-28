@@ -1,0 +1,14 @@
+{   
+    "name" : "circles" ,
+    "lr": 1e-3,
+    "batch_size": 128,
+    "epochs" : 400,
+    "lambda_1": 1,
+    "lambda_2": 1,
+    "lambda_3": 1,
+    "latent_size" : 128,
+    "latent_size_share" : 32, 
+    "mid_reduce_size" : 32
+}
+
+

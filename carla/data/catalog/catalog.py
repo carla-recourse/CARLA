@@ -50,6 +50,7 @@ class DataCatalog(Data, ABC):
         df,
         df_train,
         df_test,
+        df_val,
         scaling_method: str = "MinMax",
         encoding_method: str = "OneHot_drop_binary",
     ):
@@ -57,6 +58,7 @@ class DataCatalog(Data, ABC):
         self._df = df
         self._df_train = df_train
         self._df_test = df_test
+        self._df_val = df_val
 
         # Fit scaler and encoder
         self.scaler: BaseEstimator = fit_scaler(
@@ -77,6 +79,7 @@ class DataCatalog(Data, ABC):
         self._df = self.transform(self.df)
         self._df_train = self.transform(self.df_train)
         self._df_test = self.transform(self.df_test)
+        self._df_val = self.transform(self.df_val)
 
     @property
     def df(self) -> pd.DataFrame:
@@ -90,6 +93,10 @@ class DataCatalog(Data, ABC):
     def df_test(self) -> pd.DataFrame:
         return self._df_test.copy()
 
+    @property
+    def df_val(self) -> pd.DataFrame:
+        return self._df_val.copy()
+        
     @property
     def scaler(self) -> BaseEstimator:
         """
