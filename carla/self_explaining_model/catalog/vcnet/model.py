@@ -12,8 +12,6 @@ from carla.recourse_methods.processing import (
     merge_default_parameters,
 )
 from carla.self_explaining_model.catalog.vcnet.library.utils import fix_seed
-from carla.self_explaining_model.catalog.vcnet.library.vcnet_tabular_data_v0.load_config import Load_config,load_config_dict
-from carla.self_explaining_model.catalog.vcnet.library.vcnet_tabular_data_v0.join_training_network import CVAE_join,Predictor
 from carla.self_explaining_model.catalog.vcnet.library.vcnet_tabular_data_v0.train_network import Train_CVAE 
 from carla.self_explaining_model.catalog.vcnet.library.load_data import Load_dataset_carla
 from carla.self_explaining_model.catalog.vcnet.library.load_classif_model import load_classif_model
@@ -72,7 +70,7 @@ class VCNet(SelfExplainingModel) :
             
             
 
-    .. [1] Guyomard
+    .. [1] V. Guyomard 
     """
 
     _DEFAULT_HYPERPARAMS = {   
@@ -113,7 +111,6 @@ class VCNet(SelfExplainingModel) :
 
         # Load Vcnet model 
         self._training.load_weights()
-
         # Predictor part of VCnet 
         self._model = load_classif_model(self._training)
             
@@ -151,6 +148,7 @@ class VCNet(SelfExplainingModel) :
         return self._model
 
     def predict(self, x: Union[np.ndarray, pd.DataFrame]):
+
         # the predict function outputs the continuous prediction of the model, similar to sklearn.
         return torch.argmax(self._model.forward(torch.from_numpy(x.to_numpy()).float()),axis=1).detach().numpy()
 
@@ -189,11 +187,10 @@ class VCNet(SelfExplainingModel) :
         else:
             return output.detach().cpu().numpy()
 
-
     def get_counterfactuals(self , factuals : pd.DataFrame,eps=0.1) :
         data = torch.from_numpy(factuals.to_numpy()).float()
         labels = None
         results = self._training.compute_counterfactuals(data,labels)
         counterfactuals = self._training.round_counterfactuals(results,eps,data)["cf"]
-        #print(f"PROBA X : {self._training.round_counterfactuals(results,eps,data)['proba_x']} \n  ======================================= \n PROBA_C :{self.training.round_counterfactuals(results,eps,data)['proba_c']} ")
+        #print(f"PROBA X : {self.training.round_counterfactuals(results,eps,data)['proba_x']} \n  ======================================= \n PROBA_C :{self.training.round_counterfactuals(results,eps,data)['proba_c']} ")
         return pd.DataFrame(counterfactuals.numpy(),columns=self.feature_input_order)

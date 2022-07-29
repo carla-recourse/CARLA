@@ -210,7 +210,7 @@ def get_models_home(models_home=None):
     """
 
     if models_home is None:
-        models_home = os.environ.get("CF_MODELS", os.path.join("~", "carla", "models"))
+        models_home = os.environ.get("CF_MODELS", os.path.join("~", "carla", "models","self_train"))
 
     models_home = os.path.expanduser(models_home)
     if not os.path.exists(models_home):

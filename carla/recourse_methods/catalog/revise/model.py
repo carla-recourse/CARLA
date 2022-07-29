@@ -120,7 +120,7 @@ class Revise(RecourseMethod):
 
         if vae_params["train"]:
             self.vae.fit(
-                xtrain=mlmodel.data.df[mlmodel.feature_input_order],
+                xtrain=mlmodel.data.df_train[mlmodel.feature_input_order],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
@@ -197,7 +197,7 @@ class Revise(RecourseMethod):
                 cf = reconstruct_encoding_constraints(
                     cf, cat_features_indices, self._params["binary_cat_features"]
                 )
-                output = self._mlmodel.predict_proba(cf, return_tensor=True)[0]
+                output = self._mlmodel.predict_proba(cf)[0]
                 _, predicted = torch.max(output, 0)
 
                 z.requires_grad = True
@@ -231,7 +231,7 @@ class Revise(RecourseMethod):
     def _compute_loss(self, cf_initialize, query_instance, target):
 
         loss_function = nn.BCELoss()
-        output = self._mlmodel.predict_proba(cf_initialize, return_tensor = True)[0]
+        output = self._mlmodel.predict_proba(cf_initialize)[0]
 
         # classification loss
         loss1 = loss_function(output, target)

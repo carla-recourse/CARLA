@@ -13,7 +13,7 @@ from carla.recourse_methods.processing import reconstruct_encoding_constraints
 
 def compute_loss(cf_initialize, query_instance, target, i, lambda_param, mlmodel):
     loss_function = nn.BCELoss()
-    output = mlmodel.predict_proba(cf_initialize,return_tensor =True)
+    output = mlmodel.predict_proba(cf_initialize)
     loss1 = loss_function(output, target)  # classification loss
     loss2 = torch.sum((cf_initialize - query_instance) ** 2)  # distance loss
     total_loss = loss1 + lambda_param * loss2
@@ -78,7 +78,7 @@ def counterfactual_search(
         cf = reconstruct_encoding_constraints(
             cf, cat_feature_indices, binary_cat_features
         ).to(device)
-        output = mlmodel.predict_proba(cf,return_tensor=True)
+        output = mlmodel.predict_proba(cf)
         _, predicted = torch.max(output[0], 0)
 
         if predicted == target_prediction:
@@ -98,7 +98,7 @@ def counterfactual_search(
     if not len(counterfactuals):
         # if no counterfactual is present, returing the last candidate
         log.debug("No counterfactual found")
-        output = mlmodel.predict_proba(cf,return_tensor =True)
+        output = mlmodel.predict_proba(cf)
         _, predicted = torch.max(output[0], 0)
         return (
             torch.cat((cf, predicted.reshape((-1, 1))), dim=-1)

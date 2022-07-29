@@ -1,12 +1,28 @@
-from abc import abstractmethod
+from abc import ABC,abstractmethod
 import pandas as pd
 
 from carla.models.api import MLModel
-from carla.data.catalog import DataCatalog
+from carla.data import Data
 
-class SelfExplainingModel(MLModel):
+class SelfExplainingModel(MLModel,ABC):
+    """
+    Abstract class to implement custom self explaining methods.
 
-    def _init__(self,data:DataCatalog):
+    Parameters
+    ----------
+    data: Data
+        Dataset inherited from Data-wrapper
+
+    Methods
+    -------
+    get_counterfactuals:
+        Generate counterfactual examples for given factuals.
+
+    Returns
+    -------
+    None
+    """
+    def _init__(self,data:Data):
         super().__init__(data)
 
     @abstractmethod

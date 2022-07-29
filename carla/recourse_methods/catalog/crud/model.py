@@ -113,7 +113,7 @@ class CRUD(RecourseMethod):
 
         if vae_params["train"]:
             self._csvae.fit(
-                data=mlmodel.data.df[
+                data=mlmodel.data.df_train[
                     mlmodel.feature_input_order + [mlmodel.data.target]
                 ],
                 epochs=vae_params["epochs"],

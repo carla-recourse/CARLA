@@ -110,7 +110,7 @@ class CCHVAE(RecourseMethod):
 
         vae_params = self._params["vae_params"]
         self._generative_model = self._load_vae(
-            self._mlmodel.data.df, vae_params, self._mlmodel, self._params["data_name"]
+            self._mlmodel.data.df_train, vae_params, self._mlmodel, self._params["data_name"]
         )
 
     def _load_vae(
@@ -177,7 +177,7 @@ class CCHVAE(RecourseMethod):
 
         # get predicted label of instance
         instance_label = np.argmax(
-            self._mlmodel.predict_proba(torch_fact.float(),return_tensor=True).cpu().detach().numpy(),
+            self._mlmodel.predict_proba(torch_fact.float()).cpu().detach().numpy(),
             axis=1,
         )
 
@@ -231,7 +231,7 @@ class CCHVAE(RecourseMethod):
 
             # counterfactual labels
             y_candidate = np.argmax(
-                self._mlmodel.predict_proba(torch.from_numpy(x_ce).float(), return_tensor = True)
+                self._mlmodel.predict_proba(torch.from_numpy(x_ce).float())
                 .cpu()
                 .detach()
                 .numpy(),

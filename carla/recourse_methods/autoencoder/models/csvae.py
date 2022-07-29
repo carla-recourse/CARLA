@@ -103,7 +103,6 @@ class CSVAE(nn.Module):
 
     def q_zw(self, x, y):
         xy = torch.cat([x, y], dim=1)
-
         z_mu = self.mu_x_to_z(x)
         z_logvar = self.logvar_x_to_z(x)
 

@@ -2,6 +2,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import PredefinedSplit
 
 
 def predict_negative_instances(model: Any, data: pd.DataFrame) -> pd.DataFrame:
@@ -24,7 +25,6 @@ def predict_negative_instances(model: Any, data: pd.DataFrame) -> pd.DataFrame:
     df["y"] = predict_label(model, df)
     df = df[df["y"] == 0]
     df = df.drop("y", axis="columns")
-
     return df
 
 
@@ -45,7 +45,6 @@ def predict_label(model: Any, df: pd.DataFrame, as_prob: bool = False) -> np.nda
     """
 
     predictions = model.predict(df)
-
     if not as_prob:
         predictions = predictions.round()
 
