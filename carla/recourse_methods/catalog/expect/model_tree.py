@@ -88,7 +88,7 @@ class EXPECTTree(RecourseMethod):
         "max_iter": 50,
         "optimizer": "adam",
         "learning_rate": 0.05,
-        "var": 0.25,
+        "var": 0.05,
         "target_names": [1, 0],
         "lambda": 0.2,
         "upper_bound": 1.0,
