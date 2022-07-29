@@ -171,14 +171,13 @@ class Load_dataset_carla(nn.Module):
         
         # Categories is second column for each categorical feature (drop first)
         cat_arrays = self.encoder.categories_ if self.discret_cols else []
-        
         def convert_drop_first(cat_arrays):
             cat_arrays_drop_first = [] 
             for e in cat_arrays : 
                 cat_arrays_drop_first.append(np.array([e[1]]))
             return(cat_arrays_drop_first)
-        
-        cat_arrays = convert_drop_first(cat_arrays)
+        if self.encoder == "if_binary":
+            cat_arrays = convert_drop_first(cat_arrays)
         #cat_arrays = self.data_catalog.encoder.get_feature_names(self.data_catalog.categorical) if self.discret_cols else []
         #print("ENCODER CATEGORIES: ",self.encoder.categories_)
         # Number of continious variables 

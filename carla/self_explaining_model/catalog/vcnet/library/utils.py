@@ -243,20 +243,20 @@ def hinge_loss(input, target):
     return torch.norm(loss)
 
 # Comes from 03b_counterfactual_net.ipynb, cell
-def cat_normalize(c, cat_arrays, cat_idx,cont_shape,hard=False,used_carla=False):
+def cat_normalize(c, cat_arrays, cat_idx,cont_shape,drop_type,hard=False):
     c_copy = c.clone()
     # categorical feature starting index
     for col in cat_arrays:
         
         cat_end_idx = cat_idx + len(col)
         if hard:
-            if used_carla : 
+            if drop_type == "if_binary" : 
                 c_copy[:, cat_idx: cat_end_idx] = torch.round(F.sigmoid(c[:, cat_idx: cat_end_idx].clone())).long()
                 
             else :
                 c_copy[:, cat_idx: cat_end_idx] = F.gumbel_softmax(c[:, cat_idx: cat_end_idx].clone(), hard=hard)
         else:
-            if used_carla : 
+            if drop_type == "if_binary" : 
                 c_copy[:, cat_idx: cat_end_idx] = F.sigmoid(c[:, cat_idx: cat_end_idx].clone())
             else : 
                 # Softmax for categorical variables 

@@ -11,7 +11,7 @@ from used_carla import set_carla
 
 
 # Our join-training model   
-class CVAE_join(Load_dataset_carla if set_carla() else Load_dataset_base) :
+class CVAE_join(Load_dataset_carla) :
     def __init__(self, dataset_config_dict,model_config_dict,cat_arrays,cont_shape,ablation,condition,shared_layers=True):
         super().__init__(dataset_config_dict,model_config_dict)
         
@@ -68,7 +68,8 @@ class CVAE_join(Load_dataset_carla if set_carla() else Load_dataset_base) :
     def cat_normalize(self, c, hard=False):
         # categorical feature starting index
         cat_idx = len(self.continous_cols)
-        return cat_normalize(c, self.cat_arrays, cat_idx,self.cont_shape,hard=hard,used_carla=self.used_carla)
+        drop_type = self.data_catalog.encoder.drop
+        return cat_normalize(c, self.cat_arrays, cat_idx,self.cont_shape,used_carla=drop_type,hard=hard)
         
     # Shared encoding     
     def encode_share(self,x) :
@@ -196,7 +197,7 @@ class CVAE_join(Load_dataset_carla if set_carla() else Load_dataset_base) :
         return(output_class)
     
 # Only predictor part of the network     
-class Predictor(Load_dataset_carla if set_carla() else Load_dataset_base) :
+class Predictor(Load_dataset_carla) :
     def __init__(self, dataset_config_dict,model_config_dict,cat_arrays,cont_shape,ablation,condition,shared_layers=True):
         super().__init__(dataset_config_dict,model_config_dict)
         
