@@ -112,7 +112,6 @@ class CCHVAE(RecourseMethod):
         self._generative_model = self._load_vae(
             self._mlmodel.data.df_train, vae_params, self._mlmodel, self._params["data_name"]
         )
-
     def _load_vae(
         self, data: pd.DataFrame, vae_params: Dict, mlmodel: MLModel, data_name: str
     ) -> VariationalAutoencoder:
