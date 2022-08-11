@@ -2,7 +2,7 @@
 
 # CARLA - Counterfactual And Recourse Library
 
-<img align="right" width="300" height="250" src="https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo_square.png?raw=true">
+<img align="right" width="240" height="200" src="https://github.com/carla-recourse/CARLA/blob/chore/update_documentation/images/carla_logo_square.png?raw=true">
 
 CARLA is a python library to benchmark counterfactual explanation and recourse models. It comes out-of-the box with commonly used datasets and various machine learning models. Designed with extensibility in mind: Easily include your own counterfactual methods, new machine learning models or other datasets.
 
@@ -37,11 +37,12 @@ Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 
 ### Provided Machine Learning Models
 
-| Model  |                                 Description                                  | Tensorflow | Pytorch | Sklearn | XGBoost |
-|--------|:----------------------------------------------------------------------------:|:----------:|:-------:|:-------:|:-------:|
-| ANN    | Artificial Neural Network with 2 hidden layers and ReLU activation function. |     X      |    X    |         |         |
-| LR     |        Linear Model with no hidden layer and no activation function.         |     X      |    X    |         |         |
-| Forest |                             Tree Ensemble Model.                             |            |         |    X    |    X    |
+| Model        |                                 Description                                  | Tensorflow | Pytorch | Sklearn | XGBoost |
+|--------------|:----------------------------------------------------------------------------:|:----------:|:-------:|:-------:|:-------:|
+| ANN          | Artificial Neural Network with 2 hidden layers and ReLU activation function. |     X      |    X    |         |         |
+| LR           |        Linear Model with no hidden layer and no activation function.         |     X      |    X    |         |         |
+| RandomForest |                             Tree Ensemble Model.                             |            |         |    X    |         |
+| XGBoost      |                              Gradient boosting.                              |            |         |         |    X    |
 
 ### Implemented Counterfactual methods
 The framework a counterfactual method currently works with is dependent on its underlying implementation.
