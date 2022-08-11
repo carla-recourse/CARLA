@@ -28,16 +28,20 @@ Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 
 ### Available Datasets
 
-- Adult Data Set: [Source](https://archive.ics.uci.edu/ml/datasets/adult)
-- COMPAS: [Source](https://www.kaggle.com/danofer/compass)
-- Give Me Some Credit (GMC): [Source](https://www.kaggle.com/c/GiveMeSomeCredit/data)
-- HELOC: [Source](https://community.fico.com/s/explainable-machine-learning-challenge?tabset-158d9=2)
+| Name                | Source                                                                                       |
+|---------------------|----------------------------------------------------------------------------------------------|
+| Adult               | [Source](https://archive.ics.uci.edu/ml/datasets/adult)                                      |
+| COMPAS              | [Source](https://www.kaggle.com/danofer/compass)                                             |
+| Give Me Some Credit | [Source](https://www.kaggle.com/c/GiveMeSomeCredit/data)                                     |
+| HELOC               | [Source](https://community.fico.com/s/explainable-machine-learning-challenge?tabset-158d9=2) |
 
 ### Provided Machine Learning Models
 
-- **ANN**: Artificial Neural Network with 2 hidden layers and ReLU activation function.
-- **LR**: Linear Model with no hidden layer and no activation function.
-- **Forest**: Ensemble of tree models.
+| Model  |                                 Description                                  | Tensorflow | Pytorch | Sklearn | XGBoost |
+|--------|:----------------------------------------------------------------------------:|:----------:|:-------:|:-------:|:-------:|
+| ANN    | Artificial Neural Network with 2 hidden layers and ReLU activation function. |     X      |    X    |         |         |
+| LR     |        Linear Model with no hidden layer and no activation function.         |     X      |    X    |         |         |
+| Forest |                             Tree Ensemble Model.                             |            |         |    X    |    X    |
 
 ### Implemented Counterfactual methods
 The framework a counterfactual method currently works with is dependent on its underlying implementation.
