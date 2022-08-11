@@ -6,7 +6,7 @@
 
 CARLA is a python library to benchmark counterfactual explanation and recourse models. It comes out-of-the box with commonly used datasets and various machine learning models. Designed with extensibility in mind: Easily include your own counterfactual methods, new machine learning models or other datasets. Find extensive documentation [here](https://carla-counterfactual-and-recourse-library.readthedocs.io/en/latest/)! Our arXiv paper can be found [here](https://arxiv.org/pdf/2108.00783.pdf).
 
-**What is algorithmic recourse?** As machine learning (ML) models are increasingly being deployed in high-stakes applications, there has been growing interest in providing recourse to individuals adversely impacted by model predictions (e.g., below we depict the canonical recourse example for an applicant whose loan has been denied). This library provides a starting point for researchers and practitioners alike, who wish to understand the inner workings of various counterfactual explanation and recourse methods and their underlying assumptions that went into the design of these methods. 
+**What is algorithmic recourse?** As machine learning (ML) models are increasingly being deployed in high-stakes applications, there has been growing interest in providing recourse to individuals adversely impacted by model predictions (e.g., below we depict the canonical recourse example for an applicant whose loan has been denied). This library provides a starting point for researchers and practitioners alike, who wish to understand the inner workings of various counterfactual explanation and recourse methods and their underlying assumptions that went into the design of these methods.
 
 
 
@@ -47,21 +47,21 @@ CARLA is a python library to benchmark counterfactual explanation and recourse m
 The framework a counterfactual method currently works with is dependent on its underlying implementation.
 It is planned to make all recourse methods available for all ML frameworks . The latest state can be found here:
 
-| Recourse Method                                            | Paper                                                                                                                        | Tensorflow | Pytorch | SKlearn | XGBoost |
-|------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|:----------:| :-----: | :-----: | :-----: |
-| Actionable Recourse (AR)                                   | [Source](https://arxiv.org/pdf/1809.06514.pdf)                                                                               | X         | X       |         |         |
-| Causal Recourse                                            | [Source](https://arxiv.org/abs/2002.06278.pdf)                                                                               | X     | X       |         |         |
-| CCHVAE                                                     | [Source](https://arxiv.org/pdf/1910.09398.pdf)                                                                               |       | X       |         |         |
-| Contrastive Explanations Method (CEM)                      | [Source](https://arxiv.org/pdf/1802.07623.pdf)                                                                               | X     |         |         |         |
-| Counterfactual Latent Uncertainty Explanations (CLUE)      | [Source](https://arxiv.org/pdf/2006.06848.pdf)                                                                               |       | X       |         |         |
-| CRUDS                                                      | [Source](https://finale.seas.harvard.edu/files/finale/files/cruds-_counterfactual_recourse_using_disentangled_subspaces.pdf) |       | X       |         |         |
-| Diverse Counterfactual Explanations (DiCE)                 | [Source](https://arxiv.org/pdf/1905.07697.pdf)                                                                               | X     | X       |         |         |
-| Feasible and Actionable Counterfactual Explanations (FACE) | [Source](https://arxiv.org/pdf/1909.09369.pdf)                                                                               | X     | X       |         |         |
-| FeatureTweak                                               | [Source](https://arxiv.org/pdf/1706.06691.pdf)                                                                               |       |         | X       |    X    |
-| FOCUS                                                      | [Source](https://arxiv.org/pdf/1911.12199.pdf)                                                                               |       |         | X       |    X    |
-| Growing Spheres (GS)                                       | [Source](https://arxiv.org/pdf/1712.08443.pdf)                                                                               | X     | X       |         |         |
-| Revise                                                     | [Source](https://arxiv.org/pdf/1907.09615.pdf)                                                                               |       | X       |         |         |
-| Wachter                                                    | [Source](https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf)                                                             |       | X       |         |         |
+| Recourse Method                                            | Paper                                                            | Tensorflow | Pytorch | SKlearn | XGBoost |
+|------------------------------------------------------------|:-----------------------------------------------------------------|:----------:|:-------:|:-------:|:-------:|
+| Actionable Recourse (AR)                                   | [Source](https://arxiv.org/pdf/1809.06514.pdf)                   |     X      |    X    |         |         |
+| Causal Recourse                                            | [Source](https://arxiv.org/abs/2002.06278.pdf)                   |     X      |    X    |         |         |
+| CCHVAE                                                     | [Source](https://arxiv.org/pdf/1910.09398.pdf)                   |            |    X    |         |         |
+| Contrastive Explanations Method (CEM)                      | [Source](https://arxiv.org/pdf/1802.07623.pdf)                   |     X      |         |         |         |
+| Counterfactual Latent Uncertainty Explanations (CLUE)      | [Source](https://arxiv.org/pdf/2006.06848.pdf)                   |            |    X    |         |         |
+| CRUDS                                                      | [Source](https://finale.seas.harvard.edu/files/finale/files/cruds-_counterfactual_recourse_using_disentangled_subspaces.pdf)                                                       |            |    X    |         |         |
+| Diverse Counterfactual Explanations (DiCE)                 | [Source](https://arxiv.org/pdf/1905.07697.pdf)                   |     X      |    X    |         |         |
+| Feasible and Actionable Counterfactual Explanations (FACE) | [Source](https://arxiv.org/pdf/1909.09369.pdf)                   |     X      |    X    |         |         |
+| FeatureTweak                                               | [Source](https://arxiv.org/pdf/1706.06691.pdf)                   |            |         |    X    |    X    |
+| FOCUS                                                      | [Source](https://arxiv.org/pdf/1911.12199.pdf)                   |            |         |    X    |    X    |
+| Growing Spheres (GS)                                       | [Source](https://arxiv.org/pdf/1712.08443.pdf)                   |     X      |    X    |         |         |
+| Revise                                                     | [Source](https://arxiv.org/pdf/1907.09615.pdf)                   |            |    X    |         |         |
+| Wachter                                                    | [Source](https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf) |            |    X    |         |         |
 
 ## Installation
 
