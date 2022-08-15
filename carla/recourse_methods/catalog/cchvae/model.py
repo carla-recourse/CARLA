@@ -8,10 +8,7 @@ from numpy import linalg as LA
 from carla import log
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.autoencoder import (
-    VariationalAutoencoder,
-    train_variational_autoencoder,
-)
+from carla.recourse_methods.autoencoder import VariationalAutoencoder
 from carla.recourse_methods.processing import (
     check_counterfactuals,
     merge_default_parameters,
@@ -86,6 +83,7 @@ class CCHVAE(RecourseMethod):
         "vae_params": {
             "layers": None,
             "train": True,
+            "kl_weight": 0.3,
             "lambda_reg": 1e-6,
             "epochs": 5,
             "lr": 1e-3,
@@ -93,7 +91,14 @@ class CCHVAE(RecourseMethod):
         },
     }
 
-    def __init__(self, mlmodel: MLModel, hyperparams: Dict) -> None:
+    def __init__(self, mlmodel: MLModel, hyperparams: Dict = None) -> None:
+
+        supported_backends = ["pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
@@ -111,16 +116,15 @@ class CCHVAE(RecourseMethod):
     def _load_vae(
         self, data: pd.DataFrame, vae_params: Dict, mlmodel: MLModel, data_name: str
     ) -> VariationalAutoencoder:
+
         generative_model = VariationalAutoencoder(
-            data_name,
-            vae_params["layers"],
+            data_name, vae_params["layers"], mlmodel.get_mutable_mask()
         )
 
         if vae_params["train"]:
-            generative_model = train_variational_autoencoder(
-                generative_model,
-                mlmodel.data,
-                mlmodel.feature_input_order,
+            generative_model.fit(
+                xtrain=data[mlmodel.feature_input_order],
+                kl_weight=vae_params["kl_weight"],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
@@ -128,7 +132,7 @@ class CCHVAE(RecourseMethod):
             )
         else:
             try:
-                generative_model.load(data.shape[1] - 1)
+                generative_model.load(vae_params["layers"][0])
             except FileNotFoundError as exc:
                 raise FileNotFoundError(
                     "Loading of Autoencoder failed. {}".format(str(exc))
@@ -178,8 +182,16 @@ class CCHVAE(RecourseMethod):
         )
 
         # vectorize z
-        z = self._generative_model.encode(torch_fact.float())[0].cpu().detach().numpy()
+        z = self._generative_model.encode(
+            torch_fact[:, self._generative_model.mutable_mask].float()
+        )[0]
+        # add the immutable features to the latents
+        z = torch.cat([z, torch_fact[:, ~self._generative_model.mutable_mask]], dim=-1)
+        z = z.cpu().detach().numpy()
         z_rep = np.repeat(z.reshape(1, -1), self._n_search_samples, axis=0)
+
+        # make copy such that we later easily combine the immutables and the reconstructed mutables
+        fact_rep = np.repeat(torch_fact.reshape(1, -1), self._n_search_samples, axis=0)
 
         candidate_dist: List = []
         x_ce: Union[np.ndarray, torch.Tensor] = np.array([])
@@ -194,7 +206,13 @@ class CCHVAE(RecourseMethod):
             torch_latent_neighbourhood = (
                 torch.from_numpy(latent_neighbourhood).to(device).float()
             )
-            x_ce = self._generative_model.decode(torch_latent_neighbourhood)[0]
+            x_ce = self._generative_model.decode(torch_latent_neighbourhood)
+
+            # add the immutable features to the reconstruction
+            temp = fact_rep.clone()
+            temp[:, self._generative_model.mutable_mask] = x_ce.double()
+            x_ce = temp
+
             x_ce = reconstruct_encoding_constraints(
                 x_ce, cat_features_indices, self._params["binary_cat_features"]
             )
@@ -250,6 +268,6 @@ class CCHVAE(RecourseMethod):
             axis=1,
         )
 
-        df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs, factuals.index)
         df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs

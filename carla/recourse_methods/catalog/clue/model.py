@@ -74,12 +74,19 @@ class Clue(RecourseMethod):
         "depth": 3,
         "latent_dim": 12,
         "batch_size": 64,
-        "epochs": 1,
+        "epochs": 10,
         "lr": 0.001,
         "early_stop": 10,
     }
 
-    def __init__(self, data: Data, mlmodel: MLModel, hyperparams: Dict) -> None:
+    def __init__(self, data: Data, mlmodel: MLModel, hyperparams: Dict = None) -> None:
+
+        supported_backends = ["pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
 
         # get hyperparameter
@@ -187,6 +194,6 @@ class Clue(RecourseMethod):
             list_cfs.append(counterfactual)
 
         # Convert output into correct format
-        df_cfs = check_counterfactuals(self._mlmodel, list_cfs)
+        df_cfs = check_counterfactuals(self._mlmodel, list_cfs, factuals.index)
         df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs

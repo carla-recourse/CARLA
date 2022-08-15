@@ -38,6 +38,13 @@ class GrowingSpheres(RecourseMethod):
     """
 
     def __init__(self, mlmodel: MLModel, hyperparams=None) -> None:
+
+        supported_backends = ["tensorflow", "pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
 
         self._immutables = encode_feature_names(
@@ -70,6 +77,6 @@ class GrowingSpheres(RecourseMethod):
             )
             list_cfs.append(counterfactual)
 
-        df_cfs = check_counterfactuals(self._mlmodel, list_cfs)
+        df_cfs = check_counterfactuals(self._mlmodel, list_cfs, factuals.index)
         df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs

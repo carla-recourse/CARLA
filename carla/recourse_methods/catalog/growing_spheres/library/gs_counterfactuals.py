@@ -102,7 +102,7 @@ def growing_spheres_search(
         instance_replicated.shape[1],
     )
     candidate_counterfactual_star[:] = np.nan
-    while not counterfactuals_found or count > max_iter:
+    while (not counterfactuals_found) and (count < max_iter):
         count = count + counter_step
 
         # STEP 1 -- SAMPLE POINTS on hyper sphere around instance

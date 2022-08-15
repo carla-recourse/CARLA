@@ -71,10 +71,17 @@ class ActionableRecourse(RecourseMethod):
     def __init__(
         self,
         mlmodel,
-        hyperparams: Dict,
+        hyperparams: Optional[Dict] = None,
         coeffs: Optional[np.ndarray] = None,
         intercepts: Optional[np.ndarray] = None,
     ) -> None:
+
+        supported_backends = ["tensorflow", "pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
         self._data = mlmodel.data
 
@@ -253,6 +260,7 @@ class ActionableRecourse(RecourseMethod):
         df_cfs[self._mlmodel.data.target] = np.argmax(
             self._mlmodel.predict_proba(cfs), axis=1
         )
-        df_cfs = check_counterfactuals(self._mlmodel, df_cfs)
+
+        df_cfs = check_counterfactuals(self._mlmodel, df_cfs, factuals.index)
         df_cfs = self._mlmodel.get_ordered_features(df_cfs)
         return df_cfs

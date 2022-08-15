@@ -133,3 +133,9 @@ dmypy.json
 # Model files
 *.h5
 *.pt
+
+# data files
+*.csv
+
+# test results
+*.html

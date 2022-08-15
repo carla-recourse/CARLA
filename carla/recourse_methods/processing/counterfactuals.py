@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,7 @@ from carla.models.api import MLModel
 def check_counterfactuals(
     mlmodel: MLModel,
     counterfactuals: Union[List, pd.DataFrame],
+    factuals_index: pd.Index,
     negative_label: int = 0,
 ) -> pd.DataFrame:
     """
@@ -19,17 +20,25 @@ def check_counterfactuals(
 
     Parameters
     ----------
-    mlmodel: Black-box-model we want to discover
-    counterfactuals: List or DataFrame of generated samples from recourse method
-    negative_label: Defines the negative label.
+    mlmodel:
+        Black-box-model we want to discover.
+    counterfactuals:
+        List or DataFrame of generated samples from recourse method.
+    factuals_index:
+        Index of the original factuals DataFrame.
+    negative_label:
+        Defines the negative label.
 
     Returns
     -------
     pd.DataFrame
     """
+
     if isinstance(counterfactuals, list):
         df_cfs = pd.DataFrame(
-            np.array(counterfactuals), columns=mlmodel.feature_input_order
+            np.array(counterfactuals),
+            columns=mlmodel.feature_input_order,
+            index=factuals_index.copy(),
         )
     else:
         df_cfs = counterfactuals.copy()
@@ -71,9 +80,12 @@ def reconstruct_encoding_constraints(
 
     Parameters
     ----------
-    x: instance where we want to reconstruct categorical constraints
-    feature_pos: list with positions of categorical features in x
-    binary_cat: If true, categorical datas are encoded with drop_if_binary
+    x:
+        Instance where we want to reconstruct categorical constraints.
+    feature_pos:
+        List with positions of categorical features in x.
+    binary_cat:
+        If True, categorical datas are encoded with drop_if_binary.
 
     Returns
     -------
@@ -103,7 +115,7 @@ def reconstruct_encoding_constraints(
     return x_enc
 
 
-def merge_default_parameters(hyperparams: Dict, default: Dict) -> Dict:
+def merge_default_parameters(hyperparams: Optional[Dict], default: Dict) -> Dict:
     """
     Checks if the input parameter hyperparams contains every necessary key and if not, uses default values or
     raises a ValueError if no default value is given.
@@ -111,7 +123,7 @@ def merge_default_parameters(hyperparams: Dict, default: Dict) -> Dict:
     Parameters
     ----------
     hyperparams: dict
-        Hyperparameter as passed to the recuorse method.
+        Hyperparameter as passed to the recourse method.
     default: dict
         Dictionary with every necessary key and default value.
         If key has no default value and hyperparams has no value for it, raise a ValueError
@@ -121,6 +133,9 @@ def merge_default_parameters(hyperparams: Dict, default: Dict) -> Dict:
     dict
         Dictionary with every necessary key.
     """
+    if hyperparams is None:
+        return default
+
     keys = default.keys()
     dict_output = dict()
 

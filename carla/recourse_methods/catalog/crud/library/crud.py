@@ -62,12 +62,22 @@ def counterfactual_search(
     )  # distance of the possible counterfactuals from the intial value - considering distance as the loss function (can even change it just the distance)
     all_loss = []
 
+    query_instance = torch.FloatTensor(x_train).to(device)
+
+    # add the immutable features to the latents
+    z = torch.cat([z, query_instance[:, ~csvae.mutable_mask]], dim=-1)
+
     for j in range(max_iter):
         cf, _ = csvae.p_x(z, w.unsqueeze(0))
+
+        # add the immutable features to the reconstruction
+        temp = query_instance.clone()
+        temp[:, csvae.mutable_mask] = cf
+        cf = temp
+
         cf = reconstruct_encoding_constraints(
             cf, cat_feature_indices, binary_cat_features
         ).to(device)
-        query_instance = torch.FloatTensor(x_train).to(device)
         output = mlmodel.predict_proba(cf)
         _, predicted = torch.max(output[0], 0)
 

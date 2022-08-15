@@ -9,11 +9,7 @@ from carla import log
 from carla.data.api import Data
 from carla.models.api import MLModel
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.autoencoder import (
-    VAEDataset,
-    VariationalAutoencoder,
-    train_variational_autoencoder,
-)
+from carla.recourse_methods.autoencoder import VariationalAutoencoder
 from carla.recourse_methods.processing.counterfactuals import (
     check_counterfactuals,
     merge_default_parameters,
@@ -98,7 +94,14 @@ class Revise(RecourseMethod):
         },
     }
 
-    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict) -> None:
+    def __init__(self, mlmodel: MLModel, data: Data, hyperparams: Dict = None) -> None:
+
+        supported_backends = ["pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
+
         super().__init__(mlmodel)
         self._params = merge_default_parameters(hyperparams, self._DEFAULT_HYPERPARAMS)
 
@@ -112,15 +115,12 @@ class Revise(RecourseMethod):
 
         vae_params = self._params["vae_params"]
         self.vae = VariationalAutoencoder(
-            self._params["data_name"],
-            vae_params["layers"],
+            self._params["data_name"], vae_params["layers"], mlmodel.get_mutable_mask()
         )
 
         if vae_params["train"]:
-            self.vae = train_variational_autoencoder(
-                self.vae,
-                self._mlmodel.data,
-                self._mlmodel.feature_input_order,
+            self.vae.fit(
+                xtrain=data.df[mlmodel.feature_input_order],
                 lambda_reg=vae_params["lambda_reg"],
                 epochs=vae_params["epochs"],
                 lr=vae_params["lr"],
@@ -151,23 +151,28 @@ class Revise(RecourseMethod):
             cat_features_indices, device, factuals
         )
 
-        cf_df = check_counterfactuals(self._mlmodel, list_cfs)
+        cf_df = check_counterfactuals(self._mlmodel, list_cfs, factuals.index)
         cf_df = self._mlmodel.get_ordered_features(cf_df)
         return cf_df
 
     def _counterfactual_optimization(self, cat_features_indices, device, df_fact):
         # prepare data for optimization steps
         test_loader = torch.utils.data.DataLoader(
-            VAEDataset(df_fact.values, with_target=False), batch_size=1, shuffle=False
+            df_fact.values, batch_size=1, shuffle=False
         )
 
         list_cfs = []
         for query_instance in test_loader:
+            query_instance = query_instance.float()
 
             target = torch.FloatTensor(self._target_class).to(device)
             target_prediction = np.argmax(np.array(self._target_class))
 
-            z = self.vae.encode(query_instance)[0].clone().detach().requires_grad_(True)
+            # encode the mutable features
+            z = self.vae.encode(query_instance[:, self.vae.mutable_mask])[0]
+            # add the immutable features to the latents
+            z = torch.cat([z, query_instance[:, ~self.vae.mutable_mask]], dim=-1)
+            z = z.clone().detach().requires_grad_(True)
 
             if self._optimizer == "adam":
                 optim = torch.optim.Adam([z], self._lr)
@@ -182,7 +187,13 @@ class Revise(RecourseMethod):
             all_loss = []
 
             for idx in range(self._max_iter):
-                cf = self.vae.decode(z)[0]
+                cf = self.vae.decode(z)
+
+                # add the immutable features to the reconstruction
+                temp = query_instance.clone()
+                temp[:, self.vae.mutable_mask] = cf
+                cf = temp
+
                 cf = reconstruct_encoding_constraints(
                     cf, cat_features_indices, self._params["binary_cat_features"]
                 )

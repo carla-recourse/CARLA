@@ -8,6 +8,8 @@ from sklearn import preprocessing
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.api import RecourseMethod
 
+from ...processing import merge_default_parameters
+from . import constraints, samplers
 from .action_set import get_discretized_action_sets
 from .cost import action_set_cost
 
@@ -51,7 +53,7 @@ class CausalRecourse(RecourseMethod):
     ----------
     mlmodel : carla.model.MLModel
         Black-Box-Model
-    hyperparams : dict
+    checked_hyperparams : dict
         Dictionary containing hyperparameters. See Notes below to see its content.
 
     Methods
@@ -80,17 +82,35 @@ class CausalRecourse(RecourseMethod):
         Transparency (pp. 353-362).
     """
 
+    _DEFAULT_HYPERPARAMS = {
+        "optimization_approach": "brute_force",
+        "num_samples": 10,
+        "scm": None,
+        "constraint_handle": constraints.point_constraint,
+        "sampler_handle": samplers.sample_true_m0,
+    }
+
     def __init__(self, mlmodel: MLModelCatalog, hyperparams: Dict):
+
+        supported_backends = ["tensorflow", "pytorch"]
+        if mlmodel.backend not in supported_backends:
+            raise ValueError(
+                f"{mlmodel.backend} is not in supported backends {supported_backends}"
+            )
 
         self._mlmodel = mlmodel
         self._dataset = mlmodel.data
 
-        self._optimization_approach = hyperparams["optimization_approach"]
-        self._num_samples = hyperparams["num_samples"]
-        self._scm = hyperparams["scm"]
+        checked_hyperparams = merge_default_parameters(
+            hyperparams, self._DEFAULT_HYPERPARAMS
+        )
 
-        self._constraint_handle = hyperparams["constraint_handle"]
-        self._sampler_handle = hyperparams["sampler_handle"]
+        self._optimization_approach = checked_hyperparams["optimization_approach"]
+        self._num_samples = checked_hyperparams["num_samples"]
+        self._scm = checked_hyperparams["scm"]
+
+        self._constraint_handle = checked_hyperparams["constraint_handle"]
+        self._sampler_handle = checked_hyperparams["sampler_handle"]
 
     def get_intervenable_nodes(self) -> dict:
         intervenable_nodes = {

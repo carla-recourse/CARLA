@@ -18,6 +18,7 @@ import numpy as np
 import yaml
 from tensorflow import Graph, Session
 
+import carla.evaluation.catalog as evaluation_catalog
 from carla.data.api import Data
 from carla.data.catalog import OnlineCatalog
 from carla.evaluation import Benchmark
@@ -234,9 +235,22 @@ for rm in args.recourse_method:
                             sess=ann_sess,
                         )
 
-                        df_benchmark = Benchmark(
+                        benchmark = Benchmark(
                             mlmodel_sess, recourse_method_sess, factuals_sess
-                        ).run_benchmark()
+                        )
+                        evaluation_measures = [
+                            evaluation_catalog.YNN(
+                                benchmark.mlmodel, {"y": 5, "cf_label": 1}
+                            ),
+                            evaluation_catalog.Distance(benchmark.mlmodel),
+                            evaluation_catalog.SuccessRate(),
+                            evaluation_catalog.Redundancy(
+                                benchmark.mlmodel, {"cf_label": 1}
+                            ),
+                            evaluation_catalog.ConstraintViolation(benchmark.mlmodel),
+                            evaluation_catalog.AvgTime({"time": benchmark.timer}),
+                        ]
+                        df_benchmark = benchmark.run_benchmark(evaluation_measures)
             else:
                 mlmodel = MLModelCatalog(dataset, model_type, backend)
 
@@ -248,9 +262,16 @@ for rm in args.recourse_method:
                     rm, mlmodel, dataset, data_name, model_type, setup
                 )
 
-                df_benchmark = Benchmark(
-                    mlmodel, recourse_method, factuals
-                ).run_benchmark()
+                benchmark = Benchmark(mlmodel, recourse_method, factuals)
+                evaluation_measures = [
+                    evaluation_catalog.YNN(benchmark.mlmodel, {"y": 5, "cf_label": 1}),
+                    evaluation_catalog.Distance(benchmark.mlmodel),
+                    evaluation_catalog.SuccessRate(),
+                    evaluation_catalog.Redundancy(benchmark.mlmodel, {"cf_label": 1}),
+                    evaluation_catalog.ConstraintViolation(benchmark.mlmodel),
+                    evaluation_catalog.AvgTime({"time": benchmark.timer}),
+                ]
+                df_benchmark = benchmark.run_benchmark(evaluation_measures)
 
             df_benchmark["Recourse_Method"] = rm
             df_benchmark["Dataset"] = data_name
