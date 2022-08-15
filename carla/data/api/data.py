@@ -3,7 +3,8 @@ from abc import ABC, abstractmethod
 
 class Data(ABC):
     """
-    Abstract class to implement arbitrary datasets, which are provided by the user.
+    Abstract class to implement arbitrary datasets, which are provided by the user. This is the general data object
+    that is used in CARLA.
     """
 
     @property

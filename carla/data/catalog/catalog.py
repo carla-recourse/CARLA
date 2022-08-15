@@ -145,12 +145,12 @@ class DataCatalog(Data, ABC):
         Transforms input for prediction into correct form.
         Only possible for DataFrames without preprocessing steps.
 
-        Recommended to use to keep correct encodings and normalization
+        Recommended to keep correct encodings and normalization
 
         Parameters
         ----------
         df : pd.DataFrame
-            Contains raw (unnormalized and not encoded) data.
+            Contains raw (not normalized and not encoded) data.
 
         Returns
         -------

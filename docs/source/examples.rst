@@ -1,8 +1,9 @@
 Examples
 ========
 
-To get a better insight of how to use CARLA for the different purposes, we will provide here some short example
-implementations.
+To get a better insight of how to use CARLA for the different purposes, we will provide here some short example implementations.
+
+We also have Tutorial notebooks available, which can be found under contents.
 
 To benchmark an arbitrary recourse method, we provide an example implementation based on :ref:`quick`, in the
 section :ref:`ex_bench`
@@ -28,10 +29,11 @@ dataset and black-box-model.
     model = MLModelCatalog(dataset, "ann")
 
     # 3. Load recourse model with model specific hyperparameters
-    gs = GrowingSpheres(model)
+    hyperparameters = {}
+    gs = GrowingSpheres(model, hyperparameters)
 
     # 4. Generate counterfactual examples
-    factuals = dataset.raw.sample(10)
+    factuals = dataset.df.sample(10)
     counterfactuals = gs.get_counterfactuals(factuals)
 
 Customization
@@ -96,10 +98,31 @@ If you want full control over your dataset, you can also implement it from scrat
        def target(self):
            return "label"
 
-       # Non-encoded and  non-normalized, raw data set
+       # The full dataset
        @property
-       def raw(self):
+       def df(self):
            return self._dataset
+
+       # The training split of the dataset
+       @property
+       def df_train(self):
+           return self._dataset_train
+
+       # The test split of the dataset
+       @property
+       def df_test(self):
+            return self._dataset_test
+
+       # Data transformation, for example normalization of continuous features
+       # and encoding of categorical features
+       def transform(self, df):
+            return transformed_df
+
+       # Inverts transform operation
+       def inverse_transform(self, df):
+            return original_df
+
+For reference you can always take a look at the `data api <https://github.com/carla-recourse/CARLA/blob/main/carla/data/api/data.py>`_. In addition we also have a concrete example of an implementation of our data api in our `DataCatalog <https://github.com/carla-recourse/CARLA/blob/main/carla/data/catalog/catalog.py>`_.
 
 .. _cstm_model:
 
@@ -163,11 +186,17 @@ See below a concrete example on how to use a custom model in our framework. Note
            df_train = self.data.df_train
            df_test = self.data.df_test
 
+           # we only use the continuous features here
+           # so you might want to also include the categorical
+           # features
            x_train = df_train[self.data.continuous]
            y_train = df_train[self.data.target]
            x_test = df_test[self.data.continuous]
            y_test = df_test[self.data.target]
 
+           # you can not only use the feature input order to
+           # order the data but also to e.g. restrict the input
+           # to only the continous features
            self._feature_input_order = self.data.continuous
 
            param = {
@@ -222,6 +251,9 @@ See below a concrete example on how to use a custom model in our framework. Note
 
 Recourse Method
 ^^^^^^^^^^^^^^^
+
+This short code example shows you how to implement a recourse method. Any configuration options should be passed to the initializer, not the :code:`get_counterfactuals` method, trough the :code:`hyperparameters` dictionary. Also note that the recourse method has access to the :code:`mlmodel`, which in turn has access to the :code:`data` object. So for example, if you want some property of the scaler, you can access that by :code:`mlmodel.data.scaler`.
+
 .. code-block:: python
    :linenos:
 
@@ -230,14 +262,26 @@ Recourse Method
     # Custom recourse implementations need to
     # inherit from the RecourseMethod interface
     class MyRecourseMethod(RecourseMethod):
-        def __init__(self, mlmodel):
+        def __init__(self, mlmodel, hyperparameters):
             super().__init__(mlmodel)
+            # the constructor can be used to load the recourse method,
+            # or construct everything necessary
 
         # Generate and return encoded and
         # scaled counterfactual examples
         def get_counterfactuals(self, factuals: pd.DataFrame):
+            # This property is responsible to generate and output
+            # encoded and scaled (i.e. transformed) counterfactual examples
+            # as pandas DataFrames.
+            # Concretely this means that e.g. the counterfactuals should have
+            # the same one-hot encoding as the factuals, and e.g. they both
+            # should be min-max normalized with the same range.
+            # It's expected that there is a single counterfactual per factual,
+            # however in case a counterfactual cannot be found it should be NaN.
     		[...]
-    		return counterfactual_examples
+            return counterfactual_examples
+
+For lots of different example of how to do this, you can take a look at all the methods in our `recourse catalog <https://github.com/carla-recourse/CARLA/tree/main/carla/recourse_methods/catalog>`_. For example the Wachter method is a clean example.
 
 .. _ex_bench:
 

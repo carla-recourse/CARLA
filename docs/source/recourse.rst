@@ -39,7 +39,7 @@ Actionable Recourse
 
 Causal Recourse
 ^^^^^^^^^^^^^^^
-.. automodule:: recourse_methods.catalog.causal_recourse
+.. automodule:: recourse_methods.catalog.causal_recourse.model
    :members:
    :undoc-members:
 

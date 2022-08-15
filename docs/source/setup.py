@@ -7,6 +7,7 @@ setup(
     version=VERSION,
     package_dir={"carla": "carla"},
     install_requires=[
+        "sphinx-copybutton",
         "sphinx_gallery",
         "markupsafe==2.0.1",
         "scipy==1.6.2",
@@ -34,6 +35,7 @@ setup(
         "matplotlib==3.5.1",
         "networkx==2.5.1",
         "imageio==2.9.0",
+        "werkzeug==2.1.2",
     ],
     entry_points="""
                 [console_scripts]
