@@ -198,35 +198,24 @@ class Roar(RecourseMethod):
         # Calculate coefficients and intercept (if not given) and reshape to match the shape that LIME generates
         # If Model linear then extract coefficients and intercepts from raw model directly
         # If Molel ANN then use LIME to generate the coefficients
-        if (coeffs is not None) and (intercepts is not None):
-
-            # Coeffs and intercepts should be numpy arrays of shape (num_features,) and () respectively
-            if not (len(coeffs.shape) == 1 and coeffs.shape[0] == factuals.shape[1]):
-                raise ValueError(
-                    "Incorrect shape of coefficients. Expected shape: (num_features,)"
-                )
-            if not (len(intercepts.shape) == 0):
-                raise ValueError("Incorrect shape of coefficients. Expected shape: ()")
-
-            # Reshape to desired shape: (num_of_instances, num_of_features)
-            coeffs = np.vstack([self._coeffs] * factuals.shape[0])
-            intercepts = np.vstack([self._intercepts] * factuals.shape[0]).squeeze(
-                axis=1
-            )
-        else:
+        if (coeffs is None) or (intercepts is None):
             if self._mlmodel.model_type == "linear":
-                coeffs_neg = self._mlmodel.raw_model.output.weight.detach()[0].numpy()
-                coeffs_pos = self._mlmodel.raw_model.output.weight.detach()[1].numpy()
+                coeffs_neg = (
+                    self._mlmodel.raw_model.output.weight.cpu().detach()[0].numpy()
+                )
+                coeffs_pos = (
+                    self._mlmodel.raw_model.output.weight.cpu().detach()[1].numpy()
+                )
 
                 intercepts_neg = np.array(
-                    self._mlmodel.raw_model.output.bias.detach()[0].numpy()
+                    self._mlmodel.raw_model.output.bias.cpu().detach()[0].numpy()
                 )
                 intercepts_pos = np.array(
-                    self._mlmodel.raw_model.output.bias.detach()[1].numpy()
+                    self._mlmodel.raw_model.output.bias.cpu().detach()[1].numpy()
                 )
 
-                self._coeffs = -(coeffs_neg - coeffs_pos)
-                self._intercepts = -(intercepts_neg - intercepts_pos)
+                self._coeffs = coeffs_pos - coeffs_neg
+                self._intercepts = intercepts_pos - intercepts_neg
 
                 # Local explanations via LIME generate coeffs and intercepts per instance, while global explanations
                 # via input parameter need to be set into correct shape [num_of_instances, num_of_features]
@@ -242,6 +231,20 @@ class Roar(RecourseMethod):
                 raise ValueError(
                     f"Model type {self._mlmodel.model_type} not supported in ROAR recourse method"
                 )
+        else:
+            # Coeffs and intercepts should be numpy arrays of shape (num_features,) and () respectively
+            if (len(coeffs.shape) != 1) or (coeffs.shape[0] != factuals.shape[1]):
+                raise ValueError(
+                    "Incorrect shape of coefficients. Expected shape: (num_features,)"
+                )
+            if len(intercepts.shape) != 0:
+                raise ValueError("Incorrect shape of coefficients. Expected shape: ()")
+
+            # Reshape to desired shape: (num_of_instances, num_of_features)
+            coeffs = np.vstack([self._coeffs] * factuals.shape[0])
+            intercepts = np.vstack([self._intercepts] * factuals.shape[0]).squeeze(
+                axis=1
+            )
 
         cfs = []
         for index, row in factuals.iterrows():
