@@ -12,7 +12,7 @@ from carla import log
 from carla.recourse_methods.processing import reconstruct_encoding_constraints
 
 
-def calc_max_perturbation(
+def _calc_max_perturbation(
     recourse: torch.Tensor,
     coeff: torch.Tensor,
     intercept: torch.Tensor,
@@ -83,21 +83,36 @@ def roar_recourse(
 
     Parameters
     ----------
-    torch_model: black-box-model to discover
-    x: factual to explain
-    coeff: Coefficient for x
-    intercept: Intercept for x
-    cat_feature_indices: list of positions of categorical features in x
-    binary_cat_features: If true, the encoding of x is done by drop_if_binary
-    feature_costs: List with costs per feature
-    lr: learning rate for gradient descent
-    lambda_param: weight factor for feature_cost
-    delta_max: maximum perturbations of weights
-    y_target: Tuple of class probabilities (BCE loss) or [Float] for logit score (MSE loss).
-    t_max_min: maximum time of search
-    norm: L-norm to calculate cost
-    loss_type: String for loss function (MSE or BCE)
-    loss_threshold: Float threshold for loss difference between iterations
+    torch_model: carla.model.MLModel.TorchModel
+        Black-box-model to discover.
+    x: np.ndarray
+        Factual to explain.
+    coeff: np.ndarray
+        Coefficient for factual x.
+    intercept: np.float
+        Intercept for factual x.
+    cat_feature_indices: list
+        List of positions of categorical features in x.
+    binary_cat_features: bool
+        If true, the encoding of x is done by drop_if_binary.
+    feature_cost: list
+        List with costs per feature.
+    lr: float
+        Learning rate for gradient descent.
+    lambda_param: float
+        Weight factor for feature_cost.
+    delta_max: float
+        Maximum perturbation for weights.
+    y_target: list
+        List of one-hot-encoded target class.
+    t_max_min: float
+        Maximum time of search.
+    norm: int
+        L-norm to calculate cost.
+    loss_type: String
+        String for loss function. "MSE" or "BCE".
+    loss_threshold: float
+        Threshold for loss difference
 
     Returns
     -------
@@ -157,7 +172,7 @@ def roar_recourse(
         )
 
         # Calculate max delta perturbation on weights
-        delta_W, delta_W0 = calc_max_perturbation(
+        delta_W, delta_W0 = _calc_max_perturbation(
             x_new_enc.squeeze(), coeff, intercept, delta_max, target_class
         )
         delta_W, delta_W0 = (
