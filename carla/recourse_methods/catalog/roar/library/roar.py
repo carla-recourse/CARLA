@@ -77,6 +77,7 @@ def roar_recourse(
     norm: int = 1,
     loss_type: str = "BCE",
     loss_threshold: float = 1e-3,
+    seed: int = 0,
 ) -> np.ndarray:
     """
     Generates counterfactual example according to ROAR method for input instance x
@@ -113,13 +114,15 @@ def roar_recourse(
         String for loss function. "MSE" or "BCE".
     loss_threshold: float
         Threshold for loss difference
+    seed: int
+        Seed for torch when generating counterfactuals.
 
     Returns
     -------
     Counterfactual example as np.ndarray
     """
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    torch.manual_seed(0)
+    torch.manual_seed(seed)
 
     if feature_costs is not None:
         feature_costs = torch.from_numpy(feature_costs).float().to(device)

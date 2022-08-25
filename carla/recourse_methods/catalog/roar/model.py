@@ -64,6 +64,8 @@ class Roar(RecourseMethod):
             Threshold for loss difference
         * "lime_seed": int, default: 0
             Seed when generating LIME coefficients
+        * "seed": int, default: 0
+            Seed for torch when calculating counterfactuals
 
     - Restrictions
         *   ROAR is only defined on linear models. To make it work for arbitrary non-linear networks
@@ -89,6 +91,7 @@ class Roar(RecourseMethod):
         "discretize": False,
         "sample": True,
         "lime_seed": 0,
+        "seed": 0,
     }
 
     def __init__(
@@ -121,6 +124,7 @@ class Roar(RecourseMethod):
         self._discretize_continuous = checked_hyperparams["discretize"]
         self._sample_around_instance = checked_hyperparams["sample"]
         self._lime_seed = checked_hyperparams["lime_seed"]
+        self._seed = checked_hyperparams["seed"]
 
     def _get_lime_coefficients(
         self, factuals: pd.DataFrame
@@ -261,6 +265,7 @@ class Roar(RecourseMethod):
                 t_max_min=self._t_max_min,
                 loss_type=self._loss_type,
                 loss_threshold=self._loss_threshold,
+                seed=self._seed,
             )
             cfs.append(counterfactual)
 
