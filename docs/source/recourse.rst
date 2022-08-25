@@ -116,6 +116,14 @@ REVISE
    :members:
    :undoc-members:
 
+.. _roar:
+
+ROAR
+^^^^^^
+.. automodule:: recourse_methods.catalog.roar.model
+   :members:
+   :undoc-members:
+
 .. _wachter:
 
 Wachter
