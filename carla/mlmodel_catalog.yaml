@@ -81,6 +81,69 @@ adult:
         - capital-loss
         - hours-per-week
 
+ACSIncome:
+  ann:
+    pytorch:
+      feature_order:
+        - AGEP
+        - WKHP
+        - COW
+        - SCHL
+        - MAR
+        - OCCP
+        - POBP
+        - RELP
+        - SEX
+        - RAC1P
+    tensorflow:
+      feature_order:
+        - AGEP
+        - WKHP
+        - COW
+        - SCHL
+        - MAR
+        - OCCP
+        - POBP
+        - RELP
+        - SEX
+        - RAC1P
+
+  linear:
+    pytorch:
+      feature_order:
+        - AGEP
+        - WKHP
+        - COW
+        - SCHL
+        - MAR
+        - OCCP
+        - POBP
+        - RELP
+        - SEX
+        - RAC1P
+    tensorflow:
+      feature_order:
+        - AGEP
+        - WKHP
+        - COW
+        - SCHL
+        - MAR
+        - OCCP
+        - POBP
+        - RELP
+        - SEX
+        - RAC1P
+
+  forest:
+    sklearn:
+      feature_order:
+        - AGEP
+        - WKHP
+    xgboost:
+      feature_order:
+        - AGEP
+        - WKHP
+
 give_me_some_credit:
   ann:
     tensorflow:
