@@ -18,6 +18,24 @@ adult:
   immutable:
     - age
     - sex
+ACSIncome:
+  target: label
+  continuous:
+    - AGEP
+    - WKHP
+  categorical:
+    - COW
+    - SCHL
+    - MAR
+    - OCCP
+    - POBP
+    - RELP
+    - SEX
+    - RAC1P
+  immutable:
+    - AGEP
+    - SEX
+    - RAC1P
 give_me_some_credit:
   target: SeriousDlqin2yrs
   continuous:
