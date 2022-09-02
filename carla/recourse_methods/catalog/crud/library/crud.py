@@ -67,9 +67,9 @@ def counterfactual_search(
 
     # add the immutable features to the latents
     print(z.get_device())
-    z = z.to(device)  # don't need? new - Annabelle
-    w = w.to(device)  # don't need? new - Annabelle
-    x = x.to(device)  # don't need? new - Annabelle
+    z = z.to(device)
+    w = w.to(device)
+    x = x.to(device)
     z = torch.cat([z, query_instance[:, ~csvae.mutable_mask]], dim=-1)
 
     for j in range(max_iter):
