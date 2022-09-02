@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 import torch
-from pandas._testing import assert_frame_equal
 
 from carla.data.catalog import OnlineCatalog
 from carla.models.catalog import MLModelCatalog
