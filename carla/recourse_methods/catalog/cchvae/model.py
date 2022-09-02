@@ -191,7 +191,9 @@ class CCHVAE(RecourseMethod):
         z_rep = np.repeat(z.reshape(1, -1), self._n_search_samples, axis=0)
 
         # make copy such that we later easily combine the immutables and the reconstructed mutables
+        torch_fact = torch_fact.cpu().detach().numpy()
         fact_rep = np.repeat(torch_fact.reshape(1, -1), self._n_search_samples, axis=0)
+        fact_rep = torch.from_numpy(fact_rep).float().to(device)
 
         candidate_dist: List = []
         x_ce: Union[np.ndarray, torch.Tensor] = np.array([])
@@ -209,8 +211,8 @@ class CCHVAE(RecourseMethod):
             x_ce = self._generative_model.decode(torch_latent_neighbourhood)
 
             # add the immutable features to the reconstruction
-            temp = fact_rep.clone()
-            temp[:, self._generative_model.mutable_mask] = x_ce.double()
+            temp = fact_rep.clone()  # pytorch
+            temp[:, self._generative_model.mutable_mask] = x_ce.float()
             x_ce = temp
 
             x_ce = reconstruct_encoding_constraints(
@@ -221,11 +223,9 @@ class CCHVAE(RecourseMethod):
 
             # STEP 2 -- COMPUTE l1 & l2 norms
             if self._p_norm == 1:
-                distances = np.abs((x_ce - torch_fact.cpu().detach().numpy())).sum(
-                    axis=1
-                )
+                distances = np.abs((x_ce - torch_fact)).sum(axis=1)
             elif self._p_norm == 2:
-                distances = LA.norm(x_ce - torch_fact.cpu().detach().numpy(), axis=1)
+                distances = LA.norm(x_ce - torch_fact, axis=1)
             else:
                 raise ValueError("Possible values for p_norm are 1 or 2")
 

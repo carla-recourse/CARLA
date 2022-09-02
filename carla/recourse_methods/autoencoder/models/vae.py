@@ -64,6 +64,7 @@ class VariationalAutoencoder(nn.Module):
         )
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = device
         self.to(device)
 
         self.mutable_mask = mutable_mask
@@ -88,6 +89,7 @@ class VariationalAutoencoder(nn.Module):
         # the mutable part gets encoded
         mu_z, log_var_z = self.encode(x_mutable)
         z = self.__reparametrization_trick(mu_z, log_var_z)
+
         # concatenate the immutable part to the latents and decode both
         z = torch.cat([z, x_immutable], dim=-1)
         recon = self.decode(z)
@@ -143,7 +145,7 @@ class VariationalAutoencoder(nn.Module):
             for data in train_loader:
                 data = data.view(data.shape[0], -1)
                 data = data.float()
-
+                data = data.to(self.device)
                 # forward pass
                 reconstruction, mu, log_var = self(data)
 

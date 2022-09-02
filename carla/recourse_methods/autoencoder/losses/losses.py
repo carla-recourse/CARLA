@@ -32,6 +32,10 @@ def csvae_loss(csvae, x_train, y_train):
         z_mu,
         z_logvar,
     ) = csvae.forward(x, y)
+    x_mu = x_mu.to(csvae.device)
+    z_logvar = z_logvar.to(csvae.device)
+    x = x.to(csvae.device)
+    w_mu_encoder = w_mu_encoder.to(csvae.device)
 
     x_recon = nn.MSELoss()(x_mu, x)
 
@@ -47,9 +51,10 @@ def csvae_loss(csvae, x_train, y_train):
         z_mu.flatten(), torch.diag(z_logvar.flatten().exp())
     )
     z_prior = dists.MultivariateNormal(
-        torch.zeros(csvae.z_dim * z_mu.size()[0]),
-        torch.eye(csvae.z_dim * z_mu.size()[0]),
+        torch.zeros(csvae.z_dim * z_mu.size()[0]).to(csvae.device),
+        torch.eye(csvae.z_dim * z_mu.size()[0]).to(csvae.device),
     )
+
     z_kl = dists.kl.kl_divergence(z_dist, z_prior)
 
     y_pred_negentropy = (

@@ -33,6 +33,7 @@ def counterfactual_search(
     max_iter: int = 2000,
 ) -> np.ndarray:
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
     if target_class is None:
         target_class = [0, 1]
 
@@ -46,7 +47,7 @@ def counterfactual_search(
     )
 
     # only w is trainable
-    w = torch.rand(2, requires_grad=True, dtype=torch.float)
+    w = torch.rand(2, requires_grad=True, dtype=torch.float, device=device)
 
     target = torch.FloatTensor(np.array(target_class)).to(device)
     target_prediction = torch.argmax(target).to(device)
@@ -65,9 +66,14 @@ def counterfactual_search(
     query_instance = torch.FloatTensor(x_train).to(device)
 
     # add the immutable features to the latents
+    print(z.get_device())
+    z = z.to(device)  # don't need? new - Annabelle
+    w = w.to(device)  # don't need? new - Annabelle
+    x = x.to(device)  # don't need? new - Annabelle
     z = torch.cat([z, query_instance[:, ~csvae.mutable_mask]], dim=-1)
 
     for j in range(max_iter):
+
         cf, _ = csvae.p_x(z, w.unsqueeze(0))
 
         # add the immutable features to the reconstruction
@@ -77,9 +83,9 @@ def counterfactual_search(
 
         cf = reconstruct_encoding_constraints(
             cf, cat_feature_indices, binary_cat_features
-        ).to(device)
+        )
         output = mlmodel.predict_proba(cf)
-        _, predicted = torch.max(output[0], 0)
+        _, predicted = torch.max(output[0], 0)  # gpu
 
         if predicted == target_prediction:
             counterfactuals.append(torch.cat((cf, predicted.reshape((-1, 1))), dim=-1))

@@ -20,6 +20,7 @@ tf.compat.v1.disable_eager_execution()
 class CSVAE(nn.Module):
     def __init__(self, data_name: str, layers: List[int], mutable_mask) -> None:
         super(CSVAE, self).__init__()
+
         self._input_dim = layers[0]
         self.z_dim = layers[-1]
         self._data_name = data_name
@@ -99,11 +100,16 @@ class CSVAE(nn.Module):
         lst_decoder_z_to_y.append(nn.Sigmoid())
         self.decoder_z_to_y = nn.Sequential(*lst_decoder_z_to_y)
 
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = device
+        self.to(device)
+
         self.mutable_mask = mutable_mask
 
     def q_zw(self, x, y):
+        x = x.to(self.device)
+        y = y.to(self.device)
         xy = torch.cat([x, y], dim=1)
-
         z_mu = self.mu_x_to_z(x)
         z_logvar = self.logvar_x_to_z(x)
 
@@ -124,7 +130,7 @@ class CSVAE(nn.Module):
 
     def p_x(self, z, w):
         zw = torch.cat([z, w], dim=1)
-
+        zw = zw.to(self.device)
         mu = self.mu_zw_to_x(zw)
         logvar = self.logvar_zw_to_x(zw)
 
@@ -148,6 +154,11 @@ class CSVAE(nn.Module):
 
         w_encoder = self.reparameterize(w_mu_encoder, w_logvar_encoder)
         z = self.reparameterize(z_mu, z_logvar)
+
+        x = x.to(self.device)
+        z = z.to(self.device)
+        x_immutable = x_immutable.to(self.device)
+        w_encoder = w_encoder.to(self.device)
 
         # concatenate the immutable part to the latents
         z = torch.cat([z, x_immutable], dim=-1)
@@ -221,6 +232,8 @@ class CSVAE(nn.Module):
         log.info("Start training of CSVAE...")
         for i in trange(epochs):
             for x, y in train_loader:
+                x = x.to(self.device)
+                y = y.to(self.device)
                 (
                     loss_val,
                     x_recon_loss_val,
