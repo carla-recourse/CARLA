@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 import torch
-from pandas._testing import assert_frame_equal
 
 from carla.data.catalog import OnlineCatalog
 from carla.models.catalog import MLModelCatalog
@@ -44,42 +43,6 @@ def test_forest_properties():
     model = MLModelCatalog(data, "forest", backend="sklearn")
 
     assert model is not None
-
-
-def test_transform():
-    data_name = "adult"
-    transformed_data = OnlineCatalog(
-        data_name, scaling_method="MinMax", encoding_method="OneHot_drop_binary"
-    )
-    raw_data = OnlineCatalog(
-        data_name, scaling_method="Identity", encoding_method="Identity"
-    )
-
-    # sort columns as order could be different
-    assert_frame_equal(
-        transformed_data.inverse_transform(transformed_data.df).sort_index(axis=1),
-        raw_data.df.sort_index(axis=1),
-        check_dtype=False,
-    )
-    assert_frame_equal(
-        transformed_data.transform(raw_data.df).sort_index(axis=1),
-        transformed_data.df.sort_index(axis=1),
-        check_dtype=False,
-    )
-    assert_frame_equal(
-        transformed_data.transform(
-            transformed_data.inverse_transform(transformed_data.df)
-        ).sort_index(axis=1),
-        transformed_data.df.sort_index(axis=1),
-        check_dtype=False,
-    )
-    assert_frame_equal(
-        transformed_data.inverse_transform(
-            transformed_data.transform(raw_data.df)
-        ).sort_index(axis=1),
-        raw_data.df.sort_index(axis=1),
-        check_dtype=False,
-    )
 
 
 @pytest.mark.parametrize("model_type", testmodel)
