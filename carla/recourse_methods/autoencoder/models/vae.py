@@ -63,8 +63,8 @@ class VariationalAutoencoder(nn.Module):
             nn.Sigmoid(),
         )
 
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.to(device)
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.to(self.device)
 
         self.mutable_mask = mutable_mask
 
@@ -142,7 +142,7 @@ class VariationalAutoencoder(nn.Module):
             # Train for all the batches
             for data in train_loader:
                 data = data.view(data.shape[0], -1)
-                data = data.float()
+                data = data.to(self.device).float()
 
                 # forward pass
                 reconstruction, mu, log_var = self(data)

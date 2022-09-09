@@ -37,7 +37,7 @@ def _calc_max_perturbation(
     """
     W = torch.cat((coeff, intercept), 0)  # Add intercept to weights
     recourse = torch.cat(
-        (recourse, torch.ones(1)), 0
+        (recourse, torch.ones(1, device=recourse.device)), 0
     )  # Add 1 to the feature vector for intercept
 
     loss_fn = torch.nn.BCELoss()
@@ -46,7 +46,7 @@ def _calc_max_perturbation(
     w_loss = loss_fn(f_x_new, target_class)
 
     gradient_w_loss = grad(w_loss, W)[0]
-    c = list(np.array(gradient_w_loss) * np.array([-1] * len(gradient_w_loss)))
+    c = list(np.array(gradient_w_loss.cpu()) * np.array([-1] * len(gradient_w_loss)))
     bound = (-delta_max, delta_max)
     bounds = [bound] * len(gradient_w_loss)
 
@@ -179,8 +179,8 @@ def roar_recourse(
             x_new_enc.squeeze(), coeff, intercept, delta_max, target_class
         )
         delta_W, delta_W0 = (
-            torch.from_numpy(delta_W).float(),
-            torch.from_numpy(delta_W0).float(),
+            torch.from_numpy(delta_W).float().to(device),
+            torch.from_numpy(delta_W0).float().to(device),
         )
 
         optimizer.zero_grad()

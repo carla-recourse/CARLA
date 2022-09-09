@@ -42,11 +42,11 @@ def counterfactual_search(
     y_train[:, 1] = factual[:, -1]
 
     x, _, zw, _, w, _, _, _, z, _ = csvae.forward(
-        torch.from_numpy(x_train).float(), torch.from_numpy(y_train).float()
+        torch.from_numpy(x_train).float().to(device), torch.from_numpy(y_train).float().to(device)
     )
 
     # only w is trainable
-    w = torch.rand(2, requires_grad=True, dtype=torch.float)
+    w = torch.rand(2, requires_grad=True, dtype=torch.float, device=device)
 
     target = torch.FloatTensor(np.array(target_class)).to(device)
     target_prediction = torch.argmax(target).to(device)
