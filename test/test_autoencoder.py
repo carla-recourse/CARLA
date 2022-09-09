@@ -14,6 +14,8 @@ from carla.recourse_methods.autoencoder import (
 
 
 def test_cs_vae():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
     # Build data and mlmodel
     data_name = "adult"
     data = OnlineCatalog(data_name)
@@ -21,8 +23,8 @@ def test_cs_vae():
     model = MLModelCatalog(data, "ann", backend="pytorch")
 
     test_input = np.zeros((1, 13))
-    test_input = torch.Tensor(test_input)
-    test_class = torch.Tensor(np.array([[0, 0]]))
+    test_input = torch.tensor(test_input, device=device).float()
+    test_class = torch.tensor(np.array([[0, 0]]), device=device).float()
 
     csvae = CSVAE(data_name, layers=[11, 16, 8], mutable_mask=model.get_mutable_mask())
 
