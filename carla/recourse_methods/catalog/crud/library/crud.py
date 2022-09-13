@@ -42,7 +42,8 @@ def counterfactual_search(
     y_train[:, 1] = factual[:, -1]
 
     x, _, zw, _, w, _, _, _, z, _ = csvae.forward(
-        torch.from_numpy(x_train).float().to(device), torch.from_numpy(y_train).float().to(device)
+        torch.from_numpy(x_train).float().to(device),
+        torch.from_numpy(y_train).float().to(device),
     )
 
     # only w is trainable

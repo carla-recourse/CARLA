@@ -191,7 +191,9 @@ class CCHVAE(RecourseMethod):
         z_rep = np.repeat(z.reshape(1, -1), self._n_search_samples, axis=0)
 
         # make copy such that we later easily combine the immutables and the reconstructed mutables
-        fact_rep = torch_fact.reshape(1, -1).repeat_interleave(self._n_search_samples, dim=0)
+        fact_rep = torch_fact.reshape(1, -1).repeat_interleave(
+            self._n_search_samples, dim=0
+        )
 
         candidate_dist: List = []
         x_ce: Union[np.ndarray, torch.Tensor] = np.array([])
