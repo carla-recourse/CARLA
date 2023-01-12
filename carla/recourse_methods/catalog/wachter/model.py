@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 
 import pandas as pd
+from tqdm import tqdm
 
 from carla.recourse_methods.api import RecourseMethod
 from carla.recourse_methods.catalog.wachter.library import wachter_recourse
@@ -104,7 +105,9 @@ class Wachter(RecourseMethod):
             factuals.columns.get_loc(feature) for feature in encoded_feature_names
         ]
 
-        df_cfs = factuals.apply(
+        tqdm.pandas()
+
+        df_cfs = factuals.progress_apply(
             lambda x: wachter_recourse(
                 self._mlmodel.raw_model,
                 x.reshape((1, -1)),
