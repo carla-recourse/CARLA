@@ -21,6 +21,7 @@ setup(
         "torch==1.7.0",
         "torchvision==0.8.1",
         "h5py==2.10.0",
+        "PyWavelets==1.3.0",
         "dice-ml==0.5",
         "ipython==7.22.0",
         "ipykernel==5.5.3",
