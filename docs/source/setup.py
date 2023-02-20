@@ -7,8 +7,9 @@ setup(
     version=VERSION,
     package_dir={"carla": "carla"},
     install_requires=[
-        "sphinx-copybutton",
-        "sphinx_gallery",
+        "Sphinx==5.1.1",
+        "sphinx-copybutton==0.5.0",
+        "sphinx_gallery==0.11.1",
         "markupsafe==2.0.1",
         "scipy==1.6.2",
         "lime==0.2.0.1",
