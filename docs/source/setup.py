@@ -16,7 +16,7 @@ setup(
         "numpy==1.19.4",
         "pandas==1.1.4",
         "scikit-learn==0.23.2",
-        "scikit-image 0.19.3",
+        "scikit-image==0.19.3",
         "tensorflow==1.14.0",
         "torch==1.7.0",
         "torchvision==0.8.1",
