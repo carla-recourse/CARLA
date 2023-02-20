@@ -33,7 +33,7 @@ setup(
         "jupyter-server==1.15.6",
         "keras==2.3.0",
         "nbsphinx",
-        "jinja2==2.11.3",
+        # "jinja2==2.11.3",
         "pillow==9.0.1",
         "matplotlib==3.5.1",
         "networkx==2.5.1",
