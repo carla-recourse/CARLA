@@ -91,7 +91,7 @@ def initialize_recourse_method(
     elif method == "cchvae":
         hyperparams["data_name"] = data_name
         hyperparams["vae_params"]["layers"] = [
-            len(mlmodel.feature_input_order)
+            sum(mlmodel.get_mutable_mask())
         ] + hyperparams["vae_params"]["layers"]
         return CCHVAE(mlmodel, hyperparams)
     elif "cem" in method:
@@ -104,7 +104,7 @@ def initialize_recourse_method(
         hyperparams["data_name"] = data_name
         # variable input layer dimension is first time here available
         hyperparams["vae_params"]["layers"] = [
-            len(mlmodel.feature_input_order)
+            sum(mlmodel.get_mutable_mask())
         ] + hyperparams["vae_params"]["layers"]
         return CRUD(mlmodel, hyperparams)
     elif method == "dice":
@@ -117,7 +117,7 @@ def initialize_recourse_method(
         hyperparams["data_name"] = data_name
         # variable input layer dimension is first time here available
         hyperparams["vae_params"]["layers"] = [
-            len(mlmodel.feature_input_order)
+            sum(mlmodel.get_mutable_mask())
         ] + hyperparams["vae_params"]["layers"]
         return Revise(mlmodel, data, hyperparams)
     elif "wachter" in method:
