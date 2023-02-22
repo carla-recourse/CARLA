@@ -99,6 +99,10 @@ class CSVAE(nn.Module):
         lst_decoder_z_to_y.append(nn.Sigmoid())
         self.decoder_z_to_y = nn.Sequential(*lst_decoder_z_to_y)
 
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = device
+        self.to(device)
+
         self.mutable_mask = mutable_mask
 
     def q_zw(self, x, y):
@@ -221,6 +225,8 @@ class CSVAE(nn.Module):
         log.info("Start training of CSVAE...")
         for i in trange(epochs):
             for x, y in train_loader:
+                x = x.to(self.device)
+                y = y.to(self.device)
                 (
                     loss_val,
                     x_recon_loss_val,

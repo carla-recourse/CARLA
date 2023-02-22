@@ -15,10 +15,8 @@ def mse(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
 
 
 def csvae_loss(csvae, x_train, y_train):
-    x = x_train.clone()
-    x = x.float()
-    y = y_train.clone()
-    y = y.float()
+    x = x_train.clone().float()
+    y = y_train.clone().float()
 
     (
         x_mu,
@@ -47,8 +45,8 @@ def csvae_loss(csvae, x_train, y_train):
         z_mu.flatten(), torch.diag(z_logvar.flatten().exp())
     )
     z_prior = dists.MultivariateNormal(
-        torch.zeros(csvae.z_dim * z_mu.size()[0]),
-        torch.eye(csvae.z_dim * z_mu.size()[0]),
+        torch.zeros(csvae.z_dim * z_mu.size()[0], device=z_mu.device),
+        torch.eye(csvae.z_dim * z_mu.size()[0], device=z_mu.device),
     )
     z_kl = dists.kl.kl_divergence(z_dist, z_prior)
 
