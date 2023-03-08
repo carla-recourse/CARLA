@@ -22,7 +22,7 @@ def load_dataset(
     Parameters
     ----------
     name : str
-        Name of the dataset ``{name}.csv`` on https://github.com/carla-recourse/cf-data.
+        Name of the dataset ``{name}.csv`` on https://github.com/shubhaguha/cf-data.
     cache : boolean, optional
         If True, try to load from the local cache first, and save to the cache
         if a download is required.
@@ -37,7 +37,7 @@ def load_dataset(
         Tabular data, possibly with some preprocessing applied.
     """
 
-    path = "https://raw.githubusercontent.com/carla-recourse/cf-data/master/{}.csv"
+    path = "https://raw.githubusercontent.com/shubhaguha/cf-data/main/{}.csv"
     full_path = path.format(name)
     train_path = path.format(name)[:-4] + "_train.csv"  # remove .csv and add new suffix
     test_path = path.format(name)[:-4] + "_test.csv"  # remove .csv and add new suffix
@@ -77,11 +77,11 @@ def get_dataset_names() -> List[Any]:
 
     """
 
-    url = "https://github.com/carla-recourse/cf-data"
+    url = "https://github.com/shubhaguha/cf-data"
     with urlopen(url) as resp:
         html = resp.read()
 
-    pat = r"/carla-recourse/cf-data/blob/main/(\w*).csv"
+    pat = r"/shubhaguha/cf-data/blob/main/(\w*).csv"
     datasets = re.findall(pat, html.decode())
     return datasets
 
