@@ -4,7 +4,9 @@ import numpy as np
 import pandas as pd
 
 
-def predict_negative_instances(model: Any, data: pd.DataFrame) -> pd.DataFrame:
+def predict_negative_instances(
+    model: Any, data: pd.DataFrame, negative_class=0
+) -> pd.DataFrame:
     """Predicts the data target and retrieves the negative instances. (H^-)
 
     Assumption: Positive class label is at position 1
@@ -22,7 +24,7 @@ def predict_negative_instances(model: Any, data: pd.DataFrame) -> pd.DataFrame:
     # get processed data and remove target
     df = data.copy()
     df["y"] = predict_label(model, df)
-    df = df[df["y"] == 0]
+    df = df[df["y"] == negative_class]
     df = df.drop("y", axis="columns")
 
     return df
