@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.compose import make_column_selector, make_column_transformer
+from sklearn.preprocessing import OneHotEncoder
 from tensorflow import Graph, Session
 
 from carla.data.catalog import OnlineCatalog
@@ -13,6 +15,7 @@ from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.crud import CRUD
 from carla.recourse_methods.catalog.dice import Dice
 from carla.recourse_methods.catalog.face import Face
+from carla.recourse_methods.catalog.fare import EFARE, FARE, fare_actions_factory
 from carla.recourse_methods.catalog.feature_tweak import FeatureTweak
 from carla.recourse_methods.catalog.focus import FOCUS
 from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
@@ -387,6 +390,86 @@ def test_crud(model_type):
 
     crud = CRUD(model, hyperparams)
     df_cfs = crud.get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert isinstance(df_cfs, pd.DataFrame)
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_fare(model_type):
+    # Build data and mlmodel
+    data_name = "adult"
+    data = OnlineCatalog(data_name)
+
+    model = MLModelCatalog(data, model_type, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data.df)
+    test_factual = factuals.iloc[:5]
+
+    # Filter and get only the negative instances
+    training_data = predict_negative_instances(model, data.df)
+    training_data = data.inverse_transform(training_data)
+
+    # Build the actions and types for this environment.
+    # It might require some tinkering
+    actions, types = fare_actions_factory(
+        data.inverse_transform(data.df_train), data.immutables
+    )
+
+    # Instantiate configurations for FARE
+    hyperparams = {
+        "environment_config": {
+            "class_name": "carla.recourse_methods.catalog.fare.MockEnv",
+            "additional_parameters": {
+                "preprocessor": data,
+                "preprocessor_fare": data,
+                "programs_library": actions,
+                "arguments": types,
+            },
+        },
+        "policy_config": {
+            "observation_dim": 14,
+            "encoding_dim": 10,
+            "hidden_size": 10,
+        },
+        "mcts_config": {
+            "exploration": True,
+            "number_of_simulations": 10,
+            "dir_epsilon": 0.4,
+            "dir_noise": 0.3,
+            "action_duplicate_cost": 10,
+        },
+    }
+
+    fare = FARE(model, hyperparams)
+    fare.fit(training_data, max_iter=5, verbose=True)
+
+    df_cfs = fare.get_counterfactuals(data.inverse_transform(test_factual))
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert isinstance(df_cfs, pd.DataFrame)
+
+    # Test the EFARE model
+    cat_selector = make_column_selector(dtype_include=[object, "category"])
+    preprocessor_efare = make_column_transformer(
+        (OneHotEncoder(handle_unknown="ignore", sparse=False), cat_selector),
+        remainder="passthrough",
+    )
+
+    # We fit the EFARE preprocessor
+    preprocessor_efare.fit(training_data)
+
+    hyperparams_efare = {
+        "fare_model": fare.fare_model,
+        "preprocessor": data,
+        "preprocessor_efare": preprocessor_efare,
+    }
+
+    efare = EFARE(model, hyperparams_efare)
+    efare.fit(training_data[0:10], verbose=True)
+
+    df_cfs = efare.get_counterfactuals(data.inverse_transform(test_factual))
+    print(df_cfs)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert isinstance(df_cfs, pd.DataFrame)
