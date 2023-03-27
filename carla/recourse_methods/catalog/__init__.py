@@ -7,6 +7,7 @@ from .clue import Clue
 from .crud import CRUD
 from .dice import Dice
 from .face import Face
+from .fare import EFARE, FARE
 from .feature_tweak import FeatureTweak
 from .focus import FOCUS
 from .growing_spheres import GrowingSpheres
