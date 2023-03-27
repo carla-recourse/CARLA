@@ -122,6 +122,8 @@ def initialize_recourse_method(
         return Revise(mlmodel, data, hyperparams)
     elif "wachter" in method:
         return Wachter(mlmodel, hyperparams)
+    elif "geco" == method:
+        return GeCo(mlmodel, hyperparams)
     else:
         raise ValueError("Recourse method not known")
 
@@ -160,6 +162,7 @@ parser.add_argument(
         "gs",
         "revise",
         "wachter",
+        "geco",
     ],
     choices=[
         "dice",
@@ -174,6 +177,7 @@ parser.add_argument(
         "gs",
         "revise",
         "wachter",
+        "geco",
     ],
     help="Recourse methods for experiment",
 )
