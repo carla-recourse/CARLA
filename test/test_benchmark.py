@@ -12,7 +12,7 @@ from carla.recourse_methods.catalog.dice import Dice
 def make_benchmark(data_name="adult", model_name="ann"):
     # get data and mlmodel
     data = OnlineCatalog(data_name)
-    model = MLModelCatalog(data, model_name, backend="tensorflow")
+    model = MLModelCatalog(data, model_name, backend="pytorch")
 
     # get factuals
     factuals = predict_negative_instances(model, data.df)
@@ -38,6 +38,9 @@ def run_benchmark():
         evaluation_catalog.Redundancy(benchmark.mlmodel, {"cf_label": 1}),
         evaluation_catalog.ConstraintViolation(benchmark.mlmodel),
         evaluation_catalog.AvgTime({"time": benchmark.timer}),
+        evaluation_catalog.InvalidationRate(
+            benchmark.mlmodel, {"var": 0.05, "n_samples": 10000, "cf_label": 1}
+        )
     ]
     df_benchmark = benchmark.run_benchmark(evaluation_measures)
     return df_benchmark, evaluation_measures
@@ -112,4 +115,15 @@ def test_time():
 
     expected = (1, 1)
     actual = time_benchmark.shape
+    assert expected == actual
+
+
+def test_invalidation_rate():
+    # Build data and mlmodel
+    benchmark, evaluation_measures = run_benchmark()
+    ir_measure = evaluation_measures[6]
+    ir_benchmark = benchmark[ir_measure.columns].dropna()
+
+    expected = (5, 1)
+    actual = ir_benchmark.shape
     assert expected == actual

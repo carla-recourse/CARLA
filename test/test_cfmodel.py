@@ -12,6 +12,7 @@ from carla.recourse_methods.catalog.cem import CEM
 from carla.recourse_methods.catalog.clue import Clue
 from carla.recourse_methods.catalog.crud import CRUD
 from carla.recourse_methods.catalog.dice import Dice
+from carla.recourse_methods.catalog.expect import EXPECT, EXPECTTree
 from carla.recourse_methods.catalog.face import Face
 from carla.recourse_methods.catalog.feature_tweak import FeatureTweak
 from carla.recourse_methods.catalog.focus import FOCUS
@@ -390,3 +391,41 @@ def test_crud(model_type):
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert isinstance(df_cfs, pd.DataFrame)
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_expect(model_type):
+    # Build data and mlmodel
+    data_name = "adult"
+    data = OnlineCatalog(data_name)
+
+    model = MLModelCatalog(data, model_type, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data.df)
+    test_factual = factuals.iloc[:5]
+
+    expect = EXPECT(model)
+    df_cfs = expect.get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert isinstance(df_cfs, pd.DataFrame)
+
+
+@pytest.mark.parametrize("backend", ["sklearn", "xgboost"])
+def test_expect_tree(backend):
+    # Build data and mlmodel
+    data_name = "adult"
+    data = OnlineCatalog(data_name)
+
+    model = MLModelCatalog(data, "forest", backend, load_online=False)
+    model.train(max_depth=2, n_estimators=5)
+
+    # get factuals
+    factuals = predict_negative_instances(model, data.df)
+    test_factual = factuals.iloc[:5]
+
+    expect = EXPECTTree(model)
+    cfs = expect.get_counterfactuals(test_factual)
+
+    assert test_factual[data.continuous].shape == cfs.shape
+    assert isinstance(cfs, pd.DataFrame)
