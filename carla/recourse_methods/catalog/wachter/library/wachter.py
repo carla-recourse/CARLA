@@ -112,7 +112,7 @@ def wachter_recourse(
     t_max = datetime.timedelta(minutes=t_max_min)
     while f_x_new <= DECISION_THRESHOLD:
         it = 0
-        while f_x_new <= 0.5 and it < n_iter:
+        while f_x_new <= DECISION_THRESHOLD and it < n_iter:
             optimizer.zero_grad()
             x_new_enc = reconstruct_encoding_constraints(
                 x_new, cat_feature_indices, binary_cat_features
@@ -146,8 +146,5 @@ def wachter_recourse(
         lamb -= 0.05
 
         if datetime.datetime.now() - t0 > t_max:
-            log.info("Timeout - No Counterfactual Explanation Found")
             break
-        elif f_x_new >= 0.5:
-            log.info("Counterfactual Explanation Found")
     return x_new_enc.cpu().detach().numpy().squeeze(axis=0)
