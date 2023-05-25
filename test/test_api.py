@@ -7,7 +7,8 @@ from carla.data.catalog import DataCatalog, OnlineCatalog
 from carla.models.api import MLModel
 from carla.models.catalog import MLModelCatalog
 from carla.recourse_methods.api import RecourseMethod
-from carla.recourse_methods.catalog.dice import Dice
+from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
+# from carla.recourse_methods.catalog.dice import Dice
 
 testmodel = ["ann", "linear"]
 
@@ -41,8 +42,8 @@ def test_cfmodel():
     hyperparams = {"num": 1, "desired_class": 1}
     model_catalog = MLModelCatalog(data_catalog, "ann", backend="tensorflow")
 
-    dice = Dice(model_catalog, hyperparams)
+    gs = GrowingSpheres(model_catalog, hyperparams)
 
-    assert issubclass(Dice, RecourseMethod)
-    assert isinstance(dice, RecourseMethod)
+    assert issubclass(GrowingSpheres, RecourseMethod)
+    assert isinstance(gs, RecourseMethod)
     assert issubclass(RecourseMethod, ABC)
