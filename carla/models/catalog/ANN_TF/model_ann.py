@@ -7,7 +7,7 @@ from keras.utils import to_categorical
 
 
 def weighted_binary_cross_entropy(target, output):
-    loss = 0.7 * (target * tf.log(output)) + 0.3 * ((1 - target) * tf.log(1 - output))
+    loss = 0.7 * (target * tf.math.log(output)) + 0.3 * ((1 - target) * tf.math.log(1 - output))
     return tf.negative(tf.reduce_mean(loss, axis=-1))
 
 
