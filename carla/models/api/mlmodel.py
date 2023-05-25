@@ -171,7 +171,7 @@ class MLModel(ABC):
         # get categorical features
         categorical = self.data.categorical
         # get the binary encoded categorical features
-        encoded_categorical = self.data.encoder.get_feature_names(categorical)
+        encoded_categorical = self.data.encoder.get_feature_names_out(categorical)
         # get the immutables, where the categorical features are in encoded format
         immutable = [
             encoded_categorical[categorical.index(i)] if i in categorical else i
