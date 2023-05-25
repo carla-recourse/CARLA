@@ -16,6 +16,9 @@ dice-ml = "*"
 ipython = "*"
 xgboost = "*"
 causalgraphicalmodels = "*"
+tensorflow = "*"
+torch = "*"
+torchvision = "*"
 
 [dev-packages]
 pre-commit = "*"
