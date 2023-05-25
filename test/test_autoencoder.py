@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import tensorflow as tf
 import torch
 from keras import backend as K
@@ -148,7 +149,7 @@ def test_autoencoder():
     expected_shape = (1, 13)
     assert test_output.shape == expected_shape
 
-
+@pytest.mark.skip("Depends on TF1 API")
 def test_save_and_load():
     with tf.Session() as sess:
         # Build data and mlmodel
