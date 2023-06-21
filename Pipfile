@@ -1,0 +1,38 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+protobuf = "*"
+lime = "*"
+mip = "*"
+numpy = "*"
+pandas = "*"
+recourse = "*"
+scikit-learn = "*"
+h5py = "*"
+dice-ml = "*"
+ipython = "*"
+xgboost = "*"
+causalgraphicalmodels = "*"
+tensorflow = "*"
+torch = "*"
+torchvision = "*"
+
+[dev-packages]
+pre-commit = "*"
+pytest = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
+sphinx-autodoc-typehints = "*"
+numpydoc = "*"
+imageio = "*"
+ipython = "*"
+jinja2 = "*"
+networkx = "*"
+scipy = "*"
+markupsafe = "*"
+
+[requires]
+python_version = "3.9"

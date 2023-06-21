@@ -79,7 +79,7 @@ def encode(
         Whole DataFrame with encoded values
     """
     output = df.copy()
-    encoded_features = fitted_encoder.get_feature_names(features)
+    encoded_features = fitted_encoder.get_feature_names_out(features)
     output[encoded_features] = fitted_encoder.transform(output[features])
     output = output.drop(features, axis=1)
 
@@ -107,7 +107,7 @@ def decode(
         Whole DataFrame with encoded values
     """
     output = df.copy()
-    encoded_features = fitted_encoder.get_feature_names(features)
+    encoded_features = fitted_encoder.get_feature_names_out(features)
 
     # Prevent errors for datasets without categorical data
     # inverse_transform cannot handle these cases

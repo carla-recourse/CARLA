@@ -98,7 +98,7 @@ class MLModelCatalog(MLModel):
                 encoded_features = data.categorical
             else:
                 encoded_features = list(
-                    data.encoder.get_feature_names(data.categorical)
+                    data.encoder.get_feature_names_out(data.categorical)
                 )
 
             self._catalog = None

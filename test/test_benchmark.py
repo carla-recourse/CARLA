@@ -5,7 +5,7 @@ from carla.data.catalog import OnlineCatalog
 from carla.evaluation import Benchmark
 from carla.models.catalog import MLModelCatalog
 from carla.models.negative_instances import predict_negative_instances
-from carla.recourse_methods.catalog.dice import Dice
+from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
 
 
 @lru_cache(maxsize=None)
@@ -20,7 +20,7 @@ def make_benchmark(data_name="adult", model_name="ann"):
 
     # get recourse method
     hyperparams = {"num": 1, "desired_class": 1}
-    recourse_method = Dice(model, hyperparams)
+    recourse_method = GrowingSpheres(model, hyperparams)
 
     # make benchmark object
     benchmark = Benchmark(model, recourse_method, test_factual)
