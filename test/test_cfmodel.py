@@ -17,6 +17,7 @@ from carla.recourse_methods.catalog.feature_tweak import FeatureTweak
 from carla.recourse_methods.catalog.focus import FOCUS
 from carla.recourse_methods.catalog.growing_spheres.model import GrowingSpheres
 from carla.recourse_methods.catalog.revise import Revise
+from carla.recourse_methods.catalog.roar import Roar
 from carla.recourse_methods.catalog.wachter import Wachter
 
 testmodel = ["ann", "linear"]
@@ -280,6 +281,32 @@ def test_wachter(model_type):
 
     hyperparams = {"loss_type": "BCE", "y_target": [0, 1]}
     df_cfs = Wachter(model, hyperparams).get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order).all()
+    assert isinstance(df_cfs, pd.DataFrame)
+
+
+@pytest.mark.parametrize("model_type", testmodel)
+def test_roar(model_type):
+    # Build data and mlmodel
+    data_name = "adult"
+    data = OnlineCatalog(data_name)
+
+    model = MLModelCatalog(data, model_type, backend="pytorch")
+    # get factuals
+    factuals = predict_negative_instances(model, data.df)
+    test_factual = factuals.iloc[:10]
+
+    hyperparams = {"loss_type": "MSE", "y_target": [1]}
+    df_cfs = Roar(model, hyperparams).get_counterfactuals(test_factual)
+
+    assert test_factual.shape[0] == df_cfs.shape[0]
+    assert (df_cfs.columns == model.feature_input_order).all()
+    assert isinstance(df_cfs, pd.DataFrame)
+
+    hyperparams = {"loss_type": "BCE", "y_target": [0, 1]}
+    df_cfs = Roar(model, hyperparams).get_counterfactuals(test_factual)
 
     assert test_factual.shape[0] == df_cfs.shape[0]
     assert (df_cfs.columns == model.feature_input_order).all()

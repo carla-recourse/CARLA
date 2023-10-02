@@ -39,7 +39,7 @@ Actionable Recourse
 
 Causal Recourse
 ^^^^^^^^^^^^^^^
-.. automodule:: recourse_methods.catalog.causal_recourse
+.. automodule:: recourse_methods.catalog.causal_recourse.model
    :members:
    :undoc-members:
 
@@ -113,6 +113,14 @@ Growing Spheres
 REVISE
 ^^^^^^
 .. automodule:: recourse_methods.catalog.revise.model
+   :members:
+   :undoc-members:
+
+.. _roar:
+
+ROAR
+^^^^^^
+.. automodule:: recourse_methods.catalog.roar.model
    :members:
    :undoc-members:
 

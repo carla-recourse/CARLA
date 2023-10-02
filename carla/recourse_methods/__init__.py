@@ -14,5 +14,6 @@ from .catalog import (
     FeatureTweak,
     GrowingSpheres,
     Revise,
+    Roar,
     Wachter,
 )

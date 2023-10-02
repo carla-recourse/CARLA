@@ -190,7 +190,9 @@ class CCHVAE(RecourseMethod):
         z_rep = np.repeat(z.reshape(1, -1), self._n_search_samples, axis=0)
 
         # make copy such that we later easily combine the immutables and the reconstructed mutables
-        fact_rep = np.repeat(torch_fact.reshape(1, -1), self._n_search_samples, axis=0)
+        fact_rep = torch_fact.reshape(1, -1).repeat_interleave(
+            self._n_search_samples, dim=0
+        )
 
         candidate_dist: List = []
         x_ce: Union[np.ndarray, torch.Tensor] = np.array([])
@@ -236,9 +238,9 @@ class CCHVAE(RecourseMethod):
                 .numpy(),
                 axis=1,
             )
-            indeces = np.where(y_candidate != instance_label)
-            candidate_counterfactuals = x_ce[indeces]
-            candidate_dist = distances[indeces]
+            indices = np.where(y_candidate != instance_label)
+            candidate_counterfactuals = x_ce[indices]
+            candidate_dist = distances[indices]
             # no candidate found & push search range outside
             if len(candidate_dist) == 0:
                 low = high

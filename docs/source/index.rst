@@ -6,6 +6,13 @@ It comes out-of-the box with commonly used datasets and various machine learning
 Designed with extensibility in mind: Easily include your own counterfactual methods,
 new machine learning models or other datasets.
 
+.. image:: images/architecture.jpg
+  :width: 800
+  :alt: architecture
+
+In the above image the architecture of the CARLA python library is shown. The silver boxes show the individual objects that will be created to generate counterfactual explanations and evaluate recourse methods. Useful explanations to specific processes are illustrated as yellow notes. The dashed arrows are showing the different implementation possibilities; either use pre-defined catalog objects or provide custom implementation. All dependencies between these objects are visualised by solid arrows with an additional description.
+
+
 Available Datasets
 ------------------
 
@@ -27,7 +34,7 @@ Implemented Counterfactual Methods
 - Feasible and Actionable Counterfactual Explanations (FACE): `FACE <https://arxiv.org/pdf/1909.09369.pdf>`_
 - FeatureTweak: `FeatureTweak <https://arxiv.org/pdf/1706.06691.pdf>`_
 - FOCUS: `FOCUS <https://arxiv.org/pdf/1911.12199.pdf>`_
-- Growing Sphere (GS): `GS <https://arxiv.org/pdf/1910.09398.pdf>`_
+- Growing Sphere (GS): `GS <https://arxiv.org/pdf/1712.08443.pdf>`_
 - Revise: `Revise <https://arxiv.org/pdf/1907.09615.pdf>`_
 - Wachter: `Wachter <https://arxiv.org/ftp/arxiv/papers/1711/1711.00399.pdf>`_
 
